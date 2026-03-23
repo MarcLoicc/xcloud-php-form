@@ -43,14 +43,34 @@ sort($existingTags);
             </button>
         </header>
 
-        <div class="bg-card border border-border p-4 rounded-xl flex items-center justify-between mb-6">
-            <div class="relative w-full md:w-96 group">
-                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3 text-zinc-500 group-focus-within:text-primary transition-colors"></i>
-                <input type="text" id="searchLeadInput" placeholder="Filtrar por nombre, etiquetas..." 
-                       class="w-full pl-10 pr-4 py-2 bg-bg border border-border rounded-lg focus:ring-1 focus:ring-primary outline-none text-white text-sm placeholder-zinc-600 transition-all">
+        <!-- Filtros Avanzados -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8 bg-card border border-border p-5 rounded-2xl items-end shadow-sm">
+            <div class="md:col-span-1 space-y-1.5">
+                <label class="text-[9px] font-black text-zinc-600 uppercase tracking-widest ml-1">Búsqueda Global</label>
+                <div class="relative group">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-zinc-600 group-focus-within:text-primary transition-colors"></i>
+                    <input type="text" id="filterGlobal" placeholder="Nombre o empresa..." class="w-full pl-9 pr-3 py-2 bg-zinc-950/50 border border-zinc-800 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none text-xs text-white placeholder-zinc-700 transition-all">
+                </div>
             </div>
-            <div class="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">
-                <span id="visibleLeadsCount" class="text-white"><?php echo $result->num_rows; ?></span> Resultados
+            <div class="space-y-1.5">
+                <label class="text-[9px] font-black text-zinc-600 uppercase tracking-widest ml-1">Fuente</label>
+                <select id="filterSource" class="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-400 focus:ring-1 focus:ring-primary focus:outline-none appearance-none cursor-pointer">
+                    <option value="all">TODAS</option>
+                    <option value="pago">PAGO</option>
+                    <option value="organico">ORGÁNICO</option>
+                </select>
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-[9px] font-black text-zinc-600 uppercase tracking-widest ml-1">Presupuesto Min. (€)</label>
+                <input type="number" id="filterPrice" placeholder="0.00" class="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-700 focus:ring-1 focus:ring-primary focus:outline-none transition-all">
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-[9px] font-black text-zinc-600 uppercase tracking-widest ml-1">Fecha de Entrada</label>
+                <input type="date" id="filterDate" class="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-500 focus:ring-1 focus:ring-primary focus:outline-none uppercase">
+            </div>
+            <div class="pb-2.5 text-right">
+                <span class="text-[10px] font-black text-zinc-600 uppercase tracking-tighter block leading-none mb-1">Total Leads</span>
+                <span id="visibleLeadsCount" class="text-xl font-bold text-white tabular-nums leading-none"><?php echo $result->num_rows; ?></span>
             </div>
         </div>
 
@@ -69,8 +89,14 @@ sort($existingTags);
                     <tbody class="divide-y divide-border">
                         <?php while($row = $result->fetch_assoc()): 
                             $json_data = htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8');
+                            $rowDate = date('Y-m-d', strtotime($row['created_at']));
                         ?>
-                        <tr class="lead-row hover:bg-zinc-900/40 transition-all group cursor-pointer" onclick='showLeadDetails(<?php echo $json_data; ?>)'>
+                        <tr class="lead-row hover:bg-zinc-900/40 transition-all group cursor-pointer" 
+                            onclick='showLeadDetails(<?php echo $json_data; ?>)'
+                            data-source="<?php echo $row['source']; ?>"
+                            data-price="<?php echo $row['proposal_price'] ?? 0; ?>"
+                            data-date="<?php echo $rowDate; ?>"
+                            data-tags="<?php echo htmlspecialchars($row['tags'] ?? ''); ?>">
                             <td class="px-6 py-4">
                                 <div class="flex flex-col text-sm">
                                     <span class="font-semibold text-white group-hover:text-primary transition-colors"><?php echo htmlspecialchars($row['name']); ?></span>
@@ -201,23 +227,41 @@ sort($existingTags);
             }
         }
 
-        const searchInput = document.getElementById('searchLeadInput');
+        const globalInp = document.getElementById('filterGlobal');
+        const sourceSel = document.getElementById('filterSource');
+        const priceInp = document.getElementById('filterPrice');
+        const dateInp = document.getElementById('filterDate');
         const rows = document.querySelectorAll('.lead-row');
         const countSpan = document.getElementById('visibleLeadsCount');
 
-        if(searchInput) {
-            searchInput.addEventListener('input', () => {
-                const term = searchInput.value.toLowerCase();
-                let visible = 0;
-                rows.forEach(r => {
-                    const txt = r.innerText.toLowerCase();
-                    const isV = txt.includes(term);
-                    r.style.display = isV ? '' : 'none';
-                    if(isV) visible++;
-                });
-                if(countSpan) countSpan.textContent = visible;
+        function applyFilters() {
+            const query = globalInp.value.toLowerCase();
+            const source = sourceSel.value;
+            const minPrice = parseFloat(priceInp.value) || 0;
+            const targetDate = dateInp.value; // YYYY-MM-DD
+
+            let visible = 0;
+            rows.forEach(r => {
+                const text = r.innerText.toLowerCase();
+                const rSrc = r.dataset.source;
+                const rPrice = parseFloat(r.dataset.price) || 0;
+                const rDate = r.dataset.date;
+
+                const matchText = text.includes(query);
+                const matchSrc = (source === 'all' || rSrc === source);
+                const matchPrice = (rPrice >= minPrice);
+                const matchDate = (!targetDate || rDate === targetDate);
+
+                const isV = matchText && matchSrc && matchPrice && matchDate;
+                r.style.display = isV ? '' : 'none';
+                if(isV) visible++;
             });
+            countSpan.textContent = visible;
         }
+
+        [globalInp, sourceSel, priceInp, dateInp].forEach(el => {
+            el.addEventListener('input', applyFilters);
+        });
 
         const modalD = document.getElementById('detailModal');
         const editLeadForm = document.getElementById('editLeadForm');
