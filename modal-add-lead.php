@@ -103,8 +103,12 @@
                             <div id="recordingTimer" class="text-2xl font-mono font-bold text-white tabular-nums">00:00</div>
                         </div>
 
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-3">
                             <audio id="audioPreview" controls class="hidden max-h-8 scale-90 opacity-80"></audio>
+                            <!-- Botón Descartar (Papelera) -->
+                            <button type="button" id="discardBtn" onclick="discardAudio()" class="hidden p-3 bg-zinc-800 hover:bg-red-600/20 text-zinc-500 hover:text-red-500 rounded-2xl border border-zinc-700 transition-all active:scale-90" title="Descartar audio">
+                                <i data-lucide="trash-2" class="w-5 h-5"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -166,16 +170,24 @@
         }
     }
 
+    function discardAudio() {
+        if(confirm('¿Seguro que quieres descartar este audio?')) {
+            resetAudioUI();
+        }
+    }
+
     function resetAudioUI() {
         stopRecording();
         audioBlob = null;
         audioChunks = [];
         document.getElementById('micIcon').innerHTML = '<i data-lucide="mic"></i>';
-        document.getElementById('recordBtn').classList.replace('bg-zinc-800', 'bg-red-600');
+        document.getElementById('recordBtn').classList.remove('bg-zinc-800');
+        document.getElementById('recordBtn').classList.add('bg-red-600');
         document.getElementById('recordingStatus').textContent = 'Micro listo';
         document.getElementById('recordingStatus').className = 'text-xs font-black text-zinc-600 uppercase tracking-widest mb-1';
         document.getElementById('recordingTimer').textContent = '00:00';
         document.getElementById('audioPreview').classList.add('hidden');
+        document.getElementById('discardBtn').classList.add('hidden');
         if(animationId) cancelAnimationFrame(animationId);
         const canvas = document.getElementById('visualizer');
         const ctx = canvas.getContext('2d');
@@ -217,16 +229,23 @@
     }
 
     async function toggleRecording() {
+        if (!isRecording && audioBlob) {
+            if(!confirm('Ya tienes una grabación. ¿Quieres borrarla y empezar de nuevo?')) {
+                return;
+            }
+            resetAudioUI();
+        }
+
         const status = document.getElementById('recordingStatus');
         const preview = document.getElementById('audioPreview');
         const btn = document.getElementById('recordBtn');
+        const discBtn = document.getElementById('discardBtn');
         const deviceId = document.getElementById('micSelect').value;
 
         if (!isRecording) {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: deviceId } } });
                 
-                // Visualizador Setup
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioContext.createAnalyser();
                 const source = audioContext.createMediaStreamSource(stream);
@@ -241,7 +260,9 @@
                     audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                     preview.src = URL.createObjectURL(audioBlob);
                     preview.classList.remove('hidden');
+                    discBtn.classList.remove('hidden');
                     status.textContent = 'Grabación finalizada';
+                    lucide.createIcons();
                 };
 
                 mediaRecorder.start();
@@ -262,8 +283,12 @@
         isRecording = false;
         document.getElementById('recordBtn').classList.replace('bg-zinc-800', 'bg-red-600');
         document.getElementById('recordingStatus').className = 'text-xs font-black text-zinc-500 uppercase tracking-widest mb-1';
-        if(audioContext) audioContext.close();
+        if(audioContext) {
+            audioContext.close();
+            audioContext = null;
+        }
     }
+
 
 
     const modalForm = document.getElementById('modalLeadForm');
