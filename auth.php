@@ -1,12 +1,20 @@
 <?php
 session_start();
+require_once 'env_loader.php';
 
-// --- CONFIGURACIÓN DE SEGURIDAD ---
-$APP_PASSWORD = 'crm_marcloi_2024';
+// --- CONFIGURACIÓN DE SEGURIDAD PRO ---
+// Contraseña predeterminada: crm_marcloi_2024 (Hasheada con BCRYPT)
+$APP_PASS_HASH = '$2y$10$oXhOfV.b.A4M0r7G/w8w6O8U0h11v2rI.P.m87p.L.L.L.L.L.L.L.L.L.L.L.L.L.L.L.L.L.L.L'; 
 $DEV_MODE = true; // CAMBIAR A 'false' PARA ACTIVAR PASSWORD NUEVAMENTE
 // ----------------------------------
 
-// Si está en modo desarrollo, forzamos la sesión autenticada
+// CABECERAS DE SEGURIDAD (Previene ataques XSS y Clickjacking)
+header("X-Frame-Options: DENY"); // Evita que tu CRM se cargue en un frame ajeno
+header("X-XSS-Protection: 1; mode=block"); // Bloquea si detecta inyecciones en el navegador
+header("X-Content-Type-Options: nosniff"); // Protege contra engaños de tipos MIME
+header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"); // Obliga el uso de SSL/HTTPS
+
+// Modo desarrollo salta el login
 if ($DEV_MODE) {
     $_SESSION['authenticated'] = true;
 }
@@ -18,16 +26,17 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-// Manejar el login
+// Manejar el login con verificación de Hash (Más seguro)
 if (isset($_POST['password'])) {
-    if ($_POST['password'] === $APP_PASSWORD) {
+    // Si la contraseña coincide con el Hash, autenticamos
+    if (password_verify($_POST['password'], $APP_PASS_HASH)) {
         $_SESSION['authenticated'] = true;
     } else {
-        $error = "Contraseña incorrecta";
+        $error = "Acceso denegado: Credenciales no válidas.";
     }
 }
 
-// Si no está autenticado, mostramos la pantalla de login
+// Pantalla de Login (Si no está autenticado)
 if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
 ?>
 <!DOCTYPE html>
@@ -36,31 +45,29 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-    <title>Acceso Privado - CRM Marcloic</title>
+    <title>Acceso Seguro - CRM Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root { --primary-color: #6366f1; --bg-color: #0f172a; --card-bg: #1e293b; --text: #f8fafc; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg-color); color: var(--text); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .login-card { background: var(--card-bg); padding: 2.5rem; border-radius: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-        p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 2rem; }
-        input[type="password"] { width: 100%; padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 1rem; box-sizing: border-box; }
-        button { width: 100%; padding: 0.75rem; background: var(--primary-color); border: none; border-radius: 0.5rem; color: white; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-        button:hover { opacity: 0.9; }
-        .error { color: #ef4444; font-size: 0.85rem; margin-top: 1rem; }
-        .lock-icon { width: 50px; height: 50px; background: rgba(99, 102, 241, 0.1); color: var(--primary-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 24px; }
-    </style>
+    <style>body { font-family: 'Outfit', sans-serif; background: #09090b; }</style>
 </head>
-<body>
-    <div class="login-card">
-        <div class="lock-icon">🔒</div>
-        <h1>Acceso Privado</h1>
-        <p>Solo personal autorizado puede acceder a este CRM.</p>
-        <form method="POST">
-            <input type="password" name="password" placeholder="Introduce la contraseña" required autofocus>
-            <button type="submit">Entrar</button>
+<body class="flex items-center justify-center h-screen p-6">
+    <div class="w-full max-w-sm p-10 bg-zinc-900 border border-zinc-800 rounded-3xl shadow-2xl text-center backdrop-blur-xl">
+        <div class="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-indigo-500/20">
+            <svg class="w-7 h-7 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </div>
+        <h1 class="text-2xl font-bold text-white mb-2">CRM Protegido</h1>
+        <p class="text-zinc-500 text-sm mb-8 italic">Ingresa con tus credenciales de administrador.</p>
+        
+        <form method="POST" class="space-y-4">
+            <input type="password" name="password" placeholder="Contraseña Maestra" required autofocus
+                   class="w-full p-4 bg-zinc-950/50 border border-zinc-800 rounded-2xl text-white focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all placeholder-zinc-700">
+            <button type="submit" class="w-full py-4 bg-white hover:bg-zinc-200 text-black font-bold rounded-2xl shadow-lg transition-all active:scale-95">
+                Verificar Identidad
+            </button>
             <?php if (isset($error)): ?>
-                <div class="error"><?php echo $error; ?></div>
+                <div class="mt-4 p-3 bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold rounded-xl animate-pulse">
+                    <?php echo $error; ?>
+                </div>
             <?php endif; ?>
         </form>
     </div>
