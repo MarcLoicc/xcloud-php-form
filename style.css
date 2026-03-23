@@ -1,8 +1,9 @@
 :root {
-  --primary: #ffffff;
-  --secondary: #a1a1aa;
-  --accent: #6366f1;
-  --bg: #09090b;
+  --primary: #0066FF; /* Azul Eléctrico */
+  --primary-hover: #0052CC;
+  --secondary: #3b82f6;
+  --accent: #22d3ee; /* Cian para acentos leves */
+  --bg-dark: #09090b;
   --sidebar: #111111;
   --card: #18181b;
   --border: #27272a;
@@ -19,7 +20,7 @@
 
 body {
   font-family: 'Outfit', sans-serif;
-  background-color: var(--bg);
+  background-color: var(--bg-dark);
   color: var(--text-main);
   min-height: 100vh;
   display: flex;
@@ -81,11 +82,14 @@ body {
 }
 
 /* Layout Elements */
-.page-header {
-  margin-bottom: 2.5rem;
+.page-header { margin-bottom: 2.5rem; }
+.page-header h1 { 
+    font-size: 2.1rem; font-weight: 800; 
+    background: linear-gradient(to bottom, #fff 0%, #a1a1aa 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
-
-.page-header h1 { font-size: 2rem; font-weight: 700; color: #fff; }
 .page-header p { color: var(--text-muted); margin-top: 0.25rem; }
 
 /* Dashboard Cards */
@@ -101,37 +105,15 @@ body {
   border: 1px solid var(--border);
   padding: 1.5rem;
   border-radius: var(--radius);
-  transition: border-color 0.2s;
+  transition: all 0.2s;
 }
 
-.stat-card:hover { border-color: #3f3f46; }
+.stat-card:hover { border-color: var(--primary); transform: translateY(-3px); }
 .stat-card .label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; display: block; }
 .stat-card .value { font-size: 1.75rem; font-weight: 700; color: #fff; }
-.stat-card .trend { font-size: 0.75rem; margin-top: 0.5rem; padding: 2px 8px; border-radius: 99px; display: inline-block; }
-.trend.up { background: rgba(16, 185, 129, 0.1); color: var(--success); }
 
-/* Main Panels */
-.grid-main {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
-}
-
-.panel {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.panel-header h2 { font-size: 1.1rem; font-weight: 600; }
+/* Stats Colors */
+.stat-accent { color: var(--primary); }
 
 /* Table Updated */
 .data-table { width: 100%; border-collapse: collapse; }
@@ -141,45 +123,19 @@ body {
   font-weight: 600; text-transform: uppercase;
 }
 .data-table td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-.data-table tr:last-child td { border: none; }
+.data-table tr:hover td { background: rgba(0, 102, 255, 0.03); }
 
 /* Badge System */
 .badge {
   padding: 0.25rem 0.6rem;
   border-radius: 6px;
   font-size: 0.75rem;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  font-weight: 600;
 }
-.badge-email { background: #27272a; color: #e4e4e7; }
-.badge-status { background: rgba(99, 102, 241, 0.1); color: #818cf8; }
-
-/* Form Elements Pro */
-.form-pro { max-width: 600px; }
-.field { margin-bottom: 1.25rem; }
-.field label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
-.input-pro {
-  width: 100%; padding: 0.75rem 1rem; background: var(--input); 
-  border: 1px solid var(--border); border-radius: 8px; color: white;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.input-pro:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
-
-.btn-pro {
-  width: 100%; padding: 0.75rem; background: #fff; color: #000;
-  border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
-  transition: transform 0.1s, opacity 0.2s;
-}
-.btn-pro:hover { opacity: 0.9; transform: translateY(-1px); }
-
-.icon-box {
-  width: 32px; height: 32px; border-radius: 8px; background: #27272a;
-  display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
-}
+.badge-email { background: rgba(0, 102, 255, 0.1); color: #60a5fa; }
+.badge-status { background: rgba(16, 185, 129, 0.1); color: var(--success); }
 
 @media (max-width: 1100px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .grid-main { grid-template-columns: 1fr; }
+  .main-content { padding: 2.5rem 2rem; }
 }
