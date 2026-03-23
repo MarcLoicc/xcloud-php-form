@@ -28,6 +28,7 @@ $tableQuery = "CREATE TABLE IF NOT EXISTS leads (
     tags VARCHAR(255),
     proposal_price DECIMAL(10, 2) DEFAULT 0.00,
     file_path VARCHAR(555),
+    audio_path VARCHAR(555),
     message TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
@@ -40,8 +41,10 @@ $columns = [
     'source' => "ENUM('organico', 'pago') DEFAULT 'organico'",
     'tags' => "VARCHAR(255)",
     'proposal_price' => "DECIMAL(10, 2) DEFAULT 0.00",
-    'file_path' => "VARCHAR(555)"
+    'file_path' => "VARCHAR(555)",
+    'audio_path' => "VARCHAR(555)"
 ];
+
 
 
 foreach ($columns as $col => $type) {

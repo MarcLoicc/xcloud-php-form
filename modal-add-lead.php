@@ -72,30 +72,35 @@
                 <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Etiquetas del Lead</label>
                 <div class="flex flex-wrap gap-3">
                     <label class="cursor-pointer group">
-                        <input type="checkbox" name="tags[]" value="meaads" class="hidden peer">
-                        <div class="px-5 py-2.5 rounded-2xl border border-zinc-800 text-sm font-bold text-zinc-600 bg-zinc-950/50 peer-checked:bg-blue-600/10 peer-checked:border-blue-500 peer-checked:text-blue-500 transition-all hover:border-zinc-700">Meaads</div>
+                        <input type="checkbox" name="tags[]" value="metaads" class="hidden peer">
+                        <div class="px-5 py-2.5 rounded-2xl border border-zinc-800 text-sm font-bold text-zinc-600 bg-zinc-950/50 peer-checked:bg-blue-600/10 peer-checked:border-blue-500 peer-checked:text-blue-500 transition-all hover:border-zinc-700 underline underline-offset-4 decoration-blue-500/0 peer-checked:decoration-blue-500/100">Metaads</div>
                     </label>
                     <label class="cursor-pointer group">
                         <input type="checkbox" name="tags[]" value="arquitectos" class="hidden peer">
-                        <div class="px-5 py-2.5 rounded-2xl border border-zinc-800 text-sm font-bold text-zinc-600 bg-zinc-950/50 peer-checked:bg-blue-600/10 peer-checked:border-blue-500 peer-checked:text-blue-500 transition-all hover:border-zinc-700">Arquitectos</div>
+                        <div class="px-5 py-2.5 rounded-2xl border border-zinc-800 text-sm font-bold text-zinc-600 bg-zinc-950/50 peer-checked:bg-blue-600/10 peer-checked:border-blue-500 peer-checked:text-blue-500 transition-all hover:border-zinc-700 underline underline-offset-4 decoration-blue-500/0 peer-checked:decoration-blue-500/100">Arquitectos</div>
                     </label>
                 </div>
             </div>
 
-            <!-- Sección 5: Subida de Archivos (Max 150MB) -->
-            <div class="space-y-2 pt-2">
-                <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Adjuntar Archivo (Máx. 150MB)</label>
-                <div class="relative group">
-                    <input type="file" name="lead_file" id="lead_file"
-                           class="block w-full text-xs text-zinc-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-blue-600/10 file:text-blue-500 hover:file:bg-blue-600/20 transition-all cursor-pointer border-2 border-dashed border-zinc-800 p-4 rounded-2xl group-hover:border-blue-500/30">
+            <!-- Sección 5: Grabador de Llamada -->
+            <div class="space-y-3 pt-2">
+                <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Grabar Llamada / Notas de Voz</label>
+                <div class="flex items-center gap-4 bg-zinc-950/30 p-4 border border-zinc-800 rounded-3xl">
+                    <button type="button" id="recordBtn" onclick="toggleRecording()" class="w-14 h-14 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95 shadow-red-600/10">
+                        <i data-lucide="mic" id="micIcon" class="w-6 h-6"></i>
+                    </button>
+                    <div id="recordingStatus" class="flex-1 text-sm font-bold text-zinc-500 italic">Pulsa para grabar</div>
+                    <audio id="audioPreview" controls class="hidden max-h-8 scale-90"></audio>
                 </div>
             </div>
 
-            <!-- Otros Datos -->
+            <!-- Sección 6: Subida de Archivos -->
             <div class="space-y-2 pt-2">
-                <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Observaciones Finales</label>
-                <textarea name="message" rows="2" placeholder="Cualquier otra información relevante..."
-                          class="block w-full p-4 bg-zinc-950/50 border border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 text-white placeholder-zinc-800 transition-all text-sm"></textarea>
+                <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Documentos (Máx. 150MB)</label>
+                <div class="relative group">
+                    <input type="file" name="lead_file" id="lead_file"
+                           class="block w-full text-xs text-zinc-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-blue-600/10 file:text-blue-500 hover:file:bg-blue-600/20 transition-all cursor-pointer border border-zinc-800 p-3 rounded-2xl group-hover:border-blue-500/30">
+                </div>
             </div>
 
             <button type="submit" id="modalSubmitBtn" class="w-full py-5 px-6 bg-blue-600 hover:bg-blue-500 text-white text-base font-black rounded-2xl shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 active:scale-95 transition-all">
@@ -109,12 +114,65 @@
 </div>
 
 <script>
+    let mediaRecorder;
+    let audioChunks = [];
+    let audioBlob;
+    let isRecording = false;
+
     function toggleModal() {
         const modal = document.getElementById('addLeadModal');
         modal.classList.toggle('hidden');
         if(!modal.classList.contains('hidden')) {
             document.getElementById('modalStatusMessage').classList.add('hidden');
             document.getElementById('modalLeadForm').reset();
+            resetAudioUI();
+        }
+    }
+
+    function resetAudioUI() {
+        isRecording = false;
+        audioBlob = null;
+        audioChunks = [];
+        document.getElementById('micIcon').innerHTML = '<i data-lucide="mic"></i>';
+        document.getElementById('recordBtn').classList.replace('bg-zinc-800', 'bg-red-600');
+        document.getElementById('recordingStatus').textContent = 'Pulsa para grabar';
+        document.getElementById('audioPreview').classList.add('hidden');
+        lucide.createIcons();
+    }
+
+    async function toggleRecording() {
+        const status = document.getElementById('recordingStatus');
+        const preview = document.getElementById('audioPreview');
+        const btn = document.getElementById('recordBtn');
+
+        if (!isRecording) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    preview.src = audioUrl;
+                    preview.classList.remove('hidden');
+                    status.textContent = 'Grabación lista';
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                btn.classList.replace('bg-red-600', 'bg-zinc-800');
+                status.className = 'flex-1 text-sm font-bold text-red-500 animate-pulse uppercase tracking-widest';
+                status.textContent = 'GRABANDO LLAMADA...';
+            } catch (err) {
+                alert('No se pudo acceder al micrófono: ' + err);
+            }
+        } else {
+            mediaRecorder.stop();
+            isRecording = false;
+            btn.classList.replace('bg-zinc-800', 'bg-red-600');
+            status.className = 'flex-1 text-sm font-bold text-zinc-500 italic';
         }
     }
 
@@ -125,22 +183,25 @@
     modalForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         modalSubmitBtn.disabled = true;
-        modalSubmitBtn.innerHTML = 'Subiendo Datos y Archivo...';
+        modalSubmitBtn.innerHTML = 'Enviando Datos y Audio...';
 
-        // Usamos FormData para enviar el archivo
         const formData = new FormData(modalForm);
+        
+        // Adjuntar grabación de audio si existe
+        if (audioBlob) {
+            formData.append('audio_file', audioBlob, 'record.webm');
+        }
 
         try {
             const response = await fetch('insert.php', {
                 method: 'POST',
-                // IMPORTANTE: Al enviar archivos con FormData NO se debe poner el header Content-Type manualmente
                 body: formData,
             });
 
             const result = await response.json();
 
             if (result.status === 'success') {
-                modalStatus.textContent = result.message;
+                modalStatus.textContent = 'REGISTRO GUARDADO';
                 modalStatus.className = 'mt-6 p-4 rounded-2xl text-center font-bold bg-green-500/10 text-green-500 border border-green-500/20 text-[10px] tracking-widest';
                 modalStatus.classList.remove('hidden');
                 setTimeout(() => { location.reload(); }, 1200);
@@ -163,4 +224,5 @@
         if (event.target == modal) { toggleModal(); }
     }
 </script>
+
 

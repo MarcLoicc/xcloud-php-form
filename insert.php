@@ -41,6 +41,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // --- MANEJO DE GRABACIÓN DE AUDIO ---
+    $audio_path = null;
+    if (isset($_FILES['audio_file']) && $_FILES['audio_file']['error'] === UPLOAD_ERR_OK) {
+        $upload_dir = 'uploads/';
+        if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
+        
+        $audio_tmp = $_FILES['audio_file']['tmp_name'];
+        $audio_name = 'call_rec_' . time() . '.webm';
+        $target_audio = $upload_dir . $audio_name;
+
+        if (move_uploaded_file($audio_tmp, $target_audio)) {
+            $audio_path = $target_audio;
+        }
+    }
+
     if (empty($name) || empty($email)) {
         echo json_encode(['status' => 'error', 'message' => 'Nombre y Email son obligatorios']);
         exit;
@@ -51,9 +66,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Insertar con Prepared Statements
-    $stmt = $conn->prepare("INSERT INTO leads (name, email, phone, company, website, source, tags, proposal_price, file_path, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssssssdss", $name, $email, $phone, $company, $website, $source, $tags, $proposal_price, $file_path, $message);
+    // Insertar con Prepared Statements (11 campos)
+    $stmt = $conn->prepare("INSERT INTO leads (name, email, phone, company, website, source, tags, proposal_price, file_path, audio_path, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssssdsss", $name, $email, $phone, $company, $website, $source, $tags, $proposal_price, $file_path, $audio_path, $message);
+
 
 
     if ($stmt->execute()) {

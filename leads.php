@@ -68,11 +68,12 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
                                     <?php 
                                     $tags = !empty($row['tags']) ? explode(', ', $row['tags']) : [];
                                     foreach($tags as $tag): 
-                                        $tagColor = ($tag == 'meaads') ? 'emerald' : 'violet';
+                                        $tagName = ($tag == 'metaads') ? 'Metaads' : ucfirst($tag);
+                                        $tagColor = ($tag == 'metaads') ? 'emerald' : 'violet';
                                     ?>
-                                        <span class="px-2 py-0.5 bg-<?php echo $tagColor; ?>-500/10 text-<?php echo $tagColor; ?>-400 text-[8px] font-black rounded-md border border-<?php echo $tagColor; ?>-500/20 uppercase tracking-tighter"><?php echo $tag; ?></span>
+                                        <span class="px-2 py-0.5 bg-<?php echo $tagColor; ?>-500/10 text-<?php echo $tagColor; ?>-400 text-[8px] font-black rounded-md border border-<?php echo $tagColor; ?>-500/20 uppercase tracking-tighter"><?php echo $tagName; ?></span>
                                     <?php endforeach; if(empty($tags)) echo '<span class="text-zinc-700 text-[8px] italic font-bold">SIN ETIQUETAS</span>'; ?>
-                                </div>
+                                 </div>
                             </td>
 
                             <!-- Archivo -->
@@ -85,6 +86,18 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
                                     <span class="text-zinc-800"><i data-lucide="minus" class="w-4 h-4 mx-auto"></i></span>
                                 <?php endif; ?>
                             </td>
+
+                            <!-- Audio -->
+                            <td class="px-4 py-5 text-center">
+                                <?php if(!empty($row['audio_path'])): ?>
+                                    <a href="<?php echo htmlspecialchars($row['audio_path']); ?>" target="_blank" class="text-red-500 hover:text-red-400 p-2 inline-block transition-transform hover:scale-125 focus:ring-2 focus:ring-red-500/50 rounded-full" title="Escuchar llamada grabada">
+                                        <i data-lucide="volume-2" class="w-5 h-5"></i>
+                                    </a>
+                                <?php else: ?>
+                                    <span class="text-zinc-800"><i data-lucide="mic-off" class="w-4 h-4 mx-auto opacity-20"></i></span>
+                                <?php endif; ?>
+                            </td>
+
 
                             <!-- Precio Propuesta -->
                             <td class="px-6 py-5 text-right">
