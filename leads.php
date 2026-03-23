@@ -1,5 +1,6 @@
 <?php require_once 'auth.php'; ?>
 <?php
+date_default_timezone_set('Europe/Madrid');
 require_once 'db.php';
 $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
 ?>
@@ -24,6 +25,20 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
             </button>
         </div>
 
+        <!-- Filtro Buscador -->
+        <div class="mb-8 bg-dark-card border border-dark-border rounded-3xl p-4 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="relative w-full md:w-[400px] group">
+                <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-500 group-focus-within:text-blue-500 transition-colors">
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                </div>
+                <input type="text" id="searchLeadInput" placeholder="Filtrar por nombre, etiquetas, fuente..." 
+                       class="w-full pl-14 pr-4 py-3.5 bg-zinc-950/50 border border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 text-white placeholder-zinc-600 transition-all font-medium text-sm outline-none shadow-inner">
+            </div>
+            <div class="text-xs font-black tracking-widest text-zinc-600 uppercase">
+                Mostrando <span id="visibleLeadsCount" class="text-blue-500"><?php echo $result->num_rows; ?></span> leads
+            </div>
+        </div>
+
         <div class="bg-dark-card border border-dark-border rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-sm">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
@@ -38,7 +53,7 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
                     </thead>
                     <tbody class="divide-y divide-dark-border">
                         <?php while($row = $result->fetch_assoc()): ?>
-                        <tr class="hover:bg-blue-500/5 transition-all group">
+                        <tr class="lead-row hover:bg-blue-500/5 transition-all group">
                             <!-- Nombre y Empresa -->
                             <td class="px-8 py-5">
                                 <div class="flex flex-col">
@@ -102,7 +117,30 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
         </div>
     </main>
 
-    <script>lucide.createIcons();</script>
+    <script>
+        lucide.createIcons();
+        
+        const searchInput = document.getElementById('searchLeadInput');
+        const countSpan = document.getElementById('visibleLeadsCount');
+        const rows = document.querySelectorAll('tbody tr.lead-row');
+
+        if(searchInput) {
+            searchInput.addEventListener('input', function() {
+                const term = this.value.toLowerCase();
+                let visible = 0;
+                rows.forEach(row => {
+                    const text = row.innerText.toLowerCase();
+                    if(text.includes(term)) {
+                        row.style.display = '';
+                        visible++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                if(countSpan) countSpan.textContent = visible;
+            });
+        }
+    </script>
 </body>
 </html>
 <?php $conn->close(); ?>
