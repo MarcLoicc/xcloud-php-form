@@ -1,13 +1,22 @@
+<?php require_once 'auth.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bloqueo total para buscadores e IA -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <!-- Evitar caché en el navegador -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <title>Nuevo Lead - xCloud PHP</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- Versionado del CSS para forzar actualización -->
+    <link rel="stylesheet" href="style.css?v=1.0.1">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
