@@ -1,9 +1,9 @@
 <?php
-// Configuración de la base de datos MariaDB para xCloud
+// Configuración de la base de datos MariaDB para xCloud (CREDENCIALES ACTUALIZADAS s208273)
 $host = '127.0.0.1';
-$user = 's208256_crm';
-$pass = 'kjugtAAO5mKa3nuA';
-$db   = 's208256_crm';
+$user = 'u208273_crm';
+$pass = 'Nwpd0WGdyRO810tA';
+$db   = 's208273_crm';
 $port = 3306;
 
 $conn = new mysqli($host, $user, $pass, $db, $port);
