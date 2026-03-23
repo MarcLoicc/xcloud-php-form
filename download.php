@@ -1,28 +1,24 @@
 <?php
-require_once 'auth.php'; // Solo tú puedes descargar
+require_once 'auth.php'; // Protección de seguridad del CRM
 require_once 'db.php';
 
 $file = $_GET['file'] ?? '';
 
-if (empty($file)) die("Archivo no especificado.");
+if (empty($file)) die("Error: No has indicado qué archivo quieres ver.");
 
-// Seguridad: Solo permitir leer archivos de la carpeta uploads/
-// Evitar ataques de "../../../etc/passwd"
-$baseDir = realpath('uploads/');
-$filePath = realpath($file);
-
-if ($filePath === false || strpos($filePath, $baseDir) !== 0) {
-    die("Acceso denegado o archivo no encontrado.");
-}
+// Normalizamos la ruta para evitar trucos de hackers
+$file = basename($file); // Solo nos quedamos con el nombre del archivo (seguridad extra)
+$filePath = 'uploads/' . $file;
 
 if (!file_exists($filePath)) {
-    die("El archivo no existe físicamente en el servidor.");
+    // Si llegamos aquí, es que el archivo no está en el disco duro del servidor
+    die("Error crítico: El archivo '$file' NO existe en el servidor. Puede que se haya borrado al hacer el despliegue de Git.");
 }
 
 // Detective de tipo de archivo (MIME Type)
 $mimeType = mime_content_type($filePath);
 header("Content-Type: $mimeType");
-header("Content-Disposition: inline; filename=\"" . basename($filePath) . "\"");
+header("Content-Disposition: inline; filename=\"$file\"");
 header("Content-Length: " . filesize($filePath));
 
 // Leer y entregar el archivo
