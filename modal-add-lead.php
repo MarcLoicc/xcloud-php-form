@@ -82,21 +82,37 @@
                 </div>
             </div>
 
-            <!-- Sección 5: Grabador de Llamada -->
-            <div class="space-y-3 pt-2">
-                <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Grabar Llamada / Notas de Voz</label>
-                <div class="flex items-center gap-4 bg-zinc-950/30 p-4 border border-zinc-800 rounded-3xl">
-                    <button type="button" id="recordBtn" onclick="toggleRecording()" class="w-14 h-14 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95 shadow-red-600/10">
-                        <i data-lucide="mic" id="micIcon" class="w-6 h-6"></i>
-                    </button>
-                    <div id="recordingStatus" class="flex-1 text-sm font-bold text-zinc-500 italic">Pulsa para grabar</div>
-                    <audio id="audioPreview" controls class="hidden max-h-8 scale-90"></audio>
+            <!-- Sección 5: Grabador de Llamada Profesional -->
+            <div class="space-y-4 pt-2">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Estación de Grabación</label>
+                    <select id="micSelect" class="text-[9px] bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1 text-zinc-500 outline-none focus:border-blue-500 transition-colors max-w-[150px] truncate"></select>
+                </div>
+                
+                <div class="relative bg-zinc-950/40 p-6 border border-zinc-800 rounded-[2rem] overflow-hidden group">
+                    <!-- Visualizer Canvas -->
+                    <canvas id="visualizer" class="absolute inset-0 w-full h-full opacity-30 pointer-events-none"></canvas>
+                    
+                    <div class="relative z-10 flex items-center gap-6">
+                        <button type="button" id="recordBtn" onclick="toggleRecording()" class="w-16 h-16 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center transition-all shadow-xl active:scale-95 shadow-red-600/20 group-hover:scale-105">
+                            <i data-lucide="mic" id="micIcon" class="w-7 h-7"></i>
+                        </button>
+                        
+                        <div class="flex-1">
+                            <div id="recordingStatus" class="text-xs font-black text-zinc-600 uppercase tracking-widest mb-1">Micro listo</div>
+                            <div id="recordingTimer" class="text-2xl font-mono font-bold text-white tabular-nums">00:00</div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <audio id="audioPreview" controls class="hidden max-h-8 scale-90 opacity-80"></audio>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Sección 6: Subida de Archivos -->
             <div class="space-y-2 pt-2">
-                <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Documentos (Máx. 150MB)</label>
+                <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Documentos Adicionales (Máx. 150MB)</label>
                 <div class="relative group">
                     <input type="file" name="lead_file" id="lead_file"
                            class="block w-full text-xs text-zinc-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-blue-600/10 file:text-blue-500 hover:file:bg-blue-600/20 transition-all cursor-pointer border border-zinc-800 p-3 rounded-2xl group-hover:border-blue-500/30">
@@ -118,6 +134,26 @@
     let audioChunks = [];
     let audioBlob;
     let isRecording = false;
+    let timerInterval;
+    let audioContext;
+    let analyser;
+    let animationId;
+
+    // Cargar micrófonos disponibles
+    async function setupMics() {
+        const select = document.getElementById('micSelect');
+        try {
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            select.innerHTML = '';
+            devices.filter(d => d.kind === 'audioinput').forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.deviceId;
+                opt.text = d.label || `Micro ${select.length + 1}`;
+                select.appendChild(opt);
+            });
+        } catch(e) { console.error("Error cargando mics", e); }
+    }
 
     function toggleModal() {
         const modal = document.getElementById('addLeadModal');
@@ -125,56 +161,110 @@
         if(!modal.classList.contains('hidden')) {
             document.getElementById('modalStatusMessage').classList.add('hidden');
             document.getElementById('modalLeadForm').reset();
+            setupMics();
             resetAudioUI();
         }
     }
 
     function resetAudioUI() {
-        isRecording = false;
+        stopRecording();
         audioBlob = null;
         audioChunks = [];
         document.getElementById('micIcon').innerHTML = '<i data-lucide="mic"></i>';
         document.getElementById('recordBtn').classList.replace('bg-zinc-800', 'bg-red-600');
-        document.getElementById('recordingStatus').textContent = 'Pulsa para grabar';
+        document.getElementById('recordingStatus').textContent = 'Micro listo';
+        document.getElementById('recordingStatus').className = 'text-xs font-black text-zinc-600 uppercase tracking-widest mb-1';
+        document.getElementById('recordingTimer').textContent = '00:00';
         document.getElementById('audioPreview').classList.add('hidden');
+        if(animationId) cancelAnimationFrame(animationId);
+        const canvas = document.getElementById('visualizer');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0,0, canvas.width, canvas.height);
         lucide.createIcons();
+    }
+
+    function startTimer() {
+        let sec = 0;
+        timerInterval = setInterval(() => {
+            sec++;
+            const m = Math.floor(sec / 60).toString().padStart(2, '0');
+            const s = (sec % 60).toString().padStart(2, '0');
+            document.getElementById('recordingTimer').textContent = `${m}:${s}`;
+        }, 1000);
+    }
+
+    function drawVisualizer() {
+        const canvas = document.getElementById('visualizer');
+        const ctx = canvas.getContext('2d');
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        const draw = () => {
+            animationId = requestAnimationFrame(draw);
+            analyser.getByteFrequencyData(dataArray);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0066FF';
+            const barWidth = (canvas.width / bufferLength) * 2.5;
+            let barHeight;
+            let x = 0;
+            for(let i = 0; i < bufferLength; i++) {
+                barHeight = dataArray[i] / 2;
+                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                x += barWidth + 1;
+            }
+        };
+        draw();
     }
 
     async function toggleRecording() {
         const status = document.getElementById('recordingStatus');
         const preview = document.getElementById('audioPreview');
         const btn = document.getElementById('recordBtn');
+        const deviceId = document.getElementById('micSelect').value;
 
         if (!isRecording) {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: deviceId } } });
+                
+                // Visualizador Setup
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                const source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyser);
+                analyser.fftSize = 256;
+                drawVisualizer();
+
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
-
-                mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
                 mediaRecorder.onstop = () => {
                     audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    preview.src = audioUrl;
+                    preview.src = URL.createObjectURL(audioBlob);
                     preview.classList.remove('hidden');
-                    status.textContent = 'Grabación lista';
+                    status.textContent = 'Grabación finalizada';
                 };
 
                 mediaRecorder.start();
+                startTimer();
                 isRecording = true;
                 btn.classList.replace('bg-red-600', 'bg-zinc-800');
-                status.className = 'flex-1 text-sm font-bold text-red-500 animate-pulse uppercase tracking-widest';
-                status.textContent = 'GRABANDO LLAMADA...';
-            } catch (err) {
-                alert('No se pudo acceder al micrófono: ' + err);
-            }
+                status.className = 'text-xs font-black text-red-500 uppercase tracking-widest mb-1 animate-pulse';
+                status.textContent = 'GRABANDO...';
+            } catch (err) { alert('Micro no disponible: ' + err); }
         } else {
-            mediaRecorder.stop();
-            isRecording = false;
-            btn.classList.replace('bg-zinc-800', 'bg-red-600');
-            status.className = 'flex-1 text-sm font-bold text-zinc-500 italic';
+            stopRecording();
         }
     }
+
+    function stopRecording() {
+        if(mediaRecorder && isRecording) mediaRecorder.stop();
+        if(timerInterval) clearInterval(timerInterval);
+        isRecording = false;
+        document.getElementById('recordBtn').classList.replace('bg-zinc-800', 'bg-red-600');
+        document.getElementById('recordingStatus').className = 'text-xs font-black text-zinc-500 uppercase tracking-widest mb-1';
+        if(audioContext) audioContext.close();
+    }
+
 
     const modalForm = document.getElementById('modalLeadForm');
     const modalSubmitBtn = document.getElementById('modalSubmitBtn');
