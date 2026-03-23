@@ -10,6 +10,12 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Base de Datos Leads - CRM Blue Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+    </style>
 </head>
 <body class="bg-dark text-white font-sans">
     <?php include 'sidebar.php'; ?>
@@ -50,7 +56,8 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
                             <th class="px-6 py-4 text-right">Fecha</th>
                             <th class="px-6 py-4 text-right">Propuesta</th>
                         </tr>
-                    </thead>                    <tbody class="divide-y divide-border">
+                    </thead>
+                    <tbody class="divide-y divide-border">
                         <?php while($row = $result->fetch_assoc()): 
                             $json_data = htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8');
                         ?>
@@ -111,62 +118,86 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
         </div>
     </main>
 
-    <!-- Modal Detalle Lead -->
+    <!-- Modal Detalle/Edición Lead -->
     <div id="detailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
         <div class="bg-card border border-border w-full max-w-2xl rounded-2xl shadow-2xl p-8 transform transition-all animate-in zoom-in duration-200">
-            <div class="flex justify-between items-start mb-8">
-                <div>
-                    <h2 id="det-name" class="text-2xl font-bold text-white"></h2>
-                    <p id="det-company" class="text-zinc-500 text-sm mt-1"></p>
+            <form id="editLeadForm">
+                <input type="hidden" name="id" id="det-id">
+                <div class="flex justify-between items-start mb-8">
+                    <div class="w-full mr-4">
+                        <label class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Nombre completo / Empresa</label>
+                        <input type="text" name="name" id="det-name" class="w-full bg-transparent border-b border-transparent hover:border-zinc-800 focus:border-primary focus:outline-none text-2xl font-bold text-white transition-all px-0 py-1">
+                        <input type="text" name="company" id="det-company" class="w-full bg-transparent border-b border-transparent hover:border-zinc-800 focus:border-primary focus:outline-none text-zinc-500 text-sm mt-1 px-0 py-1" placeholder="Empresa (opcional)">
+                    </div>
+                    <button type="button" onclick="closeDetailModal()" class="p-2 hover:bg-zinc-800 rounded-xl transition-colors text-zinc-500 hover:text-white">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
                 </div>
-                <button onclick="closeDetailModal()" class="p-2 hover:bg-zinc-800 rounded-xl transition-colors text-zinc-500 hover:text-white">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                <div class="space-y-6">
-                    <div>
-                        <label class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Contacto</label>
-                        <div class="space-y-2">
-                            <a id="det-email-link" href="#" class="flex items-center gap-3 text-sm text-zinc-300 hover:text-primary transition-colors">
-                                <i data-lucide="mail" class="w-4 h-4 text-zinc-500"></i> <span id="det-email"></span>
-                            </a>
-                            <a id="det-phone-link" href="#" class="flex items-center gap-3 text-sm text-zinc-300 hover:text-primary transition-colors">
-                                <i data-lucide="phone" class="w-4 h-4 text-zinc-500"></i> <span id="det-phone"></span>
-                            </a>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Email de contacto</label>
+                            <div class="relative group">
+                                <i data-lucide="mail" class="w-4 h-4 absolute left-0 top-3 text-zinc-500 group-focus-within:text-primary transition-colors"></i>
+                                <input type="email" name="email" id="det-email" class="w-full pl-6 bg-transparent border-b border-zinc-800 focus:border-primary focus:outline-none text-sm py-2 text-zinc-300">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Teléfono</label>
+                            <div class="relative group">
+                                <i data-lucide="phone" class="w-4 h-4 absolute left-0 top-3 text-zinc-500 group-focus-within:text-primary transition-colors"></i>
+                                <input type="text" name="phone" id="det-phone" class="w-full pl-6 bg-transparent border-b border-zinc-800 focus:border-primary focus:outline-none text-sm py-2 text-zinc-300">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Sitio Web</label>
+                            <div class="relative group">
+                                <i data-lucide="link-2" class="w-4 h-4 absolute left-0 top-3 text-zinc-500 group-focus-within:text-primary transition-colors"></i>
+                                <input type="text" name="website" id="det-website" class="w-full pl-6 bg-transparent border-b border-zinc-800 focus:border-primary focus:outline-none text-sm py-2 text-zinc-300">
+                            </div>
                         </div>
                     </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Web</label>
-                        <a id="det-web-link" href="#" target="_blank" class="flex items-center gap-3 text-sm text-zinc-300 hover:text-primary transition-colors">
-                            <i data-lucide="link" class="w-4 h-4 text-zinc-500"></i> <span id="det-website"></span>
-                        </a>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Etiquetas (separadas por comas)</label>
+                            <input type="text" name="tags" id="det-tags" class="w-full bg-zinc-900 border border-border rounded-lg text-xs py-2 px-3 text-zinc-400 focus:border-primary focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Fuente</label>
+                            <select name="source" id="det-source" class="w-full bg-zinc-900 border border-border rounded-lg text-xs py-2 px-3 text-zinc-400 focus:border-primary focus:outline-none">
+                                <option value="organico">Orgánico</option>
+                                <option value="pago">Pago</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Inversión / Presupuesto</label>
+                            <div class="relative group">
+                                <input type="number" step="0.01" name="proposal_price" id="det-price" class="w-full pl-2 bg-transparent border-b border-zinc-800 focus:border-primary focus:outline-none text-2xl font-bold text-white py-1">
+                                <span class="absolute right-0 bottom-1 text-zinc-500 font-bold">€</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="space-y-6">
-                    <div>
-                        <label class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Metadatos</label>
-                        <div class="flex flex-wrap gap-2" id="det-tags"></div>
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block mb-1">Inversión Estimada</label>
-                        <div class="text-2xl font-bold text-white"><span id="det-price"></span>€</div>
+                <div class="border-t border-border pt-6">
+                    <label class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block mb-3">Mensaje Adicional</label>
+                    <textarea name="message" id="det-message" class="w-full bg-zinc-900/50 border border-border rounded-xl p-4 text-sm text-zinc-300 focus:border-primary focus:outline-none italic min-h-[100px]"></textarea>
+                </div>
+
+                <div class="mt-8 flex justify-between items-center">
+                    <span id="saveStatus" class="text-xs text-green-500 hidden animate-pulse font-bold tracking-widest uppercase">Guardando...</span>
+                    <div class="flex gap-3 ml-auto">
+                        <button type="button" onclick="closeDetailModal()" class="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded-lg transition-all uppercase tracking-widest">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-primary hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition-all uppercase tracking-widest shadow-lg shadow-primary/20">
+                            Guardar Cambios
+                        </button>
                     </div>
                 </div>
-            </div>
-
-            <div class="border-t border-border pt-6">
-                <label class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block mb-3">Mensaje Adicional</label>
-                <div id="det-message" class="text-zinc-400 text-sm leading-relaxed italic bg-zinc-900/50 p-4 rounded-xl border border-border min-h-[80px]"></div>
-            </div>
-
-            <div class="mt-8 flex justify-end">
-                <button onclick="closeDetailModal()" class="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded-lg transition-all uppercase tracking-widest">
-                    Cerrar
-                </button>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -194,39 +225,22 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
             });
         }
 
-        // Funciones del Modal de Detalle
+        // Funciones del Modal
         const modalDetail = document.getElementById('detailModal');
+        const editForm = document.getElementById('editLeadForm');
+        const saveStatus = document.getElementById('saveStatus');
 
         function showLeadDetails(data) {
-            document.getElementById('det-name').textContent = data.name;
-            document.getElementById('det-company').textContent = data.company ? data.company : 'Cliente Particular';
-            
-            document.getElementById('det-email').textContent = data.email;
-            document.getElementById('det-email-link').href = 'mailto:' + data.email;
-            
-            document.getElementById('det-phone').textContent = data.phone;
-            document.getElementById('det-phone-link').href = 'tel:' + data.phone;
-            
-            document.getElementById('det-website').textContent = data.website ? data.website : 'N/A';
-            document.getElementById('det-web-link').href = data.website ? (data.website.startsWith('http') ? data.website : 'https://' + data.website) : '#';
-            
-            const price = parseFloat(data.proposal_price || 0).toLocaleString('es-ES', { minimumFractionDigits: 2 });
-            document.getElementById('det-price').textContent = price;
-            
-            document.getElementById('det-message').textContent = (data.message && data.message.trim() !== '') ? data.message : 'Sin mensaje adicional.';
-
-            const tagsCont = document.getElementById('det-tags');
-            tagsCont.innerHTML = '';
-            if (data.tags) {
-                data.tags.split(',').forEach(tag => {
-                    const span = document.createElement('span');
-                    span.className = 'px-2 py-0.5 bg-zinc-800 text-zinc-400 text-[9px] font-semibold rounded border border-border uppercase';
-                    span.textContent = tag.trim();
-                    tagsCont.appendChild(span);
-                });
-            } else {
-                tagsCont.innerHTML = '<span class="text-zinc-700 text-[10px]">Sin etiquetas</span>';
-            }
+            document.getElementById('det-id').value = data.id;
+            document.getElementById('det-name').value = data.name;
+            document.getElementById('det-company').value = data.company || '';
+            document.getElementById('det-email').value = data.email || '';
+            document.getElementById('det-phone').value = data.phone || '';
+            document.getElementById('det-website').value = data.website || '';
+            document.getElementById('det-tags').value = data.tags || '';
+            document.getElementById('det-source').value = data.source || 'organico';
+            document.getElementById('det-price').value = data.proposal_price || 0;
+            document.getElementById('det-message').value = data.message || '';
 
             modalDetail.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
@@ -237,6 +251,28 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
             modalDetail.classList.add('hidden');
             document.body.style.overflow = 'auto';
         }
+
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveStatus.classList.remove('hidden');
+            
+            const formData = new FormData(this);
+            fetch('update_lead.php', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    saveStatus.textContent = "¡LISTO!";
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    alert('Error: ' + data.message);
+                    saveStatus.classList.add('hidden');
+                }
+            })
+            .catch(err => {
+                alert('Error de conexión');
+                saveStatus.classList.add('hidden');
+            });
+        });
 
         modalDetail.addEventListener('click', (e) => {
             if (e.target === modalDetail) closeDetailModal();
