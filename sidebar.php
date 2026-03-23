@@ -1,33 +1,34 @@
 <nav class="sidebar">
     <div class="sidebar-logo">
-        <i data-lucide="layout-dashboard"></i>
-        <span>CRM MarcLoic</span>
+        <i data-lucide="command" style="color: var(--accent);"></i>
+        <span>CRM Pro</span>
     </div>
+    
     <ul class="nav-links">
         <li>
             <a href="index.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'active' : ''; ?>">
-                <i data-lucide="bar-chart-3"></i>
-                <span>Panel Principal</span>
+                <i data-lucide="layout-grid"></i>
+                <span>Dashboard</span>
             </a>
         </li>
         <li>
             <a href="leads.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'leads.php' ? 'active' : ''; ?>">
-                <i data-lucide="users"></i>
-                <span>Lista de Leads</span>
+                <i data-lucide="users-2"></i>
+                <span>Leads</span>
             </a>
         </li>
         <li>
             <a href="add-lead.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'add-lead.php' ? 'active' : ''; ?>">
-                <i data-lucide="user-plus"></i>
+                <i data-lucide="plus-circle"></i>
                 <span>Nuevo Registro</span>
             </a>
         </li>
     </ul>
     
-    <div class="sidebar-footer">
-        <a href="?logout=1" class="logout-btn">
-            <i data-lucide="log-out"></i>
-            <span>Cerrar Sesión</span>
+    <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border);">
+        <a href="?logout=1" class="logout-btn" style="width: 100%; border: none; background: transparent; display: flex; align-items: center; gap: 10px; padding: 10px; cursor: pointer; text-decoration: none;">
+            <i data-lucide="log-out" style="width: 18px;"></i>
+            <span>Desconectar</span>
         </a>
     </div>
 </nav>
