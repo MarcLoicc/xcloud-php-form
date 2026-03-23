@@ -173,8 +173,11 @@ sort($existingTags);
                 </div>
 
                 <div class="mt-8 flex items-center justify-between">
-                    <div id="saveStatus" class="text-[10px] font-black uppercase tracking-widest text-green-500 hidden animate-pulse underline underline-offset-4">Sincronizando...</div>
-                    <div class="flex gap-3 ml-auto">
+                    <button type="button" onclick="deleteLead()" class="px-4 py-2 border border-red-500/20 hover:bg-red-500/10 text-red-500 text-[10px] font-black rounded-xl transition-all uppercase tracking-[0.2em] flex items-center gap-2">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Eliminar Lead
+                    </button>
+                    <div class="flex gap-3 ml-auto items-center">
+                        <div id="saveStatus" class="text-[10px] font-black uppercase tracking-widest text-green-500 hidden animate-pulse underline underline-offset-4 mr-4">Sincronizando...</div>
                         <button type="button" onclick="closeDetailModal()" class="px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white text-[10px] font-black rounded-xl transition-all uppercase tracking-[0.2em]">Cerrar</button>
                         <button type="submit" class="px-6 py-2.5 bg-primary hover:bg-blue-500 text-white text-[10px] font-black rounded-xl transition-all uppercase tracking-[0.2em] shadow-lg shadow-primary/20">Guardar Cambios</button>
                     </div>
@@ -237,6 +240,21 @@ sort($existingTags);
         function closeDetailModal() {
             modalD.classList.add('hidden');
             document.body.style.overflow = 'auto';
+        }
+
+        function deleteLead() {
+            const id = document.getElementById('det-id').value;
+            if(!confirm('¿COMENTAR ELIMINACIÓN? Esta acción es irreversible.')) return;
+            
+            const fd = new FormData();
+            fd.append('id', id);
+
+            fetch('delete_lead.php', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(res => {
+                if(res.success) location.reload();
+                else alert('Error: ' + res.message);
+            }).catch(() => alert('Fallo de red'));
         }
 
         editLeadForm.addEventListener('submit', function(e) {
