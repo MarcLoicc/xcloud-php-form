@@ -32,7 +32,6 @@ $recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 
                     <div class="p-3 bg-indigo-500/10 rounded-xl group-hover:scale-110 transition-transform">
                         <i data-lucide="users" class="w-6 h-6 text-indigo-500"></i>
                     </div>
-                    <span class="text-xs font-semibold px-2 py-1 bg-green-500/10 text-green-500 rounded-lg">TOTAL</span>
                 </div>
                 <h3 class="text-gray-400 text-sm font-medium">Total Leads</h3>
                 <span class="text-3xl font-bold text-white block mt-1"><?php echo $totalLeads; ?></span>
@@ -43,9 +42,8 @@ $recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 
                     <div class="p-3 bg-emerald-500/10 rounded-xl group-hover:scale-110 transition-transform">
                         <i data-lucide="calendar" class="w-6 h-6 text-emerald-500"></i>
                     </div>
-                    <span class="text-xs font-semibold px-2 py-1 bg-indigo-500/10 text-indigo-500 rounded-lg">HOY</span>
                 </div>
-                <h3 class="text-gray-400 text-sm font-medium">Leads Registrados</h3>
+                <h3 class="text-gray-400 text-sm font-medium">Hoy</h3>
                 <span class="text-3xl font-bold text-white block mt-1"><?php echo $todayLeads; ?></span>
             </div>
 
@@ -57,7 +55,7 @@ $recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 
                 </div>
                 <h3 class="text-gray-400 text-sm font-medium">Tasa de Registro</h3>
                 <span class="text-3xl font-bold text-white block mt-1"><?php echo $conversionRate; ?>%</span>
-                <p class="text-gray-500 text-xs mt-2 font-medium italic">Calculado hoy vs total</p>
+                <p class="text-gray-500 text-xs mt-2 italic">Hoy vs total</p>
             </div>
 
             <div class="p-6 bg-dark-card border border-dark-border rounded-2xl hover:border-amber-500/50 transition-all group">
@@ -67,20 +65,19 @@ $recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 
                     </div>
                 </div>
                 <h3 class="text-gray-400 text-sm font-medium">Acción Rápida</h3>
-                <a href="add-lead.php" class="inline-block mt-3 text-sm font-semibold text-amber-500 hover:text-white transition-colors bg-amber-500/10 hover:bg-amber-600 px-4 py-2 rounded-xl">Nuevo Registro +</a>
+                <button onclick="toggleModal()" class="w-full mt-3 text-sm font-bold text-black bg-white hover:bg-zinc-200 px-4 py-2.5 rounded-xl transition-all">Crear Lead +</button>
             </div>
         </div>
 
-        <!-- Main Dashboard Content -->
+        <!-- Main Workspace -->
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <!-- Recent Table -->
-            <div class="xl:col-span-2 p-6 bg-dark-card border border-dark-border rounded-2xl">
+            <div class="xl:col-span-3 p-6 bg-dark-card border border-dark-border rounded-2xl">
                 <div class="flex items-center justify-between mb-8">
                     <h2 class="text-xl font-bold text-white flex items-center gap-2">
                         <i data-lucide="clock" class="w-5 h-5 text-indigo-400"></i>
                         Última Actividad
                     </h2>
-                    <a href="leads.php" class="text-sm font-medium text-indigo-400 hover:text-indigo-300">Ver todo &rarr;</a>
+                    <a href="leads.php" class="text-sm font-medium text-indigo-400 hover:text-indigo-300">Ver historial completo &rarr;</a>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -89,7 +86,7 @@ $recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 
                             <tr class="text-gray-500 text-xs font-semibold uppercase tracking-wider border-b border-dark-border">
                                 <th class="pb-4">Nombre</th>
                                 <th class="pb-4">Email</th>
-                                <th class="pb-4 text-center">Estado</th>
+                                <th class="pb-4">Estado</th>
                                 <th class="pb-4 text-right">Fecha</th>
                             </tr>
                         </thead>
@@ -102,7 +99,7 @@ $recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 
                                         <?php echo htmlspecialchars($row['email']); ?>
                                     </span>
                                 </td>
-                                <td class="py-4 text-center">
+                                <td class="py-4">
                                     <span class="px-2 py-1 bg-indigo-500/10 text-indigo-400 text-xs font-bold rounded-lg uppercase">Nuevo</span>
                                 </td>
                                 <td class="py-4 text-right text-sm text-gray-500"><?php echo date('d/m/y', strtotime($row['created_at'])); ?></td>
@@ -110,25 +107,6 @@ $recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 
                             <?php endwhile; ?>
                         </tbody>
                     </table>
-                </div>
-            </div>
-
-            <!-- Profile / Info Card -->
-            <div class="p-6 bg-gradient-to-b from-indigo-900/20 to-dark-card border border-dark-border rounded-2xl flex flex-col justify-center text-center">
-                <div class="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-indigo-500/30">
-                    <i data-lucide="shield-check" class="w-10 h-10 text-indigo-500"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-white mb-2">Seguridad Activa</h3>
-                <p class="text-gray-400 text-sm mb-6">Tu CRM está protegido con autenticación privada y bloqueo de indexación.</p>
-                <div class="flex flex-col gap-3">
-                    <div class="flex items-center justify-between text-xs px-4 py-3 bg-dark-card/50 rounded-xl border border-dark-border">
-                        <span class="text-gray-500 uppercase font-bold tracking-widest">Base de Datos</span>
-                        <span class="text-green-500 flex items-center gap-1"><i data-lucide="check-circle" class="w-3 h-3"></i> Online</span>
-                    </div>
-                    <div class="flex items-center justify-between text-xs px-4 py-3 bg-dark-card/50 rounded-xl border border-dark-border">
-                        <span class="text-gray-500 uppercase font-bold tracking-widest">Visibilidad IA</span>
-                        <span class="text-red-500 flex items-center gap-1"><i data-lucide="slash" class="w-3 h-3"></i> Oculta</span>
-                    </div>
                 </div>
             </div>
         </div>

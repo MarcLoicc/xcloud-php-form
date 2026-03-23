@@ -27,7 +27,7 @@
          <div class="p-2 bg-indigo-600/10 rounded-lg group-hover:bg-indigo-600/20 transition-all">
             <i data-lucide="command" class="w-6 h-6 text-indigo-500"></i>
          </div>
-         <span class="self-center text-xl font-bold whitespace-nowrap text-white ml-3 tracking-tight">CRM PRO</span>
+         <span class="self-center text-xl font-bold whitespace-nowrap text-white ml-3 tracking-tight uppercase">CRM PRO</span>
       </a>
       
       <ul class="space-y-2 font-medium flex-1">
@@ -40,14 +40,15 @@
          <li>
             <a href="leads.php" class="flex items-center p-3 text-gray-400 rounded-xl hover:bg-dark-card hover:text-white group transition-all <?php echo basename($_SERVER['PHP_SELF']) == 'leads.php' ? 'bg-dark-card text-white border border-dark-border' : ''; ?>">
                <i data-lucide="users" class="w-5 h-5 transition duration-75"></i>
-               <span class="ms-3">Leads</span>
+               <span class="ms-3">Lista de Leads</span>
             </a>
          </li>
+         <!-- Trigger Modal -->
          <li>
-            <a href="add-lead.php" class="flex items-center p-3 text-gray-400 rounded-xl hover:bg-dark-card hover:text-white group transition-all <?php echo basename($_SERVER['PHP_SELF']) == 'add-lead.php' ? 'bg-dark-card text-white border border-dark-border' : ''; ?>">
+            <button onclick="toggleModal()" class="flex items-center w-full p-3 text-gray-400 rounded-xl hover:bg-dark-card hover:text-white group transition-all">
                <i data-lucide="plus-circle" class="w-5 h-5 transition duration-75"></i>
                <span class="ms-3">Nuevo Registro</span>
-            </a>
+            </button>
          </li>
       </ul>
 
@@ -59,5 +60,8 @@
       </div>
    </div>
 </aside>
+
+<!-- Cargar el Modal en todas las páginas donde esté el sidebar -->
+<?php include 'modal-add-lead.php'; ?>
 
 <script>lucide.createIcons();</script>
