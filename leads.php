@@ -17,7 +17,7 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
     
     <title>Lista de Leads - xCloud PHP CRM</title>
     <!-- Versionado del CSS para forzar actualización -->
-    <link rel="stylesheet" href="style.css?v=1.0.1">
+    <link rel="stylesheet" href="style.css?v=1.0.2">
 </head>
 <body>
     <div class="container leads-page">

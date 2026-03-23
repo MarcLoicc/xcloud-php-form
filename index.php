@@ -16,7 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <title>Nuevo Lead - xCloud PHP</title>
     <!-- Versionado del CSS para forzar actualización -->
-    <link rel="stylesheet" href="style.css?v=1.0.1">
+    <link rel="stylesheet" href="style.css?v=1.0.2">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
