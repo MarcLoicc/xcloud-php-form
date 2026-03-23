@@ -1,0 +1,6 @@
+{
+    "name": "marcloic/crm-php",
+    "description": "CRM personal con MariaDB",
+    "type": "project",
+    "require": {}
+}
