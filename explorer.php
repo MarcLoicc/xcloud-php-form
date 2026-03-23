@@ -105,9 +105,10 @@ $files = array_reverse($files); // Recientes primero
                             <td class="px-8 py-6 text-right font-mono text-[11px] text-zinc-500 font-black">
                                 <?php echo $size; ?> MB
                             </td>
-                            <td class="px-12 py-6 text-right">
-                                <a href="download.php?file=<?php echo urlencode($dir . $file); ?>" target="_blank" class="inline-flex items-center gap-3 px-6 py-4 bg-zinc-900 hover:bg-[#09090b] border border-zinc-800 <?php echo $isAudio ? 'hover:border-red-500/50 hover:text-red-400' : 'hover:border-blue-500/50 hover:text-blue-400'; ?> rounded-2xl text-white font-black text-[10px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-xl group-hover:shadow-blue-500/10">
-                                    <i data-lucide="<?php echo $isAudio ? 'play-circle' : 'external-link'; ?>" class="w-4 h-4"></i> <?php echo $isAudio ? 'Reproducir' : 'Abrir Archivo'; ?>
+                            <td class="px-6 py-4 text-right">
+                                <a href="download.php?file=<?php echo urlencode($dir . $file); ?>" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-border rounded-lg text-zinc-300 text-xs font-medium hover:bg-zinc-800 transition-all">
+                                    <i data-lucide="<?php echo $isAudio ? 'play' : 'external-link'; ?>" class="w-3.5 h-3.5"></i>
+                                    <?php echo $isAudio ? 'Oír' : 'Ver'; ?>
                                 </a>
                             </td>
                         </tr>
@@ -146,11 +147,11 @@ $files = array_reverse($files); // Recientes primero
             
             // Toggle visual de los botones (Pills)
             document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-500', 'shadow-lg', 'shadow-blue-600/20');
+                btn.classList.remove('bg-primary', 'text-white', 'shadow-lg', 'shadow-primary/20');
                 btn.classList.add('bg-zinc-900', 'text-zinc-400', 'border-zinc-800');
             });
             buttonElement.classList.remove('bg-zinc-900', 'text-zinc-400', 'border-zinc-800');
-            buttonElement.classList.add('bg-blue-600', 'text-white', 'border-blue-500', 'shadow-lg', 'shadow-blue-600/20');
+            buttonElement.classList.add('bg-primary', 'text-white', 'shadow-lg', 'shadow-primary/20');
 
             applyFilters();
         }
@@ -177,6 +178,7 @@ $files = array_reverse($files); // Recientes primero
             });
 
             fileCountSpan.textContent = visibleCount;
+            fileCountSpan.parentElement.classList.toggle('border-primary', visibleCount > 0);
             
             // Mostrar info de "no resultados" 
             if (visibleCount === 0 && rows.length > 0) {

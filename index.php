@@ -86,7 +86,8 @@ $recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 
                                 <td class="px-6 py-4 text-right">
                                     <span class="text-xs text-zinc-400 font-medium"><?php echo date('d M, Y', strtotime($row['created_at'])); ?></span>
                                 </td>
-                            <?php endwhile; ?>
+                            </tr>
+                        <?php endwhile; ?>
                         </tbody>
                     </table>
                 </div>
