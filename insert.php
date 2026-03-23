@@ -25,17 +25,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tags = is_array($tags_arr) ? implode(', ', $tags_arr) : $tags_arr;
 
     // --- MANEJO DE ARCHIVO ---
+    $lead_name_clean = preg_replace('/[^A-Za-z0-9\-]/', '-', $name); // Sanitizar nombre para archivos
+    $timestamp = date('Y-m-d_Hi');
+    
     $file_path = null;
     if (isset($_FILES['lead_file']) && $_FILES['lead_file']['error'] === UPLOAD_ERR_OK) {
         $upload_dir = 'uploads/';
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
 
         $file_tmp = $_FILES['lead_file']['tmp_name'];
-        $file_name = time() . '_' . basename($_FILES['lead_file']['name']);
-        $target_file = $upload_dir . $file_name;
+        $extension = pathinfo($_FILES['lead_file']['name'], PATHINFO_EXTENSION);
+        $new_file_name = "DOC_{$lead_name_clean}_{$timestamp}.{$extension}";
+        $target_file = $upload_dir . $new_file_name;
 
-        // Validar tamaño en el servidor (aunque el cliente diga 150MB, PHP tiene sus límites)
-        // Intentaremos moverlo
         if (move_uploaded_file($file_tmp, $target_file)) {
             $file_path = $target_file;
         }
@@ -48,13 +50,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
         
         $audio_tmp = $_FILES['audio_file']['tmp_name'];
-        $audio_name = 'call_rec_' . time() . '.webm';
-        $target_audio = $upload_dir . $audio_name;
+        $new_audio_name = "CALL_{$lead_name_clean}_{$timestamp}.webm";
+        $target_audio = $upload_dir . $new_audio_name;
 
         if (move_uploaded_file($audio_tmp, $target_audio)) {
             $audio_path = $target_audio;
         }
     }
+
 
     if (empty($name) || empty($email)) {
         echo json_encode(['status' => 'error', 'message' => 'Nombre y Email son obligatorios']);
