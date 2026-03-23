@@ -21,54 +21,45 @@ $files = array_reverse($files); // Recientes primero
 </head>
 <body class="bg-[#09090b] text-zinc-400 font-sans">
     <?php include 'sidebar.php'; ?>
-    <main class="sm:ml-64 p-6 sm:p-12 min-h-screen flex flex-col">
-        <div class="max-w-7xl mx-auto w-full flex-1 flex flex-col">
-            <header class="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
-                <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                    <div>
-                        <h1 class="text-6xl font-black text-white tracking-tighter uppercase italic">File Manager</h1>
-                    <p class="mt-2 text-zinc-600 text-lg tracking-tight">Gestión avanzada de todos tus documentos y grabaciones alojados.</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="px-5 py-3 bg-zinc-900 border border-zinc-800 rounded-3xl text-[10px] font-black tracking-[0.3em] text-zinc-500 uppercase">
-                        <span id="fileCount"><?php echo count($files); ?></span> Entradas
-                    </span>
-                </div>
+    <main class="sm:ml-64 p-8 min-h-screen bg-bg">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+            <div>
+                <h1 class="text-3xl font-semibold text-white tracking-tight">Archivos</h1>
+                <p class="text-zinc-500 text-sm mt-1">Gestión de grabaciones y documentos adjuntos.</p>
+            </div>
+            <div class="px-3 py-1 bg-zinc-900 border border-border rounded-lg text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                <span id="fileCount" class="text-white"><?php echo count($files); ?></span> Archivos
             </div>
         </header>
 
-        <!-- Filtros y Buscador -->
-        <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-8 bg-zinc-950 p-4 rounded-3xl border border-zinc-900 shadow-2xl">
-            
-            <div class="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-                <button onclick="filterType('all', this)" class="filter-btn active px-6 py-3 bg-blue-600 text-white border border-blue-500 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-blue-600/20">Todos</button>
-                <button onclick="filterType('audio', this)" class="filter-btn px-6 py-3 bg-zinc-900 text-zinc-400 border border-zinc-800 hover:bg-zinc-800 hover:text-white rounded-2xl text-xs font-bold transition-all">Audios 🔊</button>
-                <button onclick="filterType('doc', this)" class="filter-btn px-6 py-3 bg-zinc-900 text-zinc-400 border border-zinc-800 hover:bg-zinc-800 hover:text-white rounded-2xl text-xs font-bold transition-all">Documentos 📄</button>
+        <!-- Filtros -->
+        <div class="bg-card border border-border p-4 rounded-xl flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
+            <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto">
+                <button onclick="filterType('all', this)" class="filter-btn active px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg transition-all">Todos</button>
+                <button onclick="filterType('audio', this)" class="filter-btn px-4 py-2 bg-zinc-900 text-zinc-400 border border-border hover:text-white text-xs font-semibold rounded-lg transition-all">Audios</button>
+                <button onclick="filterType('doc', this)" class="filter-btn px-4 py-2 bg-zinc-900 text-zinc-400 border border-border hover:text-white text-xs font-semibold rounded-lg transition-all">Docs</button>
             </div>
 
-            <div class="relative w-full md:w-96 group">
-                <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-500 group-focus-within:text-blue-500 transition-colors">
-                    <i data-lucide="search" class="w-5 h-5"></i>
-                </div>
-                <input type="text" id="searchInput" placeholder="Buscar por lead o archivo..." 
-                       class="w-full pl-14 pr-4 py-3.5 bg-zinc-900 border border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 text-white placeholder-zinc-600 transition-all font-medium text-sm outline-none">
+            <div class="relative w-full md:w-80 group">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3 text-zinc-500 group-focus-within:text-primary transition-colors"></i>
+                <input type="text" id="searchInput" placeholder="Filtrar archivos..." 
+                       class="w-full pl-10 pr-4 py-2 bg-bg border border-border rounded-lg focus:ring-1 focus:ring-primary focus:border-primary text-white text-sm placeholder-zinc-600 transition-all outline-none">
             </div>
-
         </div>
 
-        <div class="bg-zinc-950 border border-zinc-900 rounded-[3rem] overflow-hidden shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)] transition-all flex-1">
+        <div class="bg-card border border-border rounded-xl overflow-hidden shadow-sm flex-1">
             <div class="overflow-x-auto h-full">
                 <table class="w-full text-left relative">
                     <thead class="sticky top-0 z-10 bg-zinc-900/90 backdrop-blur-xl">
-                        <tr class="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-900">
-                            <th class="px-12 py-8">Lead / Tipo</th>
-                            <th class="px-8 py-8">Fecha y Hora</th>
-                            <th class="px-8 py-8">Identificador Original</th>
-                            <th class="px-8 py-8 text-right">Peso</th>
-                            <th class="px-12 py-8 text-right">Acción</th>
+                        <tr class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 border-b border-border bg-zinc-900/30">
+                            <th class="px-6 py-4">Archivo / Lead</th>
+                            <th class="px-6 py-4">Fecha</th>
+                            <th class="px-6 py-4">Identificador</th>
+                            <th class="px-6 py-4 text-right">Tamaño</th>
+                            <th class="px-6 py-4 text-right">Acción</th>
                         </tr>
                     </thead>
-                    <tbody id="fileTableBody" class="divide-y divide-zinc-900 backdrop-blur-sm">
+                    <tbody id="fileTableBody" class="divide-y divide-border">
                         <?php foreach($files as $file): 
                             $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                             $isAudio = ($ext == 'webm' || $ext == 'ogg' || $ext == 'mp3' || $ext == 'wav');
@@ -88,15 +79,15 @@ $files = array_reverse($files); // Recientes primero
                             $typeClass = $isAudio ? 'audio' : 'doc';
                             $searchString = strtolower($file . ' ' . $leadNameFormatted);
                         ?>
-                        <tr class="file-row hover:bg-blue-600/5 transition-all group" data-type="<?php echo $typeClass; ?>" data-search="<?php echo htmlspecialchars($searchString); ?>">
-                            <td class="px-12 py-6">
-                                <div class="flex items-center gap-5">
-                                    <div class="w-14 h-14 flex items-center justify-center rounded-2xl <?php echo $isAudio ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-blue-600/10 text-blue-500 border border-blue-500/20'; ?> group-hover:scale-110 transition-transform shadow-lg">
-                                        <i data-lucide="<?php echo $isAudio ? 'mic-2' : 'file-text'; ?>"></i>
+                        <tr class="file-row hover:bg-zinc-900/40 transition-all group" data-type="<?php echo $typeClass; ?>" data-search="<?php echo htmlspecialchars($searchString); ?>">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 flex items-center justify-center rounded-lg <?php echo $isAudio ? 'bg-red-500/10 text-red-500' : 'bg-primary/10 text-primary'; ?> border border-border">
+                                        <i data-lucide="<?php echo $isAudio ? 'mic' : 'file'; ?>" class="w-4 h-4"></i>
                                     </div>
                                     <div>
-                                        <p class="text-white font-black text-base uppercase tracking-tight"><?php echo htmlspecialchars($leadNameFormatted); ?></p>
-                                        <p class="text-[9px] font-bold <?php echo $isAudio ? 'text-red-500/60' : 'text-blue-500/60'; ?> uppercase tracking-widest mt-1"><?php echo $isAudio ? 'Grabación de Voz' : 'Documento Adjunto'; ?></p>
+                                        <p class="text-sm font-semibold text-white"><?php echo htmlspecialchars($leadNameFormatted); ?></p>
+                                        <p class="text-[10px] text-zinc-500 uppercase font-medium"><?php echo $isAudio ? 'Audio' : 'Documento'; ?></p>
                                     </div>
                                 </div>
                             </td>

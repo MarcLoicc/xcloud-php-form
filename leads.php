@@ -14,102 +14,92 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
 <body class="bg-dark text-white font-sans">
     <?php include 'sidebar.php'; ?>
 
-    <main class="sm:ml-64 p-6 sm:p-12 min-h-screen flex flex-col">
-        <header class="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <div>
-                    <h1 class="text-6xl font-black text-white tracking-tighter uppercase italic">Lista de Leads</h1>
-                    <p class="mt-2 text-zinc-500 text-lg tracking-tight">Gestión avanzada de prospectos y propuestas económicas de xCloud.</p>
-                </div>
-                <button onclick="toggleModal()" class="px-8 py-5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl flex items-center gap-3 transition-all transform hover:-translate-y-1 shadow-2xl shadow-blue-600/20 active:scale-95 uppercase tracking-widest text-xs">
-                    <i data-lucide="shield-plus" class="w-5 h-5"></i> Registrar Nuevo Lead
-                </button>
+    <main class="sm:ml-64 p-8 min-h-screen bg-bg">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+            <div>
+                <h1 class="text-3xl font-semibold text-white tracking-tight">Leads</h1>
+                <p class="text-zinc-500 text-sm mt-1">Gestión y seguimiento de prospectos comerciales.</p>
             </div>
+            <button onclick="toggleModal()" class="px-5 py-2.5 bg-primary hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-all shadow-lg shadow-primary/20 flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> Crear Lead
+            </button>
         </header>
 
-        <!-- Filtro Buscador -->
-        <div class="mb-8 bg-zinc-950 border border-zinc-900 rounded-3xl p-6 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div class="relative w-full md:w-[450px] group">
-                <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-zinc-500 group-focus-within:text-blue-500 transition-colors">
-                    <i data-lucide="search" class="w-5 h-5"></i>
+        <!-- Filtros -->
+        <div class="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
+            <div class="bg-card border border-border p-4 rounded-xl flex items-center justify-between">
+                <div class="relative w-full md:w-96 group">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3 text-zinc-500 group-focus-within:text-primary transition-colors"></i>
+                    <input type="text" id="searchLeadInput" placeholder="Buscar por nombre, etiquetas..." 
+                           class="w-full pl-10 pr-4 py-2 bg-bg border border-border rounded-lg focus:ring-1 focus:ring-primary focus:border-primary text-white text-sm placeholder-zinc-600 transition-all outline-none">
                 </div>
-                <input type="text" id="searchLeadInput" placeholder="Buscar por nombre, etiquetas, fuente..." 
-                       class="w-full pl-16 pr-6 py-4 bg-zinc-900 border border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 text-white placeholder-zinc-700 transition-all font-bold text-sm outline-none">
-            </div>
-            <div class="px-5 py-3 bg-zinc-900 border border-zinc-800 rounded-2xl text-[10px] font-black tracking-[0.3em] text-zinc-500 uppercase">
-                <span id="visibleLeadsCount" class="text-blue-500"><?php echo $result->num_rows; ?></span> Leads localizados
+                <div class="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">
+                    <span id="visibleLeadsCount" class="text-white"><?php echo $result->num_rows; ?></span> Resultados
+                </div>
             </div>
         </div>
 
-        <div class="bg-zinc-950 border border-zinc-900 rounded-[3rem] overflow-hidden shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)] transition-all">
+        <div class="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
-                        <tr class="bg-zinc-900/40 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 border-b border-zinc-900">
-                            <th class="px-10 py-8">Lead / Empresa</th>
-                            <th class="px-6 py-8 text-center">Fuente</th>
-                            <th class="px-6 py-8 text-center">Etiquetas</th>
-                            <th class="px-6 py-8 text-right">Fecha Registro</th>
-                            <th class="px-10 py-8 text-right">Propuesta (€)</th>
+                        <tr class="bg-zinc-900/50 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 border-b border-border">
+                            <th class="px-6 py-4">Lead / Empresa</th>
+                            <th class="px-6 py-4 text-center">Fuente</th>
+                            <th class="px-6 py-4 text-center">Etiquetas</th>
+                            <th class="px-6 py-4 text-right">Fecha</th>
+                            <th class="px-6 py-4 text-right">Propuesta</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-900">
+                    <tbody class="divide-y divide-border">
                         <?php while($row = $result->fetch_assoc()): ?>
-                        <tr class="lead-row hover:bg-blue-600/5 transition-all group">
-                            <!-- Nombre y Empresa -->
-                            <td class="px-10 py-6">
+                        <tr class="lead-row hover:bg-zinc-900/40 transition-all group">
+                            <td class="px-6 py-4">
                                 <div class="flex flex-col">
-                                    <span class="text-white font-black text-xl leading-none group-hover:text-blue-400 transition-colors uppercase italic tracking-tighter"><?php echo htmlspecialchars($row['name']); ?></span>
-                                    <span class="text-zinc-600 text-xs font-bold uppercase tracking-widest mt-2 flex items-center gap-2">
-                                        <i data-lucide="building-2" class="w-3 h-3"></i>
-                                        <?php echo $row['company'] ? htmlspecialchars($row['company']) : 'Cliente Particular'; ?>
+                                    <span class="text-sm font-semibold text-white group-hover:text-primary transition-colors"><?php echo htmlspecialchars($row['name']); ?></span>
+                                    <span class="text-xs text-zinc-500 mt-0.5 flex items-center gap-1.5 uppercase tracking-tighter">
+                                        <?php echo $row['company'] ? htmlspecialchars($row['company']) : 'Particular'; ?>
                                         <?php if($row['website']): ?>
-                                            <a href="<?php echo htmlspecialchars($row['website']); ?>" target="_blank" class="text-blue-500/30 hover:text-blue-500 transition-colors ml-1">&rarr; Web</a>
+                                            <a href="<?php echo htmlspecialchars($row['website']); ?>" target="_blank" class="text-zinc-700 hover:text-primary transition-colors">&middot; web</a>
                                         <?php endif; ?>
                                     </span>
                                 </div>
                             </td>
 
-                            <!-- Fuente -->
-                            <td class="px-6 py-6 text-center">
+                            <td class="px-6 py-4 text-center">
                                 <?php if($row['source'] == 'pago'): ?>
-                                    <span class="px-4 py-2 bg-amber-500/5 text-amber-500 text-[10px] font-black rounded-xl border border-amber-500/10 uppercase tracking-[0.2em]">PAGO</span>
+                                    <span class="px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[10px] font-bold rounded-md border border-amber-500/10">PAGO</span>
                                 <?php else: ?>
-                                    <span class="px-4 py-2 bg-blue-500/5 text-blue-400 text-[10px] font-black rounded-xl border border-blue-500/10 uppercase tracking-[0.2em]">ORGÁNICO</span>
+                                    <span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded-md border border-primary/10">ORGÁNICO</span>
                                 <?php endif; ?>
                             </td>
 
-                            <!-- Etiquetas -->
-                            <td class="px-6 py-6 text-center">
-                                <div class="flex flex-wrap justify-center gap-2 min-w-[140px]">
+                            <td class="px-6 py-4 text-center">
+                                <div class="flex flex-wrap justify-center gap-1.5">
                                     <?php 
                                     $tags = !empty($row['tags']) ? explode(', ', $row['tags']) : [];
                                     foreach($tags as $tag): 
                                         $tagName = ($tag == 'metaads') ? 'Metaads' : ucfirst($tag);
-                                        $tagColor = ($tag == 'metaads') ? 'blue' : 'zinc';
                                     ?>
-                                        <span class="px-3 py-1.5 bg-<?php echo $tagColor; ?>-500/10 text-<?php echo $tagColor; ?>-400 text-[9px] font-black rounded-xl border border-<?php echo $tagColor; ?>-500/20 uppercase tracking-widest"><?php echo $tagName; ?></span>
-                                    <?php endforeach; if(empty($tags)) echo '<span class="text-zinc-800 text-[10px] font-black tracking-widest uppercase opacity-30">---</span>'; ?>
+                                        <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-[9px] font-semibold rounded border border-border"><?php echo $tagName; ?></span>
+                                    <?php endforeach; if(empty($tags)) echo '<span class="text-zinc-800 text-[10px]">&mdash;</span>'; ?>
                                  </div>
                             </td>
 
-                            <!-- Fecha -->
-                            <td class="px-6 py-6 text-right">
-                                <span class="text-zinc-200 font-bold block text-sm tracking-widest"><?php echo date('d/m/y', strtotime($row['created_at'])); ?></span>
-                                <span class="text-[10px] font-black text-zinc-700 tracking-[0.2em] mt-1 block uppercase"><?php echo date('H:i', strtotime($row['created_at'])); ?>H</span>
+                            <td class="px-6 py-4 text-right">
+                                <span class="text-xs text-zinc-300 font-medium block tracking-tight"><?php echo date('d/m/y', strtotime($row['created_at'])); ?></span>
+                                <span class="text-[10px] text-zinc-600 block mt-0.5 uppercase tracking-tighter"><?php echo date('H:i', strtotime($row['created_at'])); ?></span>
                             </td>
 
-                            <!-- Precio Propuesta -->
-                            <td class="px-10 py-6 text-right">
-                                <div class="px-5 py-3 bg-zinc-900/50 border border-zinc-900 rounded-2xl inline-block group-hover:border-blue-500/20 transition-all">
-                                    <span class="text-white font-black text-xl italic tracking-tighter">
-                                        <?php echo number_format($row['proposal_price'], 2, ',', '.'); ?>€
-                                    </span>
-                                </div>
+                            <td class="px-6 py-4 text-right">
+                                <span class="text-sm font-bold text-white tracking-tight">
+                                    <?php echo number_format($row['proposal_price'], 2, ',', '.'); ?>€
+                                </span>
                             </td>
                         </tr>
                         <?php endwhile; ?>
                     </tbody>
+
 
                 </table>
                 <?php if ($result->num_rows == 0): ?>

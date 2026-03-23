@@ -19,88 +19,73 @@ $recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 
 <body class="bg-dark text-white font-sans">
     <?php include 'sidebar.php'; ?>
 
-    <main class="sm:ml-64 p-6 sm:p-12 min-h-screen flex flex-col">
-        <header class="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
-            <h1 class="text-6xl font-black text-white tracking-tighter uppercase italic">Panel de Control</h1>
-            <p class="mt-2 text-zinc-500 text-lg tracking-tight">Resumen estratégico de actividad en tiempo real de tu CRM.</p>
+    <main class="sm:ml-64 p-8 min-h-screen bg-bg">
+        <header class="mb-10">
+            <h1 class="text-3xl font-semibold text-white tracking-tight">Dashboard</h1>
+            <p class="text-zinc-500 text-sm mt-1">Resumen de actividad y métricas clave.</p>
         </header>
 
-        <!-- Estadísticas Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <div class="p-8 bg-zinc-950 border border-zinc-900 rounded-3xl hover:border-blue-500/30 transition-all group shadow-2xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform">
-                    <i data-lucide="users" class="w-20 h-20 text-blue-500"></i>
+        <!-- Estadísticas -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="p-6 bg-card border border-border rounded-xl shadow-sm">
+                <div class="flex items-center gap-3 mb-4 text-zinc-500">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Total Leads</span>
                 </div>
-                <div class="relative z-10">
-                    <h3 class="text-zinc-600 text-[10px] font-black uppercase tracking-[0.3em] mb-4">Total Leads</h3>
-                    <span class="text-5xl font-black text-white italic tracking-tighter"><?php echo $totalLeads; ?></span>
-                </div>
+                <div class="text-4xl font-bold text-white tracking-tight leading-none"><?php echo $totalLeads; ?></div>
             </div>
 
-            <div class="p-8 bg-zinc-950 border border-zinc-900 rounded-3xl hover:border-blue-500/30 transition-all group shadow-2xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform">
-                    <i data-lucide="trending-up" class="w-20 h-20 text-blue-500"></i>
+            <div class="p-6 bg-card border border-border rounded-xl shadow-sm">
+                <div class="flex items-center gap-3 mb-4 text-zinc-500">
+                    <i data-lucide="trending-up" class="w-4 h-4"></i>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Hoy</span>
                 </div>
-                <div class="relative z-10">
-                    <h3 class="text-zinc-600 text-[10px] font-black uppercase tracking-[0.3em] mb-4">Registros Hoy</h3>
-                    <span class="text-5xl font-black text-white italic tracking-tighter"><?php echo $todayLeads; ?></span>
-                </div>
+                <div class="text-4xl font-bold text-white tracking-tight leading-none"><?php echo $todayLeads; ?></div>
             </div>
 
-            <div class="p-8 bg-zinc-950 border border-zinc-900 rounded-3xl hover:border-blue-500/30 transition-all group shadow-2xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform">
-                    <i data-lucide="line-chart" class="w-20 h-20 text-blue-500"></i>
+            <div class="p-6 bg-card border border-border rounded-xl shadow-sm">
+                <div class="flex items-center gap-3 mb-4 text-zinc-500">
+                    <i data-lucide="activity" class="w-4 h-4"></i>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Tasa Diaria</span>
                 </div>
-                <div class="relative z-10">
-                    <h3 class="text-zinc-600 text-[10px] font-black uppercase tracking-[0.3em] mb-4">Conversión</h3>
-                    <span class="text-5xl font-black text-white italic tracking-tighter"><?php echo $conversionRate; ?>%</span>
-                </div>
-            </div>
-
-            <div class="p-8 bg-zinc-950 border border-zinc-900 rounded-3xl hover:border-blue-500/30 transition-all group shadow-2xl flex flex-col justify-center gap-4">
-                <button onclick="toggleModal()" class="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl transition-all shadow-xl shadow-blue-600/20 active:scale-95 uppercase tracking-widest text-xs">
-                    <i data-lucide="plus" class="w-4 h-4 inline-block mr-2"></i> Nuevo Lead
-                </button>
+                <div class="text-4xl font-bold text-white tracking-tight leading-none"><?php echo $conversionRate; ?>%</div>
             </div>
         </div>
 
-        <!-- Main Workspace -->
         <div class="grid grid-cols-1 gap-6">
-            <div class="bg-zinc-950 border border-zinc-900 rounded-[3rem] overflow-hidden shadow-2xl">
-                <div class="p-8 border-b border-zinc-900 bg-zinc-900/20 flex items-center justify-between">
-                    <h2 class="text-xl font-black text-white italic uppercase tracking-tighter flex items-center gap-3">
-                        <i data-lucide="clock" class="w-5 h-5 text-blue-500"></i>
-                        Recién Llegados
+            <div class="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+                <div class="p-6 border-b border-border bg-zinc-900/20 flex items-center justify-between">
+                    <h2 class="text-sm font-semibold text-white flex items-center gap-2">
+                        <i data-lucide="history" class="w-4 h-4 text-primary"></i>
+                        Actividad Reciente
                     </h2>
-                    <a href="leads.php" class="text-xs font-black text-blue-500 hover:text-blue-400 uppercase tracking-widest">Ver todos &rarr;</a>
+                    <a href="leads.php" class="text-xs font-medium text-primary hover:text-blue-400 transition-colors">Ver todos</a>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
-                            <tr class="text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em] border-b border-zinc-900">
-                                <th class="px-10 py-6">Lead</th>
-                                <th class="px-6 py-6 text-center">Estado</th>
-                                <th class="px-10 py-6 text-right">Fecha</th>
+                            <tr class="text-zinc-500 text-[11px] font-semibold uppercase tracking-wider border-b border-border bg-zinc-900/30">
+                                <th class="px-6 py-4">Lead</th>
+                                <th class="px-6 py-4 text-center">Estado</th>
+                                <th class="px-6 py-4 text-right">Fecha</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-zinc-900">
+                        <tbody class="divide-y divide-border">
                             <?php while($row = $recentLeads->fetch_assoc()): ?>
-                            <tr class="hover:bg-blue-600/5 transition-all group">
-                                <td class="px-10 py-6">
+                            <tr class="hover:bg-zinc-900/40 transition-colors group">
+                                <td class="px-6 py-4">
                                     <div class="flex flex-col">
-                                        <span class="text-white font-black text-lg italic tracking-tighter group-hover:text-blue-400 transition-colors uppercase"><?php echo htmlspecialchars($row['name']); ?></span>
-                                        <span class="text-zinc-600 text-[10px] font-bold uppercase tracking-widest mt-1"><?php echo htmlspecialchars($row['email'] ?: 'Sin email'); ?></span>
+                                        <span class="text-sm font-semibold text-white group-hover:text-primary transition-colors"><?php echo htmlspecialchars($row['name']); ?></span>
+                                        <span class="text-xs text-zinc-600 mt-0.5"><?php echo htmlspecialchars($row['email'] ?: 'Sin contacto'); ?></span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-6 text-center">
-                                    <span class="px-3 py-1.5 bg-green-500/5 text-green-500 text-[9px] font-black rounded-xl border border-green-500/10 uppercase tracking-widest">NUEVO</span>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="px-2 py-0.5 bg-green-500/10 text-green-500 text-[10px] font-bold rounded-md">NUEVO</span>
                                 </td>
-                                <td class="px-10 py-6 text-right">
-                                    <span class="text-zinc-400 font-bold block text-sm tracking-widest"><?php echo date('d/m/y', strtotime($row['created_at'])); ?></span>
-                                    <span class="text-[10px] font-black text-zinc-700 tracking-[0.2em] block uppercase mt-1"><?php echo date('H:i', strtotime($row['created_at'])); ?>H</span>
+                                <td class="px-6 py-4 text-right">
+                                    <span class="text-xs text-zinc-400 font-medium"><?php echo date('d M, Y', strtotime($row['created_at'])); ?></span>
                                 </td>
-                            </tr>
                             <?php endwhile; ?>
                         </tbody>
                     </table>
