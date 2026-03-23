@@ -20,14 +20,19 @@
             <!-- Sección 1: Información Básica -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div class="space-y-2 col-span-2 md:col-span-1">
-                    <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Nombre Lead</label>
+                    <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Nombre Lead *</label>
                     <input type="text" name="name" placeholder="Juán Pérez" required
                            class="block w-full px-4 py-4 bg-zinc-950/50 border border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 text-white placeholder-zinc-800 transition-all font-medium">
                 </div>
                 <div class="space-y-2 col-span-2 md:col-span-1">
-                    <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Email Principal</label>
-                    <input type="email" name="email" placeholder="juan@gmail.com" required
+                    <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Teléfono Directo *</label>
+                    <input type="tel" name="phone" placeholder="+34 600..." required
                            class="block w-full px-4 py-4 bg-zinc-950/50 border border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 text-white placeholder-zinc-800 transition-all font-medium">
+                </div>
+                <div class="space-y-2 col-span-2 md:col-span-2">
+                    <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Email (Opcional)</label>
+                    <input type="email" name="email" placeholder="juan@gmail.com"
+                           class="block w-full px-4 py-4 bg-zinc-950/50 border border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 text-white placeholder-zinc-800 transition-all font-medium text-sm">
                 </div>
             </div>
 

@@ -59,12 +59,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
-    if (empty($name) || empty($email)) {
-        echo json_encode(['status' => 'error', 'message' => 'Nombre y Email son obligatorios']);
+    if (empty($name) || empty($phone)) {
+        echo json_encode(['status' => 'error', 'message' => 'Nombre y Teléfono son obligatorios']);
         exit;
     }
 
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+
+    if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         echo json_encode(['status' => 'error', 'message' => 'Email no válido']);
         exit;
     }

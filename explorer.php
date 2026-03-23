@@ -19,15 +19,14 @@ $files = array_reverse($files); // Recientes primero
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>body { font-family: 'Outfit', sans-serif; }</style>
 </head>
-<body class="bg-[#09090b] text-zinc-400 p-8 sm:p-20 min-h-screen flex flex-col">
-    <div class="max-w-7xl mx-auto w-full flex-1 flex flex-col">
-        <header class="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
-            <a href="index.php" class="text-blue-500 hover:text-blue-400 text-xs font-black uppercase tracking-widest flex items-center gap-2 mb-6 group transition-all w-fit">
-               <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i> Panel Dashboard
-            </a>
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <div>
-                    <h1 class="text-6xl font-black text-white tracking-tighter uppercase italic">File Manager</h1>
+<body class="bg-[#09090b] text-zinc-400 font-sans">
+    <?php include 'sidebar.php'; ?>
+    <main class="sm:ml-64 p-6 sm:p-12 min-h-screen flex flex-col">
+        <div class="max-w-7xl mx-auto w-full flex-1 flex flex-col">
+            <header class="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                    <div>
+                        <h1 class="text-6xl font-black text-white tracking-tighter uppercase italic">File Manager</h1>
                     <p class="mt-2 text-zinc-600 text-lg tracking-tight">Gestión avanzada de todos tus documentos y grabaciones alojados.</p>
                 </div>
                 <div class="flex items-center gap-3">
@@ -139,6 +138,8 @@ $files = array_reverse($files); // Recientes primero
             </div>
         </div>
     </div>
+
+    </main>
 
     <script>
         lucide.createIcons();

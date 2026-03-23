@@ -34,8 +34,8 @@ $tableQuery = "CREATE TABLE IF NOT EXISTS leads (
 )";
 $conn->query($tableQuery);
 
-// Script de "migración" rápida por si la tabla ya existía sin estas columnas
-$columns = [
+// Migración y Ajuste de esquema dinámico
+$columns_to_add = [
     'company' => "VARCHAR(255)",
     'website' => "VARCHAR(255)",
     'source' => "ENUM('organico', 'pago') DEFAULT 'organico'",
@@ -45,12 +45,14 @@ $columns = [
     'audio_path' => "VARCHAR(555)"
 ];
 
-
-
-foreach ($columns as $col => $type) {
+foreach ($columns_to_add as $col => $type) {
     $check = $conn->query("SHOW COLUMNS FROM leads LIKE '$col'");
     if ($check->num_rows == 0) {
         $conn->query("ALTER TABLE leads ADD COLUMN $col $type");
     }
 }
+
+// Asegurarse de que el email ya no sea obligatorio
+$conn->query("ALTER TABLE leads MODIFY COLUMN email VARCHAR(255) NULL");
+
 ?>
