@@ -27,6 +27,7 @@ $tableQuery = "CREATE TABLE IF NOT EXISTS leads (
     source ENUM('organico', 'pago') DEFAULT 'organico',
     tags VARCHAR(255),
     proposal_price DECIMAL(10, 2) DEFAULT 0.00,
+    file_path VARCHAR(555),
     message TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
@@ -38,8 +39,10 @@ $columns = [
     'website' => "VARCHAR(255)",
     'source' => "ENUM('organico', 'pago') DEFAULT 'organico'",
     'tags' => "VARCHAR(255)",
-    'proposal_price' => "DECIMAL(10, 2) DEFAULT 0.00"
+    'proposal_price' => "DECIMAL(10, 2) DEFAULT 0.00",
+    'file_path' => "VARCHAR(555)"
 ];
+
 
 foreach ($columns as $col => $type) {
     $check = $conn->query("SHOW COLUMNS FROM leads LIKE '$col'");

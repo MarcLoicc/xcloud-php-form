@@ -9,21 +9,37 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
     exit;
 }
 
-$data = json_decode(file_get_contents('php://input'), true);
-
+// Ya no usamos json_decode porque ahora enviamos FormData ($_POST y $_FILES)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = trim($data['name'] ?? '');
-    $email = trim($data['email'] ?? '');
-    $phone = trim($data['phone'] ?? '');
-    $company = trim($data['company'] ?? '');
-    $website = trim($data['website'] ?? '');
-    $source = $data['source'] ?? 'organico';
-    $proposal_price = floatval($data['proposal_price'] ?? 0);
-    $message = trim($data['message'] ?? '');
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $company = trim($_POST['company'] ?? '');
+    $website = trim($_POST['website'] ?? '');
+    $source = $_POST['source'] ?? 'organico';
+    $proposal_price = floatval($_POST['proposal_price'] ?? 0);
+    $message = trim($_POST['message'] ?? '');
     
-    // Tratamiento de etiquetas (Convertir array de checkboxes a string)
-    $tags_arr = $data['tags'] ?? [];
+    // Tratamiento de etiquetas (vienen como array en $_POST)
+    $tags_arr = $_POST['tags'] ?? [];
     $tags = is_array($tags_arr) ? implode(', ', $tags_arr) : $tags_arr;
+
+    // --- MANEJO DE ARCHIVO ---
+    $file_path = null;
+    if (isset($_FILES['lead_file']) && $_FILES['lead_file']['error'] === UPLOAD_ERR_OK) {
+        $upload_dir = 'uploads/';
+        if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
+
+        $file_tmp = $_FILES['lead_file']['tmp_name'];
+        $file_name = time() . '_' . basename($_FILES['lead_file']['name']);
+        $target_file = $upload_dir . $file_name;
+
+        // Validar tamaño en el servidor (aunque el cliente diga 150MB, PHP tiene sus límites)
+        // Intentaremos moverlo
+        if (move_uploaded_file($file_tmp, $target_file)) {
+            $file_path = $target_file;
+        }
+    }
 
     if (empty($name) || empty($email)) {
         echo json_encode(['status' => 'error', 'message' => 'Nombre y Email son obligatorios']);
@@ -35,9 +51,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Insertar con Prepared Statements (Seguridad Máxima)
-    $stmt = $conn->prepare("INSERT INTO leads (name, email, phone, company, website, source, tags, proposal_price, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssssssdss", $name, $email, $phone, $company, $website, $source, $tags, $proposal_price, $message);
+    // Insertar con Prepared Statements
+    $stmt = $conn->prepare("INSERT INTO leads (name, email, phone, company, website, source, tags, proposal_price, file_path, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssssdss", $name, $email, $phone, $company, $website, $source, $tags, $proposal_price, $file_path, $message);
+
 
     if ($stmt->execute()) {
         echo json_encode(['status' => 'success', 'message' => "¡Lead ($name) guardado correctamente en xCloud!"]);

@@ -32,6 +32,7 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
                             <th class="px-8 py-6">Lead / Empresa</th>
                             <th class="px-6 py-6 text-center">Fuente</th>
                             <th class="px-6 py-6 text-center">Etiquetas</th>
+                            <th class="px-4 py-6 text-center">Docs</th>
                             <th class="px-6 py-6 text-right">Propuesta (€)</th>
                             <th class="px-8 py-6 text-right">Fecha</th>
                         </tr>
@@ -72,6 +73,17 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
                                         <span class="px-2 py-0.5 bg-<?php echo $tagColor; ?>-500/10 text-<?php echo $tagColor; ?>-400 text-[8px] font-black rounded-md border border-<?php echo $tagColor; ?>-500/20 uppercase tracking-tighter"><?php echo $tag; ?></span>
                                     <?php endforeach; if(empty($tags)) echo '<span class="text-zinc-700 text-[8px] italic font-bold">SIN ETIQUETAS</span>'; ?>
                                 </div>
+                            </td>
+
+                            <!-- Archivo -->
+                            <td class="px-4 py-5 text-center">
+                                <?php if(!empty($row['file_path'])): ?>
+                                    <a href="<?php echo htmlspecialchars($row['file_path']); ?>" target="_blank" class="text-blue-500 hover:text-blue-400 p-2 inline-block transition-transform hover:scale-110" title="Ver archivo adjunto">
+                                        <i data-lucide="paperclip" class="w-5 h-5"></i>
+                                    </a>
+                                <?php else: ?>
+                                    <span class="text-zinc-800"><i data-lucide="minus" class="w-4 h-4 mx-auto"></i></span>
+                                <?php endif; ?>
                             </td>
 
                             <!-- Precio Propuesta -->

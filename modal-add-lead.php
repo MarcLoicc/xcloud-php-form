@@ -12,7 +12,7 @@
             <div class="w-16 h-16 bg-blue-600/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-500/20">
                 <i data-lucide="shield-plus" class="w-8 h-8 text-blue-500"></i>
             </div>
-            <h2 class="text-3xl font-extrabold text-white mb-2 tracking-tight">Registro Maestro</h2>
+            <h2 class="text-3xl font-extrabold text-white mb-2 tracking-tight">Registrar Lead</h2>
             <p class="text-zinc-500 text-sm">Captura todos los detalles estratégicos del lead.</p>
         </div>
 
@@ -67,23 +67,32 @@
                 </div>
             </div>
 
-            <!-- Sección 4: Etiquetas Predefinidas -->
-            <div class="space-y-2">
-                <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Etiquetas / Tags</label>
-                <div class="flex flex-wrap gap-4 pt-2">
-                    <label class="flex items-center gap-2 cursor-pointer group">
-                        <input type="checkbox" name="tags[]" value="meaads" class="w-5 h-5 rounded border-zinc-700 bg-zinc-950 text-blue-600 focus:ring-blue-500/50 transition-colors">
-                        <span class="text-sm font-semibold text-zinc-500 group-hover:text-blue-400">Meaads</span>
+            <!-- Sección 4: Etiquetas (Diseño Píldora) -->
+            <div class="space-y-4">
+                <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Etiquetas del Lead</label>
+                <div class="flex flex-wrap gap-3">
+                    <label class="cursor-pointer group">
+                        <input type="checkbox" name="tags[]" value="meaads" class="hidden peer">
+                        <div class="px-5 py-2.5 rounded-2xl border border-zinc-800 text-sm font-bold text-zinc-600 bg-zinc-950/50 peer-checked:bg-blue-600/10 peer-checked:border-blue-500 peer-checked:text-blue-500 transition-all hover:border-zinc-700">Meaads</div>
                     </label>
-                    <label class="flex items-center gap-2 cursor-pointer group">
-                        <input type="checkbox" name="tags[]" value="arquitectos" class="w-5 h-5 rounded border-zinc-700 bg-zinc-950 text-blue-600 focus:ring-blue-500/50 transition-colors">
-                        <span class="text-sm font-semibold text-zinc-500 group-hover:text-blue-400">Arquitectos</span>
+                    <label class="cursor-pointer group">
+                        <input type="checkbox" name="tags[]" value="arquitectos" class="hidden peer">
+                        <div class="px-5 py-2.5 rounded-2xl border border-zinc-800 text-sm font-bold text-zinc-600 bg-zinc-950/50 peer-checked:bg-blue-600/10 peer-checked:border-blue-500 peer-checked:text-blue-500 transition-all hover:border-zinc-700">Arquitectos</div>
                     </label>
                 </div>
             </div>
 
+            <!-- Sección 5: Subida de Archivos (Max 150MB) -->
+            <div class="space-y-2 pt-2">
+                <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Adjuntar Archivo (Máx. 150MB)</label>
+                <div class="relative group">
+                    <input type="file" name="lead_file" id="lead_file"
+                           class="block w-full text-xs text-zinc-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-blue-600/10 file:text-blue-500 hover:file:bg-blue-600/20 transition-all cursor-pointer border-2 border-dashed border-zinc-800 p-4 rounded-2xl group-hover:border-blue-500/30">
+                </div>
+            </div>
+
             <!-- Otros Datos -->
-            <div class="space-y-2 pt-4">
+            <div class="space-y-2 pt-2">
                 <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Observaciones Finales</label>
                 <textarea name="message" rows="2" placeholder="Cualquier otra información relevante..."
                           class="block w-full p-4 bg-zinc-950/50 border border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 text-white placeholder-zinc-800 transition-all text-sm"></textarea>
@@ -116,26 +125,23 @@
     modalForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         modalSubmitBtn.disabled = true;
-        modalSubmitBtn.innerHTML = 'Procesando...';
+        modalSubmitBtn.innerHTML = 'Subiendo Datos y Archivo...';
 
+        // Usamos FormData para enviar el archivo
         const formData = new FormData(modalForm);
-        
-        // Manejo manual de checkboxes para etiquetas para pasarlo como array
-        const dataObj = Object.fromEntries(formData.entries());
-        dataObj.tags = formData.getAll('tags[]'); // Sobreescribimos con el array real de tags
 
         try {
             const response = await fetch('insert.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataObj),
+                // IMPORTANTE: Al enviar archivos con FormData NO se debe poner el header Content-Type manualmente
+                body: formData,
             });
 
             const result = await response.json();
 
             if (result.status === 'success') {
-                modalStatus.textContent = 'REGISTRO GUARDADO';
-                modalStatus.className = 'mt-6 p-4 rounded-2xl text-center font-bold bg-green-500/10 text-green-500 border border-green-500/20 text-xs tracking-widest';
+                modalStatus.textContent = result.message;
+                modalStatus.className = 'mt-6 p-4 rounded-2xl text-center font-bold bg-green-500/10 text-green-500 border border-green-500/20 text-[10px] tracking-widest';
                 modalStatus.classList.remove('hidden');
                 setTimeout(() => { location.reload(); }, 1200);
             } else {
@@ -143,7 +149,7 @@
             }
         } catch (error) {
             modalStatus.textContent = error.message;
-            modalStatus.className = 'mt-6 p-4 rounded-2xl text-center font-bold bg-red-500/10 text-red-500 border border-red-500/20 text-xs tracking-widest';
+            modalStatus.className = 'mt-6 p-4 rounded-2xl text-center font-bold bg-red-500/10 text-red-500 border border-red-500/20 text-[10px] tracking-widest';
             modalStatus.classList.remove('hidden');
             modalSubmitBtn.disabled = false;
         } finally {
@@ -157,3 +163,4 @@
         if (event.target == modal) { toggleModal(); }
     }
 </script>
+
