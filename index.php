@@ -2,22 +2,26 @@
 <?php
 require_once 'db.php';
 
-// --- CÁLCULOS SEMANALES (Lunes a Domingo) ---
-$weekQuery = "YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)";
+// --- ESTADÍSTICAS REALES (Últimos 7 días) ---
+$periodQuery = "created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)";
 
-// Total Leads de la semana
-$totalWeek = $conn->query("SELECT COUNT(*) as count FROM leads WHERE $weekQuery")->fetch_assoc()['count'];
+// Total Leads, Orgánicos, Pago y Valor (Últimos 7 días)
+$total7 = $conn->query("SELECT COUNT(*) as count FROM leads WHERE $periodQuery")->fetch_assoc()['count'];
+$organic7 = $conn->query("SELECT COUNT(*) as count FROM leads WHERE $periodQuery AND source = 'organico'")->fetch_assoc()['count'];
+$paid7 = $conn->query("SELECT COUNT(*) as count FROM leads WHERE $periodQuery AND source = 'pago'")->fetch_assoc()['count'];
+$revenue7 = $conn->query("SELECT SUM(proposal_price) as total FROM leads WHERE $periodQuery")->fetch_assoc()['total'] ?? 0;
 
-// Leads Orgánicos de la semana
-$organicWeek = $conn->query("SELECT COUNT(*) as count FROM leads WHERE $weekQuery AND source = 'organico'")->fetch_assoc()['count'];
+// Datos para la Gráfica (Últimos 7 días)
+$dailyData = [];
+for($i=6; $i>=0; $i--) {
+    $date = date('Y-m-d', strtotime("-$i days"));
+    $q = $conn->query("SELECT COUNT(*) as count FROM leads WHERE DATE(created_at) = '$date'")->fetch_assoc()['count'];
+    $dailyData[] = ['date' => date('d/m', strtotime($date)), 'count' => $q];
+}
+$labels = json_encode(array_column($dailyData, 'date'));
+$counts = json_encode(array_column($dailyData, 'count'));
 
-// Leads de Pago de la semana
-$paidWeek = $conn->query("SELECT COUNT(*) as count FROM leads WHERE $weekQuery AND source = 'pago'")->fetch_assoc()['count'];
-
-// Facturación/Propuestas potenciales de la semana
-$revenueWeek = $conn->query("SELECT SUM(proposal_price) as total FROM leads WHERE $weekQuery")->fetch_assoc()['total'] ?? 0;
-
-// Leads recientes (últimos 6 de siempre para referencia)
+// Leads recientes
 $recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 6");
 ?>
 <!DOCTYPE html>
@@ -26,9 +30,10 @@ $recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-    <title>Dashboard Semanal - CRM Blue Pro</title>
+    <title>Dashboard Analítico - CRM Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>body { font-family: 'Outfit', sans-serif; }</style>
 </head>
@@ -38,85 +43,74 @@ $recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 
     <main class="sm:ml-64 p-8 min-h-screen bg-bg">
         <header class="mb-10 flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-extrabold text-white tracking-tighter">Dashboard <span class="text-zinc-700 italic font-medium ml-2 uppercase text-sm tracking-widest">Semanal</span></h1>
-                <p class="text-zinc-500 text-sm mt-1">Monitoreo de rendimiento: Lunes a Domingo (Semana Actual).</p>
+                <h1 class="text-3xl font-extrabold text-white tracking-tighter">Rendimiento <span class="text-primary italic font-medium ml-2 uppercase text-sm tracking-widest">Real</span></h1>
+                <p class="text-zinc-500 text-sm mt-1">Análisis detallado de los últimos 7 días de actividad.</p>
             </div>
-            <div class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-[10px] font-black text-zinc-500 uppercase tracking-widest shadow-sm">
-                Año <?php echo date('Y'); ?> &middot; Semana <?php echo date('W'); ?>
+            <div class="px-4 py-2 bg-card border border-border rounded-xl text-[10px] font-black text-zinc-500 uppercase tracking-widest shadow-sm">
+                Datos actualizados: <?php echo date('H:i'); ?>
             </div>
         </header>
 
-        <!-- Métricas Segmentadas -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-            <!-- Total de la Semana -->
-            <div class="bg-card border border-border p-8 rounded-3xl shadow-sm relative overflow-hidden group hover:border-blue-500/30 transition-all">
-                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-600/5 rounded-full -mr-8 -mt-8"></div>
-                <div class="relative z-10">
-                    <div class="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em] mb-4">Volumen Semanal</div>
-                    <div class="flex items-end gap-3">
-                        <span class="text-5xl font-black text-white tabular-nums leading-none"><?php echo $totalWeek; ?></span>
-                        <span class="text-xs font-bold text-blue-500 pb-1 uppercase">Leads</span>
-                    </div>
+        <!-- Métricas Principales -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+            <div class="bg-card border border-border p-6 rounded-3xl">
+                <div class="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-3">Total Leads (7d)</div>
+                <div class="text-4xl font-black text-white tabular-nums mb-1"><?php echo $total7; ?></div>
+                <div class="w-full bg-zinc-900 h-1.5 rounded-full mt-3 overflow-hidden">
+                    <div class="bg-primary h-full" style="width: 100%"></div>
                 </div>
             </div>
-
-            <!-- Orgánico -->
-            <div class="bg-card border border-border p-8 rounded-3xl shadow-sm relative overflow-hidden transition-all hover:bg-zinc-900/40">
-                <div class="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                   <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div> Orgánico
-                </div>
-                <div class="text-4xl font-black text-white tabular-nums mb-1"><?php echo $organicWeek; ?></div>
-                <div class="text-[10px] font-bold text-zinc-600 uppercase">Tráfico Gratuito</div>
+            <div class="bg-card border border-border p-6 rounded-3xl">
+                <div class="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-3">Orgánico</div>
+                <div class="text-4xl font-black text-white tabular-nums mb-1"><?php echo $organic7; ?></div>
+                <div class="text-[9px] font-bold text-zinc-600 uppercase"><?php echo $total7 > 0 ? round(($organic7/$total7)*100) : 0; ?>% del total</div>
             </div>
-
-            <!-- Pago -->
-            <div class="bg-card border border-border p-8 rounded-3xl shadow-sm relative overflow-hidden transition-all hover:bg-zinc-900/40">
-                <div class="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                   <div class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></div> Pago (Ads)
-                </div>
-                <div class="text-4xl font-black text-white tabular-nums mb-1"><?php echo $paidWeek; ?></div>
-                <div class="text-[10px] font-bold text-zinc-600 uppercase">Inversión Activa</div>
+            <div class="bg-card border border-border p-6 rounded-3xl">
+                <div class="text-[9px] font-black text-amber-500 uppercase tracking-widest mb-3">Canal de Pago</div>
+                <div class="text-4xl font-black text-white tabular-nums mb-1"><?php echo $paid7; ?></div>
+                <div class="text-[9px] font-bold text-zinc-600 uppercase"><?php echo $total7 > 0 ? round(($paid7/$total7)*100) : 0; ?>% del total</div>
             </div>
-
-            <!-- Valor Proyectado -->
-            <div class="bg-card border-2 border-blue-600/20 p-8 rounded-3xl shadow-xl shadow-blue-600/5 relative overflow-hidden bg-zinc-900/50">
-                <div class="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] mb-4">Valor Estimado</div>
-                <div class="text-4xl font-black text-white tabular-nums mb-1"><?php echo number_format($revenueWeek, 0, ',', '.'); ?>€</div>
-                <div class="text-[10px] font-bold text-zinc-500 uppercase">Propuestas enviadas</div>
+            <div class="bg-card border border-border p-6 rounded-3xl">
+                <div class="text-[9px] font-black text-primary uppercase tracking-widest mb-3">Valor Estimado</div>
+                <div class="text-4xl font-black text-white tabular-nums mb-1"><?php echo number_format($revenue7, 0, ',', '.'); ?>€</div>
+                <div class="text-[9px] font-bold text-zinc-600 uppercase">Potencial generado</div>
             </div>
         </div>
 
-        <!-- Tabla de Actividad Reciente -->
-        <div class="bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
-            <div class="px-8 py-6 border-b border-border flex items-center justify-between bg-zinc-900/30">
-                <h2 class="text-xs font-black text-zinc-500 uppercase tracking-[0.2em]">Actividad Reciente</h2>
-                <a href="leads.php" class="text-[10px] font-black text-blue-500 hover:text-blue-400 uppercase tracking-widest transition-colors flex items-center gap-2">Ver todos <i data-lucide="arrow-right" class="w-3 h-3"></i></a>
+        <!-- Gráfica Semanal -->
+        <div class="bg-card border border-border p-8 rounded-[2rem] shadow-sm mb-10">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">Evolución de Leads (Últimos 7 días)</h2>
+            </div>
+            <div class="h-64">
+                <canvas id="leadsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Actividad Reciente -->
+        <div class="bg-card border border-border rounded-[2rem] overflow-hidden shadow-sm">
+            <div class="px-8 py-6 border-b border-border flex items-center justify-between bg-zinc-900/30 text-xs font-black text-zinc-500 uppercase tracking-widest">
+                Últimas Entradas
+                <a href="leads.php" class="text-primary hover:underline transition-all">Ver todos</a>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="bg-zinc-950/50 text-[10px] font-black uppercase tracking-widest text-zinc-700 border-b border-border">
-                            <th class="px-8 py-4">Lead / Empresa</th>
-                            <th class="px-8 py-4">Fuente</th>
-                            <th class="px-8 py-4 text-right">Fecha Entrada</th>
-                        </tr>
-                    </thead>
+                <table class="w-full">
                     <tbody class="divide-y divide-border">
                         <?php while($row = $recentLeads->fetch_assoc()): ?>
-                        <tr class="hover:bg-zinc-900/50 transition-colors group">
-                            <td class="px-8 py-6">
+                        <tr class="hover:bg-zinc-900/40 transition-colors group">
+                            <td class="px-8 py-5">
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-white mb-0.5"><?php echo htmlspecialchars($row['name']); ?></span>
-                                    <span class="text-[10px] text-zinc-600 uppercase font-bold tracking-tighter"><?php echo $row['company'] ?: 'Particular'; ?></span>
+                                    <span class="text-sm font-bold text-white"><?php echo htmlspecialchars($row['name']); ?></span>
+                                    <span class="text-[10px] text-zinc-600 uppercase font-black tracking-tighter"><?php echo $row['company'] ?: 'Particular'; ?></span>
                                 </div>
                             </td>
-                            <td class="px-8 py-6">
-                                <span class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border <?php echo $row['source'] == 'pago' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'; ?>">
+                            <td class="px-8 py-5">
+                                <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase border <?php echo $row['source'] == 'pago' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'; ?>">
                                     <?php echo $row['source']; ?>
                                 </span>
                             </td>
-                            <td class="px-8 py-6 text-right">
-                                <span class="text-xs font-bold text-zinc-400 tabular-nums"><?php echo date('d/m/Y', strtotime($row['created_at'])); ?></span>
+                            <td class="px-8 py-5 text-right font-mono text-[10px] text-zinc-600 uppercase font-bold">
+                                <?php echo date('d M, H:i', strtotime($row['created_at'])); ?>
                             </td>
                         </tr>
                         <?php endwhile; ?>
@@ -125,7 +119,42 @@ $recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 
             </div>
         </div>
     </main>
-    <script>lucide.createIcons();</script>
+
+    <script>
+        lucide.createIcons();
+
+        // Configuración de la Gráfica
+        const ctx = document.getElementById('leadsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: <?php echo $labels; ?>,
+                datasets: [{
+                    label: 'Leads',
+                    data: <?php echo $counts; ?>,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 4,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#3b82f6',
+                    pointBorderColor: '#09090b',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false, drawBorder: false }, ticks: { color: '#52525b', font: { size: 10, weight: 'bold' } } },
+                    y: { beginAtZero: true, grid: { color: '#27272a', drawBorder: false }, ticks: { color: '#52525b', font: { size: 10 }, stepSize: 1 } }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
 <?php $conn->close(); ?>
