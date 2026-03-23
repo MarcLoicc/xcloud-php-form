@@ -115,8 +115,8 @@ sort($existingTags);
                 <input type="hidden" name="id" id="det-id">
                 <div class="flex justify-between items-start mb-8">
                     <div class="w-full mr-4">
-                        <label class="text-[10px] font-black text-zinc-600 uppercase tracking-widest block mb-1 ml-1 leading-none">Identidad Comercial</label>
-                        <input type="text" name="name" id="det-name" placeholder="Nombre" class="w-full bg-transparent border-b border-zinc-800 focus:border-primary focus:outline-none text-2xl font-bold text-white transition-all px-0 py-1">
+                        <label class="text-[10px] font-black text-zinc-600 uppercase tracking-widest block mb-1 ml-1 leading-none">Nombre completo</label>
+                        <input type="text" name="name" id="det-name" placeholder="Nombre completo" class="w-full bg-transparent border-b border-zinc-800 focus:border-primary focus:outline-none text-2xl font-bold text-white transition-all px-0 py-1">
                         <input type="text" name="company" id="det-company" placeholder="Empresa (opcional)" class="w-full bg-transparent border-b border-transparent hover:border-zinc-800 focus:border-primary focus:outline-none text-zinc-500 text-sm mt-1 px-0 py-1">
                     </div>
                     <button type="button" onclick="closeDetailModal()" class="p-2 hover:bg-zinc-800 rounded-xl transition-colors text-zinc-500 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
@@ -125,7 +125,7 @@ sort($existingTags);
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     <div class="space-y-6">
                         <div>
-                            <label class="text-[10px] font-black text-zinc-600 uppercase tracking-widest block mb-1 ml-1">Contacto Directo</label>
+                            <label class="text-[10px] font-black text-zinc-600 uppercase tracking-widest block mb-1 ml-1">Correo electrónico / Teléfono</label>
                             <div class="relative group mt-1">
                                 <i data-lucide="mail" class="w-4 h-4 absolute left-0 top-2.5 text-zinc-500"></i>
                                 <input type="text" name="email" id="det-email" class="w-full pl-6 bg-transparent border-b border-zinc-800 focus:border-primary focus:outline-none text-sm py-2 text-zinc-300">
@@ -136,14 +136,14 @@ sort($existingTags);
                             </div>
                         </div>
                         <div>
-                            <label class="text-[10px] font-black text-zinc-600 uppercase tracking-widest block mb-1 ml-1">Presencia Digital</label>
+                            <label class="text-[10px] font-black text-zinc-600 uppercase tracking-widest block mb-1 ml-1">Página Web</label>
                             <input type="text" name="website" id="det-website" placeholder="ejemplo.es" class="w-full bg-transparent border-b border-zinc-800 focus:border-primary focus:outline-none text-sm py-2 text-zinc-300">
                         </div>
                     </div>
 
                     <div class="space-y-6">
                         <div>
-                            <label class="text-[10px] font-black text-zinc-600 uppercase tracking-widest block mb-1 ml-1">Estrategia</label>
+                            <label class="text-[10px] font-black text-zinc-600 uppercase tracking-widest block mb-1 ml-1">Etiquetas</label>
                             <input type="text" name="tags" id="det-tags" class="w-full bg-zinc-900 border border-border rounded-lg text-xs py-2 px-3 text-white focus:ring-1 focus:ring-primary focus:outline-none">
                             <div class="flex flex-wrap gap-1.5 mt-2">
                                 <?php foreach($existingTags as $tag): ?>

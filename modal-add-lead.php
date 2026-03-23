@@ -38,7 +38,7 @@ if (isset($conn)) {
         <form id="modalLeadForm" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div class="space-y-2 col-span-2 md:col-span-1">
-                    <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Nombre Lead *</label>
+                    <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Nombre completo *</label>
                     <input type="text" name="name" placeholder="Juán Pérez" required
                            class="block w-full px-4 py-4 bg-zinc-950/50 border border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 text-white placeholder-zinc-800 transition-all font-medium">
                 </div>
@@ -48,7 +48,7 @@ if (isset($conn)) {
                            class="block w-full px-4 py-4 bg-zinc-950/50 border border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 text-white placeholder-zinc-800 transition-all font-medium">
                 </div>
                 <div class="space-y-2 col-span-2 md:col-span-2">
-                    <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Email (Opcional)</label>
+                    <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Correo electrónico (Opcional)</label>
                     <input type="email" name="email" placeholder="juan@gmail.com"
                            class="block w-full px-4 py-4 bg-zinc-950/50 border border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 text-white placeholder-zinc-800 transition-all font-medium text-sm">
                 </div>
@@ -61,7 +61,7 @@ if (isset($conn)) {
                            class="block w-full px-4 py-4 bg-zinc-950/50 border border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 text-white placeholder-zinc-800 transition-all font-medium">
                 </div>
                 <div class="space-y-2">
-                    <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Sitio Web</label>
+                    <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Página Web</label>
                     <input type="text" name="website" placeholder="ejemplo.es"
                            class="block w-full px-4 py-4 bg-zinc-950/50 border border-zinc-800 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 text-white placeholder-zinc-800 transition-all font-medium text-sm">
                 </div>
