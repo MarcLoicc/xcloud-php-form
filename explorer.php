@@ -77,10 +77,11 @@ $files = array_reverse($files); // Recientes primero
                                 <?php echo $size; ?> MB
                             </td>
                             <td class="px-12 py-6 text-right">
-                                <a href="uploads/<?php echo htmlspecialchars($file); ?>" target="_blank" class="inline-flex items-center gap-3 px-6 py-3.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-2xl text-white font-black text-[10px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-2xl">
+                                <a href="download.php?file=<?php echo urlencode($dir . $file); ?>" target="_blank" class="inline-flex items-center gap-3 px-6 py-3.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-2xl text-white font-black text-[10px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-2xl">
                                     <i data-lucide="eye" class="w-4 h-4"></i> Ver Registro
                                 </a>
                             </td>
+
                         </tr>
                         <?php endforeach; ?>
                     </tbody>

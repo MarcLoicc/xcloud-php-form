@@ -79,7 +79,7 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
                             <!-- Archivo -->
                             <td class="px-4 py-5 text-center">
                                 <?php if(!empty($row['file_path'])): ?>
-                                    <a href="<?php echo htmlspecialchars($row['file_path']); ?>" target="_blank" class="text-blue-500 hover:text-blue-400 p-2 inline-block transition-transform hover:scale-110" title="Ver archivo adjunto">
+                                    <a href="download.php?file=<?php echo urlencode($row['file_path']); ?>" target="_blank" class="text-blue-500 hover:text-blue-400 p-2 inline-block transition-transform hover:scale-110" title="Ver archivo adjunto">
                                         <i data-lucide="paperclip" class="w-5 h-5"></i>
                                     </a>
                                 <?php else: ?>
@@ -90,13 +90,14 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
                             <!-- Audio -->
                             <td class="px-4 py-5 text-center">
                                 <?php if(!empty($row['audio_path'])): ?>
-                                    <a href="<?php echo htmlspecialchars($row['audio_path']); ?>" target="_blank" class="text-red-500 hover:text-red-400 p-2 inline-block transition-transform hover:scale-125 focus:ring-2 focus:ring-red-500/50 rounded-full" title="Escuchar llamada grabada">
+                                    <a href="download.php?file=<?php echo urlencode($row['audio_path']); ?>" target="_blank" class="text-red-500 hover:text-red-400 p-2 inline-block transition-transform hover:scale-125 focus:ring-2 focus:ring-red-500/50 rounded-full" title="Escuchar llamada grabada">
                                         <i data-lucide="volume-2" class="w-5 h-5"></i>
                                     </a>
                                 <?php else: ?>
                                     <span class="text-zinc-800"><i data-lucide="mic-off" class="w-4 h-4 mx-auto opacity-20"></i></span>
                                 <?php endif; ?>
                             </td>
+
 
 
                             <!-- Precio Propuesta -->
