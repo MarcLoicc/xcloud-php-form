@@ -72,6 +72,7 @@
         
         <div class="footer">
             <a href="leads.php" class="view-leads-link">📊 Ver Lista de Leads</a>
+            <a href="?logout=1" class="logout-btn">Salir 🔒</a>
         </div>
     </div>
 

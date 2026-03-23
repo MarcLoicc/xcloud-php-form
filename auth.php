@@ -2,8 +2,14 @@
 session_start();
 
 // --- CONFIGURACIÓN DE SEGURIDAD ---
-$APP_PASSWORD = 'crm_marcloi_2024'; // CAMBIA ESTA CONTRASEÑA POR UNA SEGURA
+$APP_PASSWORD = 'crm_marcloi_2024';
+$DEV_MODE = true; // CAMBIAR A 'false' PARA ACTIVAR PASSWORD NUEVAMENTE
 // ----------------------------------
+
+// Si está en modo desarrollo, forzamos la sesión autenticada
+if ($DEV_MODE) {
+    $_SESSION['authenticated'] = true;
+}
 
 // Manejar el logout
 if (isset($_GET['logout'])) {

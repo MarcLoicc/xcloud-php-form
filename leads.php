@@ -41,11 +41,11 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
                 <tbody>
                     <?php while($row = $result->fetch_assoc()): ?>
                     <tr>
-                        <td><?php echo date('d/m/Y H:i', strtotime($row['created_at'])); ?></td>
-                        <td><?php echo htmlspecialchars($row['name']); ?></td>
-                        <td><?php echo htmlspecialchars($row['email']); ?></td>
-                        <td><?php echo htmlspecialchars($row['phone']); ?></td>
-                        <td><?php echo htmlspecialchars($row['message']); ?></td>
+                        <td style="color: var(--text-muted); font-size: 0.8rem;"><?php echo date('d/m/y H:i', strtotime($row['created_at'])); ?></td>
+                        <td style="font-weight: 600; color: white;"><?php echo htmlspecialchars($row['name']); ?></td>
+                        <td><span style="background: rgba(99, 102, 241, 0.1); color: #a5b4fc; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.85rem;"><?php echo htmlspecialchars($row['email']); ?></span></td>
+                        <td style="color: var(--text-muted);"><?php echo htmlspecialchars($row['phone']); ?></td>
+                        <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #cbd5e1;"><?php echo htmlspecialchars($row['message']); ?></td>
                     </tr>
                     <?php endwhile; ?>
                 </tbody>
@@ -53,7 +53,7 @@ $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
         </section>
         
         <div class="footer">
-            <a href="index.html" class="back-link">Volver al Formulario</a>
+            <a href="index.php" class="back-link">Volver al Formulario</a>
         </div>
     </div>
 </body>
