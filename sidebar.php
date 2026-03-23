@@ -43,7 +43,14 @@
                <span class="ms-3">Lista de Leads</span>
             </a>
          </li>
+         <li>
+            <a href="explorer.php" class="flex items-center p-3 text-gray-400 rounded-xl hover:bg-dark-card hover:text-white group transition-all <?php echo basename($_SERVER['PHP_SELF']) == 'explorer.php' ? 'bg-dark-card text-white border border-dark-border text-blue-400' : ''; ?>">
+               <i data-lucide="folder-search" class="w-5 h-5 transition duration-75"></i>
+               <span class="ms-3">Archivo Maestro</span>
+            </a>
+         </li>
       </ul>
+
 
       <div class="pt-4 mt-4 border-t border-dark-border">
          <a href="?logout=1" class="flex items-center p-3 text-red-400/80 rounded-xl hover:bg-red-500/10 hover:text-red-400 transition-all group">
