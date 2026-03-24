@@ -473,17 +473,31 @@ function getStatusBadge($status) {
 
             const fd = new FormData(this);
             fetch('update_lead.php', { method: 'POST', body: fd })
-            .then(r => r.json())
-            .then(res => {
-                if(res.success) {
-                    location.reload();
-                } else {
-                    alert('Error: ' + (res.message || 'Error desconocido'));
-                    updateBtn.innerHTML = 'Guardar Cambios';
-                    updateBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+            .then(async response => {
+                const text = await response.text(); 
+                try {
+                    const res = JSON.parse(text);
+                    if(res.success) {
+                        location.reload();
+                    } else {
+                        alert('Error del servidor: ' + (res.message || 'Error desconocido'));
+                        updateBtn.innerHTML = 'Guardar Cambios';
+                        updateBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    }
+                } catch (e) {
+                    console.error('La respuesta no es un JSON válido:', text);
+                    // Si se ha guardado pero falla el JSON, es muy probable que haya guardado (como dices), así que refrescamos igualmente.
+                    if (text.includes('"success":true')) {
+                        location.reload();
+                    } else {
+                        alert('Ocurrió un error en la respuesta del servidor. Revisa la consola o refresca.');
+                        updateBtn.innerHTML = 'Guardar Cambios';
+                        updateBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    }
                 }
             })
-            .catch(() => {
+            .catch((err) => {
+                console.error('Error de red:', err);
                 alert('Ocurrió un error en la conexión');
                 updateBtn.innerHTML = 'Guardar Cambios';
                 updateBtn.classList.remove('opacity-75', 'cursor-not-allowed');
