@@ -98,61 +98,54 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso Estratégico - CRM Marcloi</title>
+    <title>Master Auth - CRM Marcloi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-      body { height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+      body { height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; background-color: #f8fafc; }
     </style>
 </head>
-<body class="bg-[#f0f2f5]">
-    <!-- Background Accents -->
-    <div class="fixed inset-0 z-[-1] overflow-hidden">
-        <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-indigo-500/10 blur-[150px] rounded-full animate-float"></div>
-        <div class="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-500/10 blur-[150px] rounded-full animate-float" style="animation-delay: -2s"></div>
+<body>
+    <div class="fixed inset-0 z-[-1] overflow-hidden opacity-40">
+        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-50 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2"></div>
+        <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-slate-100 blur-[120px] rounded-full -translate-x-1/2 translate-y-1/2"></div>
     </div>
 
-    <div class="w-full max-w-lg p-6">
-        <div class="glass-card p-12 rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(30,41,59,0.15)] relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/5 via-transparent to-transparent opacity-50"></div>
-            
-            <div class="relative z-10 text-center mb-12">
-                <div class="w-20 h-20 bg-indigo-600 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-indigo-100 ring-8 ring-white/50 transform group-hover:rotate-12 transition-all">
-                    <i data-lucide="shield-check" class="w-10 h-10 text-white stroke-[2.5]"></i>
+    <div class="w-full max-w-md p-8">
+        <div class="bg-white border border-slate-200 p-12 rounded-2xl shadow-2xl relative group">
+            <div class="text-center mb-12">
+                <div class="w-16 h-16 bg-slate-900 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-slate-200 ring-4 ring-slate-50 transform group-hover:scale-105 transition-all">
+                    <i data-lucide="shield-check" class="w-8 h-8 text-white stroke-[2.5]"></i>
                 </div>
-                <h1 class="text-4xl font-black text-slate-800 tracking-tighter italic">Terminal <span class="text-indigo-600 not-italic font-medium">Cloud</span></h1>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mt-3">Identificación de Operador Requerida</p>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight uppercase italic leading-none">CRM MARCLOI</h1>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-4 opacity-80 italic">Authorized Access Only :: Terminal_v5</p>
             </div>
 
-            <form method="POST" class="relative z-10 space-y-8">
-                <div class="space-y-4">
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Clave de Seguridad Master</label>
+            <form method="POST" class="space-y-8">
+                <div class="space-y-3">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Master Access Key</label>
                     <div class="relative group/inp">
-                        <i data-lucide="key-round" class="w-5 h-5 absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/inp:text-indigo-600 transition-all"></i>
+                        <i data-lucide="key-round" class="w-4 h-4 absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/inp:text-slate-900 transition-all"></i>
                         <input type="password" name="password" required autofocus
-                               class="w-full pl-16 pr-6 py-5 bg-white border border-white rounded-[1.8rem] focus:ring-8 focus:ring-indigo-100 focus:border-indigo-600 outline-none transition-all text-xl font-black text-slate-800 tracking-widest placeholder:text-slate-200 shadow-sm"
+                               class="w-full pl-14 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-lg focus:ring-4 focus:ring-slate-100 focus:border-slate-800 outline-none transition-all text-lg font-black text-slate-800 tracking-widest placeholder:text-slate-200 shadow-inner"
                                placeholder="••••••••••••">
                     </div>
                 </div>
 
-                <button type="submit" class="w-full py-6 bg-slate-900 text-white text-[10px] font-black rounded-3xl uppercase tracking-[0.4em] hover:bg-black transition-all shadow-2xl shadow-slate-200 active:scale-95 flex items-center justify-center gap-3 group">
-                    Desbloquear Sistema <i data-lucide="chevron-right" class="w-4 h-4 group-hover:translate-x-2 transition-all"></i>
+                <button type="submit" class="w-full py-5 bg-slate-900 text-white text-[11px] font-bold rounded-lg uppercase tracking-widest hover:bg-black transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3">
+                    Unlock Console <i data-lucide="chevron-right" class="w-4 h-4 text-indigo-400"></i>
                 </button>
-            </form>
 
-            <div class="mt-12 text-center relative z-10">
                 <?php if (isset($error)): ?>
-                    <div class="px-6 py-3 bg-red-50 border border-red-100 rounded-2xl text-[10px] font-black text-red-500 uppercase tracking-widest text-center animate-bounce mb-6">
+                    <div class="px-5 py-3 bg-red-50 border border-red-100 rounded-lg text-[9px] font-bold text-red-500 uppercase tracking-widest text-center animate-pulse">
                         <?php echo $error; ?>
                     </div>
                 <?php endif; ?>
-                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest opacity-60">© 2026 Marcloi Enterprise Solutions</p>
-                <div class="flex justify-center gap-4 mt-4 opacity-30 group-hover:opacity-100 transition-opacity">
-                    <i data-lucide="zap" class="w-3 h-3 text-indigo-400"></i>
-                    <i data-lucide="shield" class="w-3 h-3 text-indigo-400"></i>
-                    <i data-lucide="database" class="w-3 h-3 text-indigo-400"></i>
-                </div>
+            </form>
+
+            <div class="mt-12 text-center">
+                <p class="text-[8px] font-bold text-slate-300 uppercase tracking-widest opacity-60 italic leading-loose">© 2026 Marcloi Solutions / Engineering Division</p>
             </div>
         </div>
     </div>
