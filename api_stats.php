@@ -14,11 +14,17 @@ if ($startDate && $endDate) {
     $where .= " AND created_at >= DATE_SUB(NOW(), INTERVAL $range DAY)";
 }
 
-// 1. Métricas de tarjetas
+// 1. Métricas de tarjetas desglosadas
 $totalLeads = $conn->query("SELECT COUNT(*) as total FROM leads $where")->fetch_assoc()['total'];
 $revenue = $conn->query("SELECT SUM(proposal_price) as total FROM leads $where AND status IN ('ganado', 'propuesta_enviada')")->fetch_assoc()['total'] ?? 0;
-$wonLeads = $conn->query("SELECT COUNT(*) as total FROM leads $where AND status = 'ganado'")->fetch_assoc()['total'];
-$lostLeads = $conn->query("SELECT COUNT(*) as total FROM leads $where AND status = 'perdido'")->fetch_assoc()['total'];
+
+// Desglose Pago
+$wonPago = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'pago' AND status = 'ganado'")->fetch_assoc()['total'];
+$lostPago = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'pago' AND status = 'perdido'")->fetch_assoc()['total'];
+
+// Desglose Orgánico
+$wonOrganico = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'organico' AND status = 'ganado'")->fetch_assoc()['total'];
+$lostOrganico = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'organico' AND status = 'perdido'")->fetch_assoc()['total'];
 
 // 2. Gráfica de Tendencia Séparada (Pago vs Orgánico)
 $historyQuery = "
@@ -51,10 +57,16 @@ $response = [
     'metrics' => [
         'totalLeads' => (int)$totalLeads,
         'revenue' => number_format((float)$revenue, 0, '.', ','),
-        'wonLeads' => (int)$wonLeads,
-        'lostLeads' => (int)$lostLeads,
-        'pago' => (int)$sourceData['pago'],
-        'organico' => (int)$sourceData['organico']
+        'pago' => [
+            'total' => (int)$sourceData['pago'],
+            'won' => (int)$wonPago,
+            'lost' => (int)$lostPago
+        ],
+        'organico' => [
+            'total' => (int)$sourceData['organico'],
+            'won' => (int)$wonOrganico,
+            'lost' => (int)$lostOrganico
+        ]
     ],
     'chart' => [
         'labels' => $dates,
