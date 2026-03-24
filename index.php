@@ -168,23 +168,29 @@
             // Actualizar Gráfica Tendencia
             if (trendChart) trendChart.destroy();
             trendChart = new Chart(document.getElementById('leadsTrendChart').getContext('2d'), {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: data.chart.labels,
                     datasets: [
                         {
                             label: 'ADS (Pago)',
                             data: data.chart.pago,
-                            backgroundColor: '#6366f1',
-                            borderRadius: 4,
-                            barThickness: 12
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            borderWidth: 3
                         },
                         {
                             label: 'Orgánico',
                             data: data.chart.organico,
-                            backgroundColor: '#06b6d4',
-                            borderRadius: 4,
-                            barThickness: 12
+                            borderColor: '#06b6d4',
+                            backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            borderWidth: 3
                         }
                     ]
                 },
