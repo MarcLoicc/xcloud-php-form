@@ -2,14 +2,12 @@
 <?php
 require_once 'db.php';
 
-// Totales históticos para las cajas superiores
+// Totales históricos para las cajas superiores
 $paidTotal = $conn->query("SELECT COUNT(*) as count FROM leads WHERE source = 'pago'")->fetch_assoc()['count'];
 $paidValue = $conn->query("SELECT SUM(proposal_price) as total FROM leads WHERE source = 'pago'")->fetch_assoc()['total'] ?? 0;
-$paidLeads = $conn->query("SELECT * FROM leads WHERE source = 'pago' ORDER BY created_at DESC LIMIT 3");
 
 $organicTotal = $conn->query("SELECT COUNT(*) as count FROM leads WHERE source = 'organico'")->fetch_assoc()['count'];
 $organicValue = $conn->query("SELECT SUM(proposal_price) as total FROM leads WHERE source = 'organico'")->fetch_assoc()['total'] ?? 0;
-$organicLeads = $conn->query("SELECT * FROM leads WHERE source = 'organico' ORDER BY created_at DESC LIMIT 3");
 
 // DATOS GRÁFICAS (7 Días)
 $dates = []; $paidData = []; $orgData = [];
@@ -21,90 +19,89 @@ for($i=6; $i>=0; $i--) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="es" class="bg-dark text-white">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-    <title>Pro Dashboard Analítico</title>
+    <title>Dashboard - CRM Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Outfit', sans-serif; }</style>
 </head>
-<body class="bg-dark text-white font-sans">
+<body class="bg-slate-50 text-slate-900 font-sans">
     <?php include 'sidebar.php'; ?>
 
-    <main class="sm:ml-64 p-8 min-h-screen bg-bg">
-        <header class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <main class="sm:ml-64 p-8 min-h-screen">
+        <header class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-200">
             <div>
-                <h1 class="text-3xl font-extrabold text-white tracking-tighter italic">Monitor <span class="text-primary not-italic font-medium">Empresarial</span></h1>
-                <p class="text-zinc-600 text-sm mt-1">Control de rendimiento y adquisición en tiempo real.</p>
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Dashboard <span class="text-indigo-600">Analítico</span></h1>
+                <p class="text-slate-500 text-sm mt-1">Control de rendimiento y adquisición en tiempo real.</p>
             </div>
-            <button onclick="toggleModal()" class="px-6 py-2.5 bg-primary hover:bg-blue-500 text-white text-xs font-black rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center gap-2 uppercase tracking-widest">
-                <i data-lucide="shield-plus" class="w-4 h-4"></i> Registrar Lead
+            <button onclick="toggleModal()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-100 flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> Registrar Lead
             </button>
         </header>
 
         <!-- SECCIÓN 1: PAGO (ADS) -->
         <section class="mb-12">
-            <div class="flex items-center gap-3 mb-6 bg-zinc-900/40 p-3 rounded-2xl w-fit border border-amber-500/10">
-                <i data-lucide="zap" class="w-5 h-5 text-amber-500"></i>
-                <h2 class="text-xs font-black text-white uppercase tracking-[0.2em]">Campaña de Pago <span class="text-zinc-700 ml-1 font-bold">(Inversión Activa)</span></h2>
+            <div class="flex items-center gap-3 mb-6 bg-amber-50 px-4 py-2 rounded-full w-fit border border-amber-100">
+                <i data-lucide="zap" class="w-4 h-4 text-amber-600"></i>
+                <h2 class="text-[10px] font-black text-amber-900 uppercase tracking-widest">Campaña de Pago</h2>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-card border border-border p-8 rounded-[2rem] flex flex-col justify-between">
+                <div class="bg-white border border-slate-200 p-8 rounded-[2rem] shadow-sm flex flex-col justify-between">
                     <div>
-                        <div class="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-4">Total Histórico (Ads)</div>
-                        <div class="text-6xl font-black text-white"><?php echo $paidTotal; ?></div>
-                        <div class="text-2xl font-bold text-amber-500 mt-4"><?php echo number_format($paidValue, 0, ',', '.'); ?>€</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Total Ads (Semanas)</div>
+                        <div class="text-6xl font-black text-slate-900"><?php echo $paidTotal; ?></div>
+                        <div class="text-2xl font-bold text-amber-600 mt-4"><?php echo number_format($paidValue, 0, ',', '.'); ?>€</div>
                     </div>
                 </div>
-                <div class="md:col-span-2 bg-zinc-900/30 border border-border rounded-[2.5rem] p-8 h-64">
+                <div class="md:col-span-2 bg-white border border-slate-200 rounded-[2rem] p-8 h-80 shadow-sm">
                     <canvas id="paidChart"></canvas>
                 </div>
             </div>
         </section>
 
         <!-- SECCIÓN 2: ORGÁNICO -->
-        <section class="mb-12 pt-8 border-t border-zinc-900">
-            <div class="flex items-center gap-3 mb-6 bg-zinc-900/40 p-3 rounded-2xl w-fit border border-emerald-500/10">
-                <i data-lucide="leaf" class="w-5 h-5 text-emerald-500"></i>
-                <h2 class="text-xs font-black text-white uppercase tracking-[0.2em]">Crecimiento Orgánico <span class="text-zinc-700 ml-1 font-bold">(Tráfico Natural)</span></h2>
+        <section class="mb-12">
+            <div class="flex items-center gap-3 mb-6 bg-emerald-50 px-4 py-2 rounded-full w-fit border border-emerald-100">
+                <i data-lucide="leaf" class="w-4 h-4 text-emerald-600"></i>
+                <h2 class="text-[10px] font-black text-emerald-900 uppercase tracking-widest">Crecimiento Orgánico</h2>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-card border border-border p-8 rounded-[2rem] flex flex-col justify-between">
+                <div class="bg-white border border-slate-200 p-8 rounded-[2rem] shadow-sm flex flex-col justify-between">
                     <div>
-                        <div class="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-4">Total Histórico (Org)</div>
-                        <div class="text-6xl font-black text-white"><?php echo $organicTotal; ?></div>
-                        <div class="text-2xl font-bold text-emerald-500 mt-4"><?php echo number_format($organicValue, 0, ',', '.'); ?>€</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Total Org (Natural)</div>
+                        <div class="text-6xl font-black text-slate-900"><?php echo $organicTotal; ?></div>
+                        <div class="text-2xl font-bold text-emerald-600 mt-4"><?php echo number_format($organicValue, 0, ',', '.'); ?>€</div>
                     </div>
                 </div>
-                <div class="md:col-span-2 bg-zinc-900/30 border border-border rounded-[2.5rem] p-8 h-64">
+                <div class="md:col-span-2 bg-white border border-slate-200 rounded-[2rem] p-8 h-80 shadow-sm">
                     <canvas id="organicChart"></canvas>
                 </div>
             </div>
         </section>
     </main>
 
-    <?php include_once 'modal-add-lead.php'; ?>
-
     <script>
         lucide.createIcons();
-        const cfg = { type: 'line', options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-            scales: { x: { grid: { display: false }, ticks: { color: '#3f3f46', font: { size: 9, weight: 'bold' } } },
-            y: { beginAtZero: true, grid: { color: '#18181b' }, ticks: { color: '#3f3f46', font: { size: 9 }, stepSize: 1 } } }
+        const cfg = { type: 'line', options: { responsive: true, maintainAspectRatio: false, 
+            plugins: { legend: { display: false } },
+            scales: { 
+                x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10, weight: '600' } } },
+                y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { color: '#94a3b8', font: { size: 10 }, stepSize: 1 } } 
+            }
         }};
 
         // Gráfico Pago
         new Chart(document.getElementById('paidChart').getContext('2d'), { ...cfg, data: { labels: <?php echo json_encode($dates); ?>,
-            datasets: [{ data: <?php echo json_encode($paidData); ?>, borderColor: '#f59e0b', borderWidth: 4, tension: 0.4, fill: true, backgroundColor: 'rgba(245, 158, 11, 0.05)', pointRadius: 0 }]
+            datasets: [{ data: <?php echo json_encode($paidData); ?>, borderColor: '#f59e0b', borderWidth: 3, tension: 0.4, fill: true, backgroundColor: 'rgba(245, 158, 11, 0.05)', pointRadius: 4, pointBackgroundColor: '#fff', pointBorderWidth: 2 }]
         }});
         
         // Gráfico Orgánico
         new Chart(document.getElementById('organicChart').getContext('2d'), { ...cfg, data: { labels: <?php echo json_encode($dates); ?>,
-            datasets: [{ data: <?php echo json_encode($orgData); ?>, borderColor: '#10b981', borderWidth: 4, tension: 0.4, fill: true, backgroundColor: 'rgba(16, 185, 129, 0.05)', pointRadius: 0 }]
+            datasets: [{ data: <?php echo json_encode($orgData); ?>, borderColor: '#10b981', borderWidth: 3, tension: 0.4, fill: true, backgroundColor: 'rgba(16, 185, 129, 0.05)', pointRadius: 4, pointBackgroundColor: '#fff', pointBorderWidth: 2 }]
         }});
     </script>
 </body>
