@@ -41,18 +41,20 @@ while($h = $historyData->fetch_assoc()) {
 // 3. Distribución por Origen
 $sourceData = ['pago' => 0, 'organico' => 0];
 $sourcesResult = $conn->query("SELECT source, COUNT(*) as count FROM leads $where GROUP BY source");
-while($s = $sourcesResult->fetch_assoc()) {
-    if(isset($sourceData[$s['source']])) $sourceData[$s['source']] = (int)$s['count'];
+if($sourcesResult) {
+    while($s = $sourcesResult->fetch_assoc()) {
+        if(isset($sourceData[$s['source']])) $sourceData[$s['source']] = (int)$s['count'];
+    }
 }
 
-echo json_encode([
+$response = [
     'metrics' => [
-        'totalLeads' => $totalLeads,
+        'totalLeads' => (int)$totalLeads,
         'revenue' => number_format((float)$revenue, 0, '.', ','),
-        'wonLeads' => $wonLeads,
-        'lostLeads' => $lostLeads,
-        'pago' => $sourceData['pago'],
-        'organico' => $sourceData['organico']
+        'wonLeads' => (int)$wonLeads,
+        'lostLeads' => (int)$lostLeads,
+        'pago' => (int)$sourceData['pago'],
+        'organico' => (int)$sourceData['organico']
     ],
     'chart' => [
         'labels' => $dates,
@@ -60,8 +62,14 @@ echo json_encode([
         'organico' => $organicoCounts
     ],
     'donut' => [
-        'data' => [$sourceData['pago'], $sourceData['organico']]
+        'data' => [(int)$sourceData['pago'], (int)$sourceData['organico']]
+    ],
+    'debug' => [
+        'query' => "SELECT COUNT(*) as total FROM leads $where",
+        'actual_total' => $totalLeads
     ]
-]);
+];
+
+echo json_encode($response);
 $conn->close();
 ?>
