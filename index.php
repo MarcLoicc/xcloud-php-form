@@ -19,157 +19,157 @@ $revenue = $revenueResult->fetch_assoc()['total'] ?? 0;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-    <title>Master Analytics - CRM Console</title>
+    <title>Master Analytics (Dark) | CRM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800 antialiased">
+<body class="bg-slate-950 min-h-screen text-slate-100 antialiased">
     <?php include 'sidebar.php'; ?>
 
     <main class="sm:ml-64 min-h-screen p-8 lg:p-14 space-y-12">
-        <!-- Serious Header -->
-        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-12 border-b border-slate-200 group">
+        <!-- Dashboard Header Dark -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-10 pb-12 border-b border-slate-800 group">
             <div>
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-pulse shadow-md shadow-indigo-100"></div>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shadow-sm opacity-80">Monitor Engine Active</span>
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse shadow-md shadow-indigo-600"></div>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] bg-slate-900 px-3 py-1 rounded-full border border-slate-800">Operational Monitor Active</span>
                 </div>
-                <h1 class="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3 italic">Panel <span class="text-indigo-600 not-italic font-black uppercase">Administrativo</span></h1>
-                <p class="text-slate-400 text-sm font-medium max-w-lg mt-3">Visualización técnica de prospectos comerciales y rendimiento operacional.</p>
+                <h1 class="text-3xl font-black text-white tracking-widest flex items-center gap-4 italic uppercase">ANALYTICS <span class="text-indigo-500 not-italic font-black">CONSOLE</span></h1>
+                <p class="text-slate-500 text-[14px] font-medium max-w-lg mt-4 leading-relaxed">Control centralizado de prospectos comerciales y flujo de adquisición en tiempo real.</p>
             </div>
             <div class="flex items-center gap-4">
-                <div class="flex flex-col items-end mr-6 border-r pr-6 border-slate-200">
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Status de Conexión</span>
-                    <span class="text-[11px] font-black text-emerald-600 uppercase flex items-center gap-2 tracking-tighter shadow-sm bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 italic">xCloud Link OK</span>
+                <div class="flex flex-col items-end mr-6 border-r pr-6 border-slate-800">
+                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">Sync Status</span>
+                    <span class="text-[12px] font-black text-emerald-400 uppercase flex items-center gap-2 tracking-tighter shadow-xl bg-emerald-950 px-4 py-1.5 rounded-full border border-emerald-900 italic">Cloud Connected</span>
                 </div>
-                <button onclick="location.reload()" class="p-3 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-slate-900 hover:border-slate-800 transition-all shadow-sm active:scale-95 group">
-                    <i data-lucide="refresh-cw" class="w-4 h-4 group-hover:rotate-180 transition-all"></i>
+                <button onclick="location.reload()" class="p-4 bg-slate-900 border border-slate-800 rounded-xl text-slate-500 hover:text-white hover:border-slate-600 transition-all shadow-xl active:scale-95 group">
+                    <i data-lucide="refresh-cw" class="w-5 h-5 group-hover:rotate-180 transition-all"></i>
                 </button>
             </div>
         </header>
 
-        <!-- Stats Section (Serious Grid) -->
+        <!-- Stats Section Dark -->
         <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div class="card-premium relative p-8 rounded-xl group overflow-hidden">
-                <div class="flex justify-between items-start mb-8">
-                    <div class="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center text-white shadow-xl shadow-slate-200 group-hover:scale-105 transition-all">
+            <div class="card-premium relative p-8 rounded-xl group overflow-hidden border border-slate-800">
+                <div class="flex justify-between items-start mb-10">
+                    <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-slate-950 shadow-2xl group-hover:scale-105 transition-all">
                         <i data-lucide="users" class="w-6 h-6 stroke-[2.5]"></i>
                     </div>
                 </div>
-                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-0.5">Prospectos Totales</h3>
-                <div class="text-3xl font-black text-slate-900 tracking-tight tabular-nums italic"><?php echo $totalLeads; ?> <span class="text-slate-200 not-italic font-bold text-xs uppercase ml-2 tracking-widest">Leads</span></div>
+                <h3 class="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] mb-2 ml-1">TOTAL LEADS</h3>
+                <div class="text-4xl font-black text-white tracking-tight tabular-nums italic"><?php echo $totalLeads; ?> <span class="text-slate-800 not-italic font-black text-xs uppercase ml-3 tracking-widest">Prospectos</span></div>
             </div>
 
-            <div class="card-premium relative p-8 rounded-xl group overflow-hidden border-l-4 border-l-indigo-600 shadow-lg">
-                <div class="flex justify-between items-start mb-8">
-                    <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-xl shadow-indigo-100 group-hover:scale-105 transition-all">
+            <div class="card-premium relative p-8 rounded-xl group overflow-hidden border-l-4 border-l-indigo-600 shadow-2xl">
+                <div class="flex justify-between items-start mb-10">
+                    <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-2xl shadow-indigo-900 group-hover:scale-105 transition-all">
                         <i data-lucide="trending-up" class="w-6 h-6 stroke-[2.5]"></i>
                     </div>
                 </div>
-                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-0.5">Volumen Proyectado</h3>
-                <div class="text-3xl font-black text-slate-900 tracking-tight tabular-nums italic"><?php echo number_format($revenue, 2, ',', '.'); ?>€</div>
+                <h3 class="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] mb-2 ml-1">REVENUE MASTER</h3>
+                <div class="text-4xl font-black text-white tracking-tight tabular-nums italic"><?php echo number_format($revenue, 2, ',', '.'); ?>€</div>
             </div>
 
-            <div class="card-premium relative p-8 rounded-xl group overflow-hidden border-l-4 border-l-amber-500">
-                <div class="flex justify-between items-start mb-8">
-                    <div class="w-12 h-12 bg-amber-500 rounded-lg flex items-center justify-center text-white shadow-xl shadow-amber-100 group-hover:scale-105 transition-all">
+            <div class="card-premium relative p-8 rounded-xl group overflow-hidden border-l-4 border-l-amber-600">
+                <div class="flex justify-between items-start mb-10">
+                    <div class="w-12 h-12 bg-amber-600 rounded-lg flex items-center justify-center text-white shadow-2xl group-hover:scale-105 transition-all">
                         <i data-lucide="zap" class="w-6 h-6 stroke-[2.5] fill-white/20"></i>
                     </div>
                 </div>
-                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-0.5">Captura Paid Ads</h3>
-                <div class="text-3xl font-black text-slate-900 tracking-tight tabular-nums italic"><?php echo $sources['pago'] ?? 0; ?> <span class="text-slate-200 not-italic font-bold text-xs uppercase ml-2 tracking-widest">Leads</span></div>
+                <h3 class="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] mb-2 ml-1">PAID ADS CAPTURE</h3>
+                <div class="text-4xl font-black text-white tracking-tight tabular-nums italic"><?php echo $sources['pago'] ?? 0; ?> <span class="text-slate-800 not-italic font-black text-xs uppercase ml-3 tracking-widest">LEADS</span></div>
             </div>
 
-            <div class="card-premium relative p-8 rounded-xl group overflow-hidden border-l-4 border-l-emerald-500">
-                <div class="flex justify-between items-start mb-8">
-                    <div class="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center text-white shadow-xl shadow-emerald-100 group-hover:scale-105 transition-all">
+            <div class="card-premium relative p-8 rounded-xl group overflow-hidden border-l-4 border-l-emerald-600">
+                <div class="flex justify-between items-start mb-10">
+                    <div class="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center text-white shadow-2xl group-hover:scale-105 transition-all">
                         <i data-lucide="leaf" class="w-6 h-6 stroke-[2.5] fill-white/20"></i>
                     </div>
                 </div>
-                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-0.5">Captura Orgánica</h3>
-                <div class="text-3xl font-black text-slate-900 tracking-tight tabular-nums italic"><?php echo $sources['organico'] ?? 0; ?> <span class="text-slate-200 not-italic font-bold text-xs uppercase ml-2 tracking-widest">Leads</span></div>
+                <h3 class="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] mb-2 ml-1">ORGANIC CAPTURE</h3>
+                <div class="text-4xl font-black text-white tracking-tight tabular-nums italic"><?php echo $sources['organico'] ?? 0; ?> <span class="text-slate-800 not-italic font-black text-xs uppercase ml-3 tracking-widest">LEADS</span></div>
             </div>
         </section>
 
-        <!-- Serious Data Section -->
+        <!-- Serious Data Section Dark -->
         <section class="grid grid-cols-1 lg:grid-cols-12 gap-10 min-h-[500px]">
-            <!-- Activity Table Card -->
-            <div class="lg:col-span-8 card-premium p-10 rounded-xl relative overflow-hidden group shadow-xl">
-                <div class="flex items-center justify-between mb-10 pb-6 border-b border-slate-100">
+            <!-- Table Card Dark -->
+            <div class="lg:col-span-8 card-premium p-10 rounded-xl relative overflow-hidden group shadow-2xl">
+                <div class="flex items-center justify-between mb-12 pb-8 border-b border-slate-800">
                     <div>
-                        <h3 class="text-xl font-bold text-slate-900 tracking-tight uppercase italic">Actividad <span class="text-indigo-600 not-italic">Operacional Reciente</span></h3>
-                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 opacity-60">Log de últimos ingresos detectados</p>
+                        <h3 class="text-2xl font-black text-white tracking-widest uppercase italic leading-none">ACTIVOS <span class="text-indigo-500 not-italic">RECIENTES</span></h3>
+                        <p class="text-[11px] text-slate-500 font-black uppercase tracking-[0.4em] mt-3 opacity-60">Log de auditoría de los últimos prospectos en el clúster.</p>
                     </div>
-                    <a href="leads.php" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-900 hover:text-white text-[10px] font-bold text-slate-600 rounded-lg uppercase tracking-widest transition-all shadow-sm active:scale-95">Ir al Historial</a>
+                    <a href="leads.php" class="px-6 py-3.5 bg-slate-800 hover:bg-white hover:text-slate-950 text-[11px] font-black text-slate-400 rounded-lg uppercase tracking-widest transition-all shadow-xl active:scale-95 border border-slate-700">Explorar Todo</a>
                 </div>
 
-                <div class="space-y-4">
+                <div class="space-y-6">
                     <?php while($lead = $recentLeads->fetch_assoc()): ?>
-                    <div class="flex items-center justify-between p-5 bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-slate-300 rounded-xl transition-all hover:shadow-lg hover:shadow-slate-100 group/row cursor-pointer" onclick="location.href='leads.php'">
-                        <div class="flex items-center gap-4">
-                            <div class="w-11 h-11 bg-white border border-slate-100 rounded-lg flex items-center justify-center text-slate-700 font-bold text-sm shadow-sm group-hover/row:bg-slate-900 group-hover/row:text-white transition-all overflow-hidden uppercase">
+                    <div class="flex items-center justify-between p-6 bg-slate-950/50 border border-slate-800/80 hover:bg-slate-800 hover:border-indigo-600 transition-all cursor-pointer group/row rounded-xl shadow-lg" onclick="location.href='leads.php'">
+                        <div class="flex items-center gap-5">
+                            <div class="w-14 h-14 bg-slate-900 border border-slate-800 rounded-lg flex items-center justify-center text-white font-black text-xl shadow-inner group-hover/row:bg-white group-hover/row:text-slate-950 transition-all uppercase italic">
                                 <?php echo substr($lead['name'], 0, 1); ?>
                             </div>
                             <div class="flex flex-col">
-                                <span class="font-bold text-slate-900 group-hover/row:text-indigo-600 transition-all tracking-tight leading-none text-base italic uppercase truncate max-w-[200px]"><?php echo htmlspecialchars($lead['name']); ?></span>
-                                <span class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest block"><?php echo htmlspecialchars($lead['company'] ?: 'Particular'); ?></span>
+                                <span class="font-black text-white group-hover/row:text-indigo-400 transition-all tracking-tight leading-none text-xl italic uppercase truncate max-w-[300px]"><?php echo htmlspecialchars($lead['name']); ?></span>
+                                <span class="text-[11px] font-black text-slate-600 mt-2 uppercase tracking-widest block opacity-80"><?php echo htmlspecialchars($lead['company'] ?: 'ENTIDAD PARTICULAR'); ?></span>
                             </div>
                         </div>
-                        <div class="text-right flex items-center gap-8">
-                            <div class="hidden md:block">
-                                <span class="text-[8px] font-black text-slate-300 uppercase tracking-widest block mb-1">Status Estamento</span>
-                                <span class="px-3 py-1 bg-white border border-slate-200 rounded-md text-[9px] font-bold uppercase text-slate-600 shadow-sm"><?php echo strtoupper($lead['status'] ?? 'NUEVO'); ?></span>
+                        <div class="flex items-center gap-10">
+                            <div class="hidden md:flex flex-col items-end">
+                                <span class="text-[9px] font-black text-slate-700 uppercase tracking-widest mb-2 block">STATUS</span>
+                                <span class="px-4 py-1.5 bg-slate-900 border border-slate-800 rounded-md text-[10px] font-black uppercase text-slate-400 group-hover/row:border-slate-600 shadow-xl italic"><?php echo strtoupper($lead['status'] ?? 'NUEVO'); ?></span>
                             </div>
-                            <div class="flex flex-col items-end min-w-[100px]">
-                                <span class="text-lg font-black text-slate-900 italic tabular-nums group-hover/row:text-indigo-600 transition-all"><?php echo number_format($lead['proposal_price'] ?? 0, 0, ',', '.'); ?>€</span>
-                                <span class="text-[10px] font-bold text-slate-400 uppercase opacity-60 tabular-nums"><?php echo date('H:i', strtotime($lead['created_at'])); ?> h</span>
+                            <div class="flex flex-col items-end min-w-[120px]">
+                                <span class="text-2xl font-black text-white italic tabular-nums group-hover/row:text-indigo-400 transition-all"><?php echo number_format($lead['proposal_price'] ?? 0, 0, ',', '.'); ?>€</span>
+                                <span class="text-[11px] font-black text-slate-700 uppercase opacity-60 tabular-nums mt-1"><?php echo date('H:i', strtotime($lead['created_at'])); ?> HRS</span>
                             </div>
-                            <i data-lucide="chevron-right" class="w-5 h-5 text-slate-300 group-hover/row:text-indigo-600 transition-all group-hover/row:translate-x-1"></i>
+                            <i data-lucide="chevron-right" class="w-6 h-6 text-slate-800 group-hover/row:text-indigo-400 transition-all group-hover/row:translate-x-2"></i>
                         </div>
                     </div>
                     <?php endwhile; ?>
                 </div>
             </div>
 
-            <!-- Conversion Insights Card -->
-            <div class="lg:col-span-4 bg-white border border-slate-200 p-10 rounded-xl shadow-xl relative overflow-hidden flex flex-col justify-between group group-hover:border-indigo-100 transition-all">
+            <!-- Insights Card Dark -->
+            <div class="lg:col-span-4 bg-slate-900 border border-slate-800 p-10 rounded-xl shadow-2xl relative overflow-hidden flex flex-col justify-between group hover:border-indigo-600 transition-all">
                 <div class="relative z-10">
-                    <div class="flex items-center gap-4 mb-14 pb-6 border-b border-slate-50">
-                        <div class="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center text-white ring-4 ring-slate-100 shadow-xl shadow-slate-100">
-                            <i data-lucide="zap" class="w-5 h-5 fill-white/10 stroke-[2.5]"></i>
+                    <div class="flex items-center gap-5 mb-20 pb-10 border-b border-slate-800">
+                        <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-slate-950 shadow-2xl transition-all group-hover:scale-105">
+                            <i data-lucide="zap" class="w-6 h-6 fill-slate-950 stroke-[2.5]"></i>
                         </div>
-                        <h3 class="text-lg font-bold tracking-tight uppercase italic text-slate-900">Eficacia <span class="text-indigo-600">Comercial</span></h3>
+                        <h3 class="text-xl font-black tracking-widest uppercase italic text-white leading-none">RATIO <span class="text-indigo-500">COMERCIAL</span></h3>
                     </div>
 
-                    <div class="space-y-12">
-                        <div class="space-y-5">
+                    <div class="space-y-16">
+                        <div class="space-y-6">
                             <div class="flex justify-between items-end">
-                                <span class="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">Tasa de Conversión</span>
-                                <span class="text-2xl font-black italic tabular-nums text-slate-900">24.8%</span>
+                                <span class="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Conversión Real</span>
+                                <span class="text-4xl font-black italic tabular-nums text-white group-hover:text-indigo-400 transition-all">24.8%</span>
                             </div>
-                            <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 p-0.5 shadow-inner">
-                                <div class="w-[24.8%] h-full bg-slate-900 rounded-full transition-all duration-1000 shadow-lg"></div>
+                            <div class="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800 p-0.5 shadow-inner">
+                                <div class="w-[24.8%] h-full bg-indigo-600 rounded-full transition-all duration-1000 shadow-[0_0_15px_#4f46e5]"></div>
                             </div>
                         </div>
 
-                        <div class="space-y-5">
+                        <div class="space-y-6">
                             <div class="flex justify-between items-end">
-                                <span class="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">Churn Rate Estimado</span>
-                                <span class="text-2xl font-black italic tabular-nums text-slate-400">04.2%</span>
+                                <span class="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 italic">Índice Abandono</span>
+                                <span class="text-4xl font-black italic tabular-nums text-slate-700 group-hover:text-slate-400 transition-all">04.2%</span>
                             </div>
-                            <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 p-0.5 shadow-inner">
-                                <div class="w-[12.2%] h-full bg-slate-300 rounded-full transition-all duration-1000"></div>
+                            <div class="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800 p-0.5 shadow-inner">
+                                <div class="w-[12.2%] h-full bg-slate-800 rounded-full transition-all duration-1000"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="relative z-10 mt-16 pt-8 border-t border-slate-50">
-                    <button class="w-full py-4 bg-slate-900 text-white font-bold rounded-lg text-[11px] uppercase tracking-[0.2em] hover:bg-black transition-all shadow-xl active:scale-95 group flex items-center justify-center gap-3">
-                        Expandir Métrica <i data-lucide="activity" class="w-4 h-4 group-hover:scale-125 transition-all text-indigo-400"></i>
+                <div class="relative z-10 mt-20 pt-10 border-t border-slate-800">
+                    <button class="w-full py-5 bg-white text-slate-950 font-black rounded-lg text-[13px] uppercase tracking-[0.3em] hover:bg-slate-200 transition-all shadow-2xl active:scale-95 group flex items-center justify-center gap-4">
+                        DETALLE TÉCNICO <i data-lucide="activity" class="w-5 h-5 group-hover:scale-125 transition-all text-indigo-600"></i>
                     </button>
-                    <p class="text-center text-slate-300 text-[8px] font-bold uppercase tracking-widest mt-6 italic opacity-80">Algoritmo de predicción Master AI activo</p>
+                    <p class="text-center text-slate-700 text-[9px] font-black uppercase tracking-[0.5em] mt-8 italic opacity-60">MASTER AI PREDICTION ENGINE ACTIVATED</p>
                 </div>
             </div>
         </section>
