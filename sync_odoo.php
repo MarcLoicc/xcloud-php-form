@@ -103,18 +103,26 @@ echo "UID: $uid (OK)\n";
 $fields = ['id', 'name', 'contact_name', 'email_from', 'phone', 'planned_revenue', 'stage_id', 'create_date'];
 $odooLeads = odoo_call("$url/xmlrpc/2/object", 'execute_kw', [$db, $uid, $password, 'crm.lead', 'search_read', [[]], ['fields' => $fields]]);
 
-if (empty($odooLeads)) die("No hay leads.\n");
+if (!is_array($odooLeads)) {
+    die("Odoo devolvió un formato inesperado o error: " . print_r($odooLeads, true));
+}
 
 $inserted = 0;
 foreach ($odooLeads as $ol) {
+    if (!is_array($ol)) continue; // Saltar si no es un registro válido
+
     $contact = $ol['contact_name'] ?? ($ol['name'] ?? 'Odoo Lead');
     $email = $ol['email_from'] ?? '';
     $phone = $ol['phone'] ?? '';
     $revenue = (float)($ol['planned_revenue'] ?? 0);
     $created = $ol['create_date'] ?? date('Y-m-d H:i:s');
     
-    // Mapeo simple de estados
-    $stageName = is_array($ol['stage_id']) ? strtolower($ol['stage_id'][1]) : 'nuevo';
+    // Mapeo de estados
+    $stageName = 'nuevo';
+    if (isset($ol['stage_id']) && is_array($ol['stage_id']) && isset($ol['stage_id'][1])) {
+        $stageName = strtolower($ol['stage_id'][1]);
+    }
+    
     $status = 'nuevo';
     if (stripos($stageName, 'won') !== false || stripos($stageName, 'ganado') !== false) $status = 'ganado';
     if (stripos($stageName, 'lost') !== false || stripos($stageName, 'perdido') !== false) $status = 'perdido';
