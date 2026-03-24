@@ -4,16 +4,17 @@ date_default_timezone_set('Europe/Madrid');
 require_once 'db.php';
 $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
 
-$existingTags = [];
+$existingTags = ['vip', 'urgente', 'importante', 'pendiente']; // Predefined default tags
 $tagQuery = $conn->query("SELECT DISTINCT tags FROM leads WHERE tags IS NOT NULL AND tags != ''");
 if ($tagQuery) {
     while ($tRow = $tagQuery->fetch_assoc()) {
         foreach (explode(',', $tRow['tags']) as $p) {
-            $tag = trim($p);
+            $tag = strtolower(trim($p));
             if (!empty($tag) && !in_array($tag, $existingTags)) $existingTags[] = $tag;
         }
     }
 }
+sort($existingTags);
 sort($existingTags);
 
 function getStatusBadge($status) {
@@ -185,101 +186,160 @@ function getStatusBadge($status) {
 
     <!-- Modal Detail SaaS Accessible -->
     <div id="detailModal" role="dialog" aria-modal="true" aria-labelledby="modal-title" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm p-4 overflow-y-auto">
-        <div class="bg-zinc-900 border border-zinc-800 w-full max-w-2xl rounded-xl shadow-2xl p-8 transform transition-all animate-in zoom-in duration-200" id="detailModalContent" tabindex="-1">
-            <form id="editLeadForm">
+        <div class="bg-zinc-900 border border-zinc-800 w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" id="detailModalContent" tabindex="-1">
+            <form id="editLeadForm" enctype="multipart/form-data" class="flex flex-col h-full">
                 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                 <input type="hidden" name="id" id="det-id">
                 
-                <div class="flex justify-between items-start mb-8 pb-6 border-b border-zinc-800">
+                <!-- HEADER MODAL -->
+                <div class="px-8 py-6 border-b border-zinc-800 flex justify-between items-start bg-zinc-950/50 sticky top-0 z-10 shrink-0">
                     <div class="w-full mr-8">
                         <label for="det-name" class="sr-only">Nombre del Cliente</label>
-                        <input type="text" name="name" id="det-name" class="w-full bg-transparent border-0 focus:ring-2 focus:ring-indigo-500 rounded-md text-2xl font-bold text-zinc-100 transition-colors px-2 py-1 -ml-2" required>
+                        <input type="text" name="name" id="det-name" class="w-full bg-transparent border border-transparent focus:bg-zinc-900 focus:border-zinc-700 focus:ring-2 focus:ring-indigo-500 rounded-md text-2xl font-bold text-zinc-100 transition-colors px-3 py-1.5 -ml-3" required placeholder="Nombre del contacto">
                         
                         <label for="det-company" class="sr-only">Empresa</label>
-                        <input type="text" name="company" id="det-company" class="w-full bg-transparent border-0 focus:ring-2 focus:ring-indigo-500 rounded-md text-zinc-400 text-[15px] mt-1 px-2 py-1 -ml-2 transition-colors">
+                        <input type="text" name="company" id="det-company" class="w-full bg-transparent border border-transparent focus:bg-zinc-900 focus:border-zinc-700 focus:ring-2 focus:ring-indigo-500 rounded-md text-zinc-400 text-[15px] mt-1 px-3 py-1.5 -ml-3 transition-colors" placeholder="Empresa (Opcional)">
                     </div>
-                    <button type="button" onclick="closeDetailModal()" aria-label="Cerrar ventana" class="p-2 text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
-                        <i data-lucide="x" class="w-5 h-5" aria-hidden="true"></i>
+                    <button type="button" onclick="closeDetailModal()" aria-label="Cerrar ventana" class="p-2 text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 shrink-0">
+                        <i data-lucide="x" class="w-6 h-6" aria-hidden="true"></i>
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    <div class="space-y-6">
-                        <div>
-                            <label for="det-status" class="block text-[13px] font-semibold text-zinc-300 mb-2">Estado</label>
-                            <select name="status" id="det-status" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 px-3 text-[14px] text-zinc-100 focus:ring-2 focus:ring-indigo-500 transition-colors">
-                                <option value="nuevo">Nuevo</option>
-                                <option value="no_responde">Sin Respuesta</option>
-                                <option value="llamar_tarde">Llamar más tarde</option>
-                                <option value="interesado_tarde">Interesado (Futuro)</option>
-                                <option value="enviar_propuesta">Enviar Propuesta</option>
-                                <option value="propuesta_enviada">Propuesta Enviada</option>
-                                <option value="ganado">Ganado</option>
-                                <option value="perdido">Perdido</option>
-                                <option value="no_cualificado">No Cualificado</option>
-                            </select>
-                        </div>
+                <!-- CONTENIDO MODAL SCROLLABLE -->
+                <div class="p-8 overflow-y-auto w-full max-h-[60vh] custom-scrollbar">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-10">
                         
-                        <fieldset class="space-y-4">
-                            <legend class="block text-[13px] font-semibold text-zinc-300 mb-2">Datos de Contacto</legend>
-                            <div class="relative">
-                                <label for="det-email" class="sr-only">Correo electrónico</label>
-                                <i data-lucide="mail" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
-                                <input type="email" name="email" id="det-email" class="w-full pl-9 pr-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-600">
-                            </div>
-                            <div class="relative">
-                                <label for="det-phone" class="sr-only">Número de teléfono</label>
-                                <i data-lucide="phone" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
-                                <input type="tel" name="phone" id="det-phone" class="w-full pl-9 pr-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-600">
-                            </div>
-                        </fieldset>
-                    </div>
-
-                    <div class="space-y-6">
-                        <fieldset>
-                            <legend class="block text-[13px] font-semibold text-zinc-300 mb-2">Detalles de Propuesta</legend>
-                            <div class="flex gap-3">
-                                <div class="relative flex-1">
-                                    <label for="det-price" class="sr-only">Valor de la Propuesta</label>
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-[14px]" aria-hidden="true">€</span>
-                                    <input type="number" step="0.01" name="proposal_price" id="det-price" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 pl-8 pr-3 text-zinc-100 font-medium focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px]">
+                        <!-- Columna Izquierda (Principal) -->
+                        <div class="md:col-span-7 space-y-8">
+                            <!-- Datos Esenciales -->
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label for="det-status" class="block text-[13px] font-semibold text-zinc-300 mb-2">Estado del Lead</label>
+                                    <div class="relative">
+                                        <select name="status" id="det-status" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 pl-3 pr-8 text-[14px] text-zinc-100 focus:ring-2 focus:ring-indigo-500 transition-colors appearance-none shadow-inner">
+                                            <option value="nuevo">Nuevo</option>
+                                            <option value="no_responde">Sin Respuesta</option>
+                                            <option value="llamar_tarde">Llamar más tarde</option>
+                                            <option value="interesado_tarde">Interesado (Futuro)</option>
+                                            <option value="enviar_propuesta">Enviar Propuesta</option>
+                                            <option value="propuesta_enviada">Propuesta Enviada</option>
+                                            <option value="ganado">Ganado</option>
+                                            <option value="perdido">Perdido</option>
+                                            <option value="no_cualificado">No Cualificado</option>
+                                        </select>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" aria-hidden="true"></i>
+                                    </div>
                                 </div>
-                                <div class="w-1/3">
-                                    <label for="det-source" class="sr-only">Origen</label>
-                                    <select name="source" id="det-source" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 px-3 text-[14px] text-zinc-100 focus:ring-2 focus:ring-indigo-500 transition-colors">
-                                        <option value="organico">Orgánico</option>
-                                        <option value="pago">Pago</option>
-                                    </select>
+                                <div>
+                                    <label for="det-price" class="block text-[13px] font-semibold text-zinc-300 mb-2">Valor Obtenido (€)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-[14px]" aria-hidden="true">€</span>
+                                        <input type="number" step="0.01" name="proposal_price" id="det-price" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 pl-8 pr-3 text-zinc-100 font-medium focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] shadow-inner" placeholder="0.00">
+                                    </div>
                                 </div>
                             </div>
-                        </fieldset>
 
-                        <div>
-                            <label for="det-tags" class="block text-[13px] font-semibold text-zinc-300 mb-2">Etiquetas</label>
-                            <input type="text" name="tags" id="det-tags" placeholder="ej. vip, pendiente" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 px-3 text-[14px] text-zinc-100 focus:ring-2 focus:ring-indigo-500 transition-colors mb-3">
-                            <div class="flex flex-wrap gap-2" role="group" aria-label="Etiquetas sugeridas">
-                                <?php foreach($existingTags as $tag): ?>
-                                    <button type="button" onclick="addTagEdit('<?php echo htmlspecialchars($tag); ?>')" class="px-2.5 py-1 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 rounded text-[12px] font-medium text-zinc-300 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
-                                        + <?php echo htmlspecialchars($tag); ?>
-                                    </button>
-                                <?php endforeach; ?>
+                            <!-- Datos de Contacto -->
+                            <fieldset class="space-y-4 pt-6 border-t border-zinc-800/50">
+                                <legend class="block text-[14px] font-bold text-zinc-100 mb-4">Información de Contacto</legend>
+                                <div class="relative">
+                                    <label for="det-email" class="sr-only">Correo electrónico</label>
+                                    <i data-lucide="mail" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
+                                    <input type="email" name="email" id="det-email" class="w-full pl-10 pr-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-600 shadow-inner" placeholder="ej. correo@empresa.com">
+                                </div>
+                                <div class="relative">
+                                    <label for="det-phone" class="sr-only">Número de teléfono</label>
+                                    <i data-lucide="phone" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
+                                    <input type="tel" name="phone" id="det-phone" class="w-full pl-10 pr-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-600 shadow-inner" placeholder="ej. +34 600 000 000">
+                                </div>
+                            </fieldset>
+
+                             <!-- Notas -->
+                            <div class="pt-6 border-t border-zinc-800/50">
+                                <label for="det-message" class="block text-[14px] font-bold text-zinc-100 mb-3">Notas y Contexto</label>
+                                <textarea name="message" id="det-message" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-3 px-4 focus:ring-2 focus:ring-indigo-500 outline-none min-h-[140px] text-[14px] text-zinc-100 transition-colors placeholder:text-zinc-600 shadow-inner" placeholder="Añade aquí los detalles de la reunión, necesidades del cliente..."></textarea>
                             </div>
                         </div>
+
+                        <!-- Columna Derecha (Secundaria) -->
+                        <div class="md:col-span-5 space-y-8 bg-zinc-950 p-6 rounded-lg border border-zinc-800 shadow-inner">
+                            <div>
+                                <label for="det-source" class="block text-[13px] font-semibold text-zinc-300 mb-2">Canal de Adquisición</label>
+                                <div class="relative">
+                                    <select name="source" id="det-source" class="w-full bg-zinc-900 border border-zinc-800 rounded-md py-2.5 pl-3 pr-8 text-[14px] text-zinc-100 focus:ring-2 focus:ring-indigo-500 transition-colors appearance-none">
+                                        <option value="organico">Tráfico Orgánico / Directo</option>
+                                        <option value="pago">Márketing de Pago (Ads)</option>
+                                    </select>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" aria-hidden="true"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Archivos del Lead -->
+                            <div>
+                                <h3 class="block text-[13px] font-semibold text-zinc-300 mb-3">Archivos Adjuntos</h3>
+                                
+                                <div id="det-files-container" class="space-y-3 mb-4 empty:hidden">
+                                    <!-- Dynamic File Link -->
+                                    <a id="det-file-link" href="#" target="_blank" class="hidden items-center gap-3 p-3 bg-zinc-900 border border-zinc-800 hover:border-indigo-500/50 rounded-md transition-colors group">
+                                        <div class="w-8 h-8 rounded bg-indigo-900/30 text-indigo-400 flex items-center justify-center shrink-0">
+                                            <i data-lucide="file-text" class="w-4 h-4" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="overflow-hidden">
+                                            <p class="text-[13px] font-medium text-zinc-200 truncate group-hover:text-indigo-300 transition-colors" id="det-file-name">Documento PDF</p>
+                                            <p class="text-[11px] text-zinc-500 uppercase tracking-widest mt-0.5">Ver archivo</p>
+                                        </div>
+                                    </a>
+                                    <!-- Dynamic Audio Link -->
+                                    <a id="det-audio-link" href="#" target="_blank" class="hidden items-center gap-3 p-3 bg-zinc-900 border border-zinc-800 hover:border-emerald-500/50 rounded-md transition-colors group">
+                                        <div class="w-8 h-8 rounded bg-emerald-900/30 text-emerald-400 flex items-center justify-center shrink-0">
+                                            <i data-lucide="mic" class="w-4 h-4" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="overflow-hidden">
+                                            <p class="text-[13px] font-medium text-zinc-200 truncate group-hover:text-emerald-300 transition-colors" id="det-audio-name">Nota de Voz</p>
+                                            <p class="text-[11px] text-zinc-500 uppercase tracking-widest mt-0.5">Escuchar grabación</p>
+                                        </div>
+                                    </a>
+                                </div>
+
+                                <div class="space-y-3">
+                                    <div class="relative">
+                                        <label for="det-new-doc" class="block text-[12px] text-zinc-400 mb-1">Subir Documento (PDF, DOCX...)</label>
+                                        <input type="file" name="lead_file" id="det-new-doc" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.zip" class="block w-full text-[12px] text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[12px] file:font-semibold file:bg-zinc-800 file:text-zinc-100 hover:file:bg-zinc-700 transition-colors">
+                                    </div>
+                                    <div class="relative">
+                                        <label for="det-new-audio" class="block text-[12px] text-zinc-400 mb-1">Subir Audio (.webm, .mp3)</label>
+                                        <input type="file" name="audio_file" id="det-new-audio" accept="audio/*" class="block w-full text-[12px] text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[12px] file:font-semibold file:bg-zinc-800 file:text-zinc-100 hover:file:bg-zinc-700 transition-colors">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Etiquetas -->
+                            <div>
+                                <label for="det-tags" class="block text-[13px] font-semibold text-zinc-300 mb-2">Clasificación / Etiquetas (separadas por coma)</label>
+                                <input type="text" name="tags" id="det-tags" placeholder="ej. vip, urgente" class="w-full bg-zinc-900 border border-zinc-800 rounded-md py-2.5 px-3 text-[14px] text-zinc-100 focus:ring-2 focus:ring-indigo-500 transition-colors mb-3">
+                                <div class="flex flex-wrap gap-2" role="group" aria-label="Etiquetas sugeridas">
+                                    <?php foreach($existingTags as $tag): ?>
+                                        <button type="button" onclick="addTagEdit('<?php echo htmlspecialchars($tag); ?>')" class="px-2.5 py-1 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 rounded-md text-[12px] font-bold text-zinc-300 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 shadow-sm">
+                                            + <?php echo htmlspecialchars($tag); ?>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
-                <div class="mb-8">
-                    <label for="det-message" class="block text-[13px] font-semibold text-zinc-300 mb-2">Notas / Comentarios</label>
-                    <textarea name="message" id="det-message" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-3 px-3 focus:ring-2 focus:ring-indigo-500 outline-none min-h-[100px] text-[14px] text-zinc-100 transition-colors placeholder:text-zinc-600"></textarea>
-                </div>
-
-                <div class="flex items-center justify-between pt-6 border-t border-zinc-800">
-                    <button type="button" onclick="deleteLead()" class="text-red-400 hover:text-red-300 text-[14px] font-semibold transition-colors flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-500 rounded-md px-2 py-1">
-                        <i data-lucide="trash-2" class="w-4 h-4" aria-hidden="true"></i> Eliminar
+                <!-- FOOTER MODAL -->
+                <div class="px-8 py-5 border-t border-zinc-800 flex items-center justify-between bg-zinc-950 shrink-0">
+                    <button type="button" onclick="deleteLead()" class="text-red-400 hover:text-red-300 text-[14px] font-semibold transition-colors flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-500 rounded-md px-2 py-2">
+                        <i data-lucide="trash-2" class="w-4 h-4" aria-hidden="true"></i> Eliminar Registro
                     </button>
                     <div class="flex gap-3">
-                        <button type="button" onclick="closeDetailModal()" class="px-4 py-2 text-zinc-400 text-[14px] font-semibold rounded-md hover:text-zinc-100 hover:bg-zinc-800 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-zinc-500">Cancelar</button>
-                        <button type="submit" class="px-6 py-2 bg-zinc-100 hover:bg-zinc-300 text-zinc-950 text-[14px] font-bold rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">Guardar Cambios</button>
+                        <button type="button" onclick="closeDetailModal()" class="px-5 py-2.5 text-zinc-400 text-[14px] font-semibold rounded-md hover:text-zinc-100 hover:bg-zinc-800 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-zinc-500">Cancelar</button>
+                        <button type="submit" id="updateBtn" class="px-6 py-2.5 bg-zinc-100 hover:bg-zinc-300 text-zinc-950 text-[14px] font-bold rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 shadow-sm flex items-center gap-2">
+                            Guardar Cambios
+                        </button>
                     </div>
                 </div>
             </form>
@@ -340,10 +400,10 @@ function getStatusBadge($status) {
         let previousActiveElement;
         
         function showLeadDetails(data) {
-            previousActiveElement = document.activeElement; // Save previously focused element
+            previousActiveElement = document.activeElement; 
             
-            document.getElementById('det-id').value = data.id;
-            document.getElementById('det-name').value = data.name;
+            document.getElementById('det-id').value = data.id || '';
+            document.getElementById('det-name').value = data.name || '';
             document.getElementById('det-company').value = data.company || '';
             document.getElementById('det-email').value = data.email || '';
             document.getElementById('det-phone').value = data.phone || '';
@@ -353,11 +413,34 @@ function getStatusBadge($status) {
             document.getElementById('det-price').value = data.proposal_price || 0;
             document.getElementById('det-message').value = data.message || '';
             
+            // Handle Document display
+            const fileLink = document.getElementById('det-file-link');
+            if(data.file_path) {
+                fileLink.href = 'download.php?file=' + encodeURIComponent(data.file_path);
+                document.getElementById('det-file-name').textContent = data.file_path.split('/').pop() || 'Documento';
+                fileLink.classList.remove('hidden');
+                fileLink.classList.add('flex');
+            } else {
+                fileLink.classList.add('hidden');
+                fileLink.classList.remove('flex');
+            }
+
+            // Handle Audio display
+            const audioLink = document.getElementById('det-audio-link');
+            if(data.audio_path) {
+                audioLink.href = 'download.php?file=' + encodeURIComponent(data.audio_path);
+                document.getElementById('det-audio-name').textContent = data.audio_path.split('/').pop() || 'Grabación de Audio';
+                audioLink.classList.remove('hidden');
+                audioLink.classList.add('flex');
+            } else {
+                audioLink.classList.add('hidden');
+                audioLink.classList.remove('flex');
+            }
+
             modalD.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
             lucide.createIcons();
             
-            // Set focus inside modal
             setTimeout(() => { document.getElementById('det-name').focus(); }, 50);
         }
 
@@ -383,11 +466,27 @@ function getStatusBadge($status) {
 
         editLeadForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            const updateBtn = document.getElementById('updateBtn');
+            updateBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Guardando...';
+            updateBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            lucide.createIcons();
+
             const fd = new FormData(this);
             fetch('update_lead.php', { method: 'POST', body: fd })
             .then(r => r.json())
             .then(res => {
-                if(res.success) location.reload();
+                if(res.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + (res.message || 'Error desconocido'));
+                    updateBtn.innerHTML = 'Guardar Cambios';
+                    updateBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                }
+            })
+            .catch(() => {
+                alert('Ocurrió un error en la conexión');
+                updateBtn.innerHTML = 'Guardar Cambios';
+                updateBtn.classList.remove('opacity-75', 'cursor-not-allowed');
             });
         });
 

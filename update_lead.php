@@ -3,7 +3,6 @@ require_once 'auth.php';
 require_once 'db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Protección CSRF Extrema
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         echo json_encode(['success' => false, 'message' => 'Falsificación de petición detectada (CSRF)']);
         exit;
@@ -26,8 +25,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $proposal_price = (float)($_POST['proposal_price'] ?? 0);
     $message = $_POST['message'] ?? '';
 
-    $stmt = $conn->prepare("UPDATE leads SET name=?, email=?, phone=?, company=?, website=?, source=?, status=?, tags=?, proposal_price=?, message=? WHERE id=?");
-    $stmt->bind_param("ssssssssdsi", $name, $email, $phone, $company, $website, $source, $status, $tags, $proposal_price, $message, $id);
+    // Preparar campos dinámicos para el UPDATE
+    $fields = "name=?, email=?, phone=?, company=?, website=?, source=?, status=?, tags=?, proposal_price=?, message=?";
+    $types = "ssssssssds";
+    $params = [$name, $email, $phone, $company, $website, $source, $status, $tags, $proposal_price, $message];
+
+    // Manejo de Archivo
+    $upload_dir = 'uploads/';
+    if (!is_dir($upload_dir)) @mkdir($upload_dir, 0777, true);
+    
+    $lead_name_clean = preg_replace('/[^A-Za-z0-9\-]/', '-', $name);
+    $timestamp = date('Y-m-d_Hi');
+
+    if (isset($_FILES['lead_file']) && $_FILES['lead_file']['error'] === UPLOAD_ERR_OK) {
+        $file_tmp = $_FILES['lead_file']['tmp_name'];
+        $extension = strtolower(pathinfo($_FILES['lead_file']['name'], PATHINFO_EXTENSION));
+        $allowed = ['pdf', 'docx', 'doc', 'png', 'jpg', 'jpeg', 'zip'];
+        
+        if (in_array($extension, $allowed)) {
+            $new_file_name = "DOC_{$lead_name_clean}_{$timestamp}_{$id}.{$extension}";
+            $target_file = $upload_dir . $new_file_name;
+            if (move_uploaded_file($file_tmp, $target_file)) {
+                $fields .= ", file_path=?";
+                $types .= "s";
+                $params[] = $target_file;
+            }
+        }
+    }
+
+    if (isset($_FILES['audio_file']) && $_FILES['audio_file']['error'] === UPLOAD_ERR_OK) {
+        $audio_tmp = $_FILES['audio_file']['tmp_name'];
+        $extension = strtolower(pathinfo($_FILES['audio_file']['name'], PATHINFO_EXTENSION));
+        // Permitir archivos de audio habituales (por navegador form submit puede no ser webm)
+        $allowed_audio = ['webm', 'mp3', 'ogg', 'wav', 'm4a'];
+        if (in_array($extension, $allowed_audio) || strpos($_FILES['audio_file']['type'], 'audio/') === 0) {
+            $ext = in_array($extension, $allowed_audio) ? $extension : 'mp3';
+            $new_audio_name = "CALL_{$lead_name_clean}_{$timestamp}_{$id}.{$ext}";
+            $target_audio = $upload_dir . $new_audio_name;
+            if (move_uploaded_file($audio_tmp, $target_audio)) {
+                $fields .= ", audio_path=?";
+                $types .= "s";
+                $params[] = $target_audio;
+            }
+        }
+    }
+
+    // Agregar el ID al final de los parámetros
+    $types .= "i";
+    $params[] = $id;
+
+    $query = "UPDATE leads SET $fields WHERE id=?";
+    $stmt = $conn->prepare($query);
+    
+    // Binding dinámico
+    $stmt->bind_param($types, ...$params);
 
     if ($stmt->execute()) {
         echo json_encode(['success' => true]);
