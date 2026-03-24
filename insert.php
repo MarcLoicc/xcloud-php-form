@@ -40,7 +40,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
 
         $file_tmp = $_FILES['lead_file']['tmp_name'];
-        $extension = pathinfo($_FILES['lead_file']['name'], PATHINFO_EXTENSION);
+        $extension = strtolower(pathinfo($_FILES['lead_file']['name'], PATHINFO_EXTENSION));
+        
+        // --- AUDITORÍA EXTREMA: WHITELIST DE EXTENSIONES ---
+        $allowed = ['pdf', 'docx', 'doc', 'png', 'jpg', 'jpeg', 'zip'];
+        if (!in_array($extension, $allowed)) {
+            echo json_encode(['status' => 'error', 'message' => 'Tipo de archivo no permitido (.'.$extension.')']);
+            exit;
+        }
+
         $new_file_name = "DOC_{$lead_name_clean}_{$timestamp}.{$extension}";
         $target_file = $upload_dir . $new_file_name;
 

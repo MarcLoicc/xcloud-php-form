@@ -1,5 +1,23 @@
 <?php
+// --- CONFIGURACIÓN DE SESIÓN ULTRA-SEGURA (Auditoría Bancaria) ---
+ini_set('session.cookie_httponly', 1); // Impide robo de sesión por JS
+ini_set('session.cookie_secure', 1);   // Solo viaja por HTTPS
+ini_set('session.use_only_cookies', 1);
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => '',
+    'secure' => true,
+    'httponly' => true,
+    'samesite' => 'Strict'
+]);
 session_start();
+
+// Regenerar ID de sesión cada vez que esté autenticado (Previene fijación)
+if (isset($_SESSION['authenticated']) && $_SESSION['authenticated'] === true) {
+    // session_regenerate_id(true); // Opcional pero recomendado en alta seguridad
+}
+
 require_once 'env_loader.php';
 
 // --- CONFIGURACIÓN DE SEGURIDAD PRO ---
@@ -37,6 +55,7 @@ if (isset($_POST['password'])) {
     if (password_verify($_POST['password'], $APP_PASS_HASH)) {
         $_SESSION['authenticated'] = true;
     } else {
+        sleep(2); // Retardo anti-fuerza bruta
         $error = "Acceso denegado: Credenciales no válidas.";
     }
 }
