@@ -27,13 +27,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $source = $_POST['source'] ?? '';
     $status = $_POST['status'] ?? '';
     $tags = $_POST['tags'] ?? '';
+    $created_at = $_POST['created_at'] ?? date('Y-m-d H:i:s');
     $proposal_price = (float)($_POST['proposal_price'] ?? 0);
     $message = $_POST['message'] ?? '';
 
     // Preparar campos dinámicos para el UPDATE
-    $fields = "name=?, email=?, phone=?, company=?, website=?, source=?, status=?, tags=?, proposal_price=?, message=?";
-    $types = "ssssssssds";
-    $params = [$name, $email, $phone, $company, $website, $source, $status, $tags, $proposal_price, $message];
+    $fields = "name=?, email=?, phone=?, company=?, website=?, source=?, status=?, tags=?, proposal_price=?, message=?, created_at=?";
+    $types = "ssssssssdss";
+    $params = [$name, $email, $phone, $company, $website, $source, $status, $tags, $proposal_price, $message, $created_at];
 
     // Manejo de Archivo
     $upload_dir = 'uploads/';

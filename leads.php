@@ -240,6 +240,10 @@ function getStatusBadge($status) {
                                         <input type="number" step="0.01" name="proposal_price" id="det-price" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 pl-8 pr-3 text-zinc-100 font-medium focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] shadow-inner" placeholder="0.00">
                                     </div>
                                 </div>
+                                <div class="col-span-2">
+                                    <label for="det-date" class="block text-[13px] font-semibold text-zinc-300 mb-2">Fecha de Entrada del Lead</label>
+                                    <input type="datetime-local" name="created_at" id="det-date" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 px-3 text-[14px] text-zinc-100 focus:ring-2 focus:ring-indigo-500 transition-colors shadow-inner">
+                                </div>
                             </div>
 
                             <!-- Datos de Contacto -->
@@ -421,6 +425,12 @@ function getStatusBadge($status) {
             document.getElementById('det-status').value = data.status || 'nuevo';
             document.getElementById('det-price').value = data.proposal_price || 0;
             document.getElementById('det-message').value = data.message || '';
+            
+            // Formatear fecha para datetime-local (YYYY-MM-DDTHH:MM)
+            if(data.created_at) {
+                const dt = data.created_at.replace(' ', 'T').substring(0, 16);
+                document.getElementById('det-date').value = dt;
+            }
             
             // Handle Document display
             const fileLink = document.getElementById('det-file-link');
