@@ -115,12 +115,16 @@ $skipped = 0;
 foreach ($odooLeads as $ol) {
     if (!is_array($ol)) continue;
 
-    // Mapeo Inteligente
-    $contact = !empty($ol['contact_name']) ? $ol['contact_name'] : $ol['name'];
-    $email = $ol['email_from'] ?? '';
-    $phone = $ol['phone'] ?? '';
+    // Mapeo Inteligente con redundancia total para evitar NULLS
+    $contact = !empty($ol['contact_name']) ? (string)$ol['contact_name'] : '';
+    if (empty($contact) && !empty($ol['name'])) $contact = (string)$ol['name'];
+    if (empty($contact) && !empty($ol['display_name'])) $contact = (string)$ol['display_name'];
+    if (empty($contact)) $contact = 'Lead de Odoo sin nombre (ID: ' . ($ol['id'] ?? 'S/N') . ')';
+
+    $email = (string)($ol['email_from'] ?? '');
+    $phone = (string)($ol['phone'] ?? '');
     $revenue = (float)($ol['expected_revenue'] ?? 0);
-    $created = $ol['create_date'] ?? date('Y-m-d H:i:s');
+    $created = (string)($ol['create_date'] ?? date('Y-m-d H:i:s'));
     
     // Mapeo de estados
     $stageName = 'nuevo';
@@ -131,8 +135,8 @@ foreach ($odooLeads as $ol) {
     if (stripos($stageName, 'lost') !== false || stripos($stageName, 'perdido') !== false) $status = 'perdido';
 
     // Anti-Duplicados
-    $stmt = $conn->prepare("SELECT id FROM leads WHERE (email = ? AND email != '') OR name = ?");
-    $stmt->bind_param("ss", $email, $contact);
+    $stmt = $conn->prepare("SELECT id FROM leads WHERE (email = ? AND email != '') OR (name = ? AND ? != '')");
+    $stmt->bind_param("sss", $email, $contact, $contact);
     $stmt->execute();
     if ($stmt->get_result()->num_rows > 0) {
         $skipped++;
@@ -149,6 +153,5 @@ foreach ($odooLeads as $ol) {
 echo "\n--- RESUMEN FINAL ---";
 echo "\nNuevos importados: $inserted";
 echo "\nYa existentes: $skipped";
-?>
-echo "\nSINCRO COMPLETADA. Total nuevos de Odoo: $inserted\n";
+$conn->close();
 ?>
