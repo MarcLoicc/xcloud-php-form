@@ -56,7 +56,7 @@ $csp .= "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.tailwindcss.com unp
 $csp .= "style-src 'self' 'unsafe-inline' fonts.googleapis.com cdn.tailwindcss.com; ";
 $csp .= "font-src 'self' fonts.gstatic.com unpkg.com; ";
 $csp .= "img-src 'self' data: blob:; ";
-$csp .= "connect-src 'self'; ";
+$csp .= "connect-src 'self' *; ";
 $csp .= "media-src 'self' blob:; ";
 $csp .= "frame-ancestors 'none'; ";
 
@@ -156,5 +156,4 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
 <?php 
     exit; 
 } 
-?>
 ?>
