@@ -3,9 +3,8 @@ header('Content-Type: application/json');
 require_once 'auth.php';
 require_once 'db.php';
 
-// Modo diagnóstico forzado para ver el error exacto
-ini_set('display_errors', 1);
-ini_set('log_errors', 1);
+// Desactivar visualización de errores HTML para evitar romper el JSON
+ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
