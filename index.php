@@ -71,8 +71,8 @@
                             <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Cerrados</span>
                         </div>
                         <div>
-                            <span id="stat-pago-lost" class="text-xl font-bold text-zinc-600 block">0</span>
-                            <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Perdidos</span>
+                            <span id="stat-pago-rev" class="text-xl font-bold text-indigo-400 block">€0</span>
+                            <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Facturación</span>
                         </div>
                     </div>
                 </div>
@@ -96,8 +96,8 @@
                             <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Cerrados</span>
                         </div>
                         <div>
-                            <span id="stat-organico-lost" class="text-xl font-bold text-zinc-600 block">0</span>
-                            <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Perdidos</span>
+                            <span id="stat-organico-rev" class="text-xl font-bold text-cyan-400 block">€0</span>
+                            <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Facturación</span>
                         </div>
                     </div>
                 </div>
@@ -188,12 +188,12 @@
             // Pago
             document.getElementById('stat-pago-total').innerText = data.metrics.pago.total;
             document.getElementById('stat-pago-won').innerText = data.metrics.pago.won;
-            document.getElementById('stat-pago-lost').innerText = data.metrics.pago.lost;
+            document.getElementById('stat-pago-rev').innerText = '€' + data.metrics.pago.revenue;
             
             // Orgánico
             document.getElementById('stat-organico-total').innerText = data.metrics.organico.total;
             document.getElementById('stat-organico-won').innerText = data.metrics.organico.won;
-            document.getElementById('stat-organico-lost').innerText = data.metrics.organico.lost;
+            document.getElementById('stat-organico-rev').innerText = '€' + data.metrics.organico.revenue;
 
             // Actualizar Gráfica Tendencia
             if (trendChart) trendChart.destroy();

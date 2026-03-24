@@ -21,10 +21,12 @@ $revenue = $conn->query("SELECT SUM(proposal_price) as total FROM leads $where A
 // Desglose Pago
 $wonPago = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'pago' AND status = 'ganado'")->fetch_assoc()['total'];
 $lostPago = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'pago' AND status = 'perdido'")->fetch_assoc()['total'];
+$revPago = $conn->query("SELECT SUM(proposal_price) as total FROM leads $where AND source = 'pago' AND status IN ('ganado', 'propuesta_enviada')")->fetch_assoc()['total'] ?? 0;
 
 // Desglose Orgánico
 $wonOrganico = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'organico' AND status = 'ganado'")->fetch_assoc()['total'];
 $lostOrganico = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'organico' AND status = 'perdido'")->fetch_assoc()['total'];
+$revOrganico = $conn->query("SELECT SUM(proposal_price) as total FROM leads $where AND source = 'organico' AND status IN ('ganado', 'propuesta_enviada')")->fetch_assoc()['total'] ?? 0;
 
 // 2. Gráfica de Tendencia Séparada (Pago vs Orgánico)
 $historyQuery = "
@@ -60,12 +62,14 @@ $response = [
         'pago' => [
             'total' => (int)$sourceData['pago'],
             'won' => (int)$wonPago,
-            'lost' => (int)$lostPago
+            'lost' => (int)$lostPago,
+            'revenue' => number_format((float)$revPago, 0, '.', ',')
         ],
         'organico' => [
             'total' => (int)$sourceData['organico'],
             'won' => (int)$wonOrganico,
-            'lost' => (int)$lostOrganico
+            'lost' => (int)$lostOrganico,
+            'revenue' => number_format((float)$revOrganico, 0, '.', ',')
         ]
     ],
     'chart' => [
