@@ -11,6 +11,12 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
 
 // Ya no usamos json_decode porque ahora enviamos FormData ($_POST y $_FILES)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Protección CSRF Extrema
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        echo json_encode(['status' => 'error', 'message' => 'Falsificación de petición detectada (CSRF)']);
+        exit;
+    }
+    
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $phone = trim($_POST['phone'] ?? '');

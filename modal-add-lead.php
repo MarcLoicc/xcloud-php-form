@@ -37,6 +37,7 @@ if (isset($conn)) {
         </div>
 
         <form id="modalLeadForm" class="space-y-6">
+            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div class="space-y-2 col-span-2 md:col-span-1">
                     <label class="block text-[10px] font-black text-zinc-600 uppercase tracking-widest ml-1">Nombre completo *</label>

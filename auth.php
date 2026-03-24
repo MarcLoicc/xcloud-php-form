@@ -19,6 +19,11 @@ if ($DEV_MODE) {
     $_SESSION['authenticated'] = true;
 }
 
+// Generar Token CSRF si no existe
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 // Manejar el logout
 if (isset($_GET['logout'])) {
     session_destroy();

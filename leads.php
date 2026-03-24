@@ -99,11 +99,11 @@ sort($existingTags);
                             data-tags="<?php echo htmlspecialchars($row['tags'] ?? ''); ?>">
                             <td class="px-6 py-4">
                                 <div class="flex flex-col text-sm">
-                                    <span class="font-semibold text-white group-hover:text-primary transition-colors"><?php echo htmlspecialchars($row['name']); ?></span>
+                                    <span class="font-semibold text-white group-hover:text-primary transition-colors"><?php echo htmlspecialchars($row['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?></span>
                                     <span class="text-xs text-zinc-500 mt-0.5 flex items-center gap-1.5 uppercase tracking-tighter">
-                                        <?php echo $row['company'] ?: 'Particular'; ?>
+                                        <?php echo htmlspecialchars($row['company'] ?: 'Particular', ENT_QUOTES, 'UTF-8'); ?>
                                         <?php if($row['website']): ?>
-                                            &middot; <?php echo parse_url($row['website'], PHP_URL_HOST) ?: $row['website']; ?>
+                                            &middot; <?php echo htmlspecialchars(parse_url($row['website'], PHP_URL_HOST) ?: $row['website'], ENT_QUOTES, 'UTF-8'); ?>
                                         <?php endif; ?>
                                     </span>
                                 </div>
@@ -116,7 +116,7 @@ sort($existingTags);
                             <td class="px-6 py-4">
                                 <div class="flex flex-wrap justify-center gap-1.5">
                                     <?php foreach(explode(',', $row['tags'] ?? '') as $tag): if(!trim($tag)) continue; ?>
-                                        <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-[9px] font-semibold rounded border border-border uppercase"><?php echo trim($tag); ?></span>
+                                        <span class="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-[9px] font-semibold rounded border border-border uppercase"><?php echo htmlspecialchars(trim($tag), ENT_QUOTES, 'UTF-8'); ?></span>
                                     <?php endforeach; if(empty($row['tags'])) echo '<span class="text-zinc-800 text-[10px]">&mdash;</span>'; ?>
                                  </div>
                             </td>
@@ -139,6 +139,7 @@ sort($existingTags);
     <div id="detailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
         <div class="bg-card border border-border w-full max-w-2xl rounded-2xl shadow-2xl p-8 transform transition-all animate-in zoom-in duration-200">
             <form id="editLeadForm">
+                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                 <input type="hidden" name="id" id="det-id">
                 <div class="flex justify-between items-start mb-8">
                     <div class="w-full mr-4">
@@ -293,6 +294,7 @@ sort($existingTags);
             
             const fd = new FormData();
             fd.append('id', id);
+            fd.append('csrf_token', '<?php echo $_SESSION['csrf_token']; ?>');
 
             fetch('delete_lead', { method: 'POST', body: fd })
             .then(r => r.json())
