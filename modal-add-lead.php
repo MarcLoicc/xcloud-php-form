@@ -43,12 +43,27 @@
                             <input type="tel" name="phone" id="phone" required class="w-full pl-9 pr-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-600 shadow-inner" placeholder="Teléfono preferido">
                         </div>
                     </div>
-                    <div class="col-span-1 md:col-span-2 space-y-2 mt-4">
+                    <div class="space-y-2">
+                        <label for="website" class="block text-[13px] font-semibold text-zinc-300 sr-only">Sitio Web</label>
+                        <div class="relative">
+                            <i data-lucide="globe" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
+                            <input type="text" name="website" id="website" class="w-full pl-9 pr-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-600 shadow-inner" placeholder="Ej. www.empresa.com">
+                        </div>
+                    </div>
+                    <div class="space-y-2">
                         <label for="email" class="block text-[13px] font-semibold text-zinc-300 sr-only">Correo Electrónico</label>
                         <div class="relative">
                             <i data-lucide="mail" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
                             <input type="email" name="email" id="email" class="w-full pl-9 pr-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-600 shadow-inner" placeholder="Ej. correo@ejemplo.com">
                         </div>
+                    </div>
+                    <div class="col-span-1 md:col-span-2 space-y-2">
+                        <label for="tags" class="block text-[13px] font-semibold text-zinc-300 sr-only">Etiquetas</label>
+                        <div class="relative">
+                            <i data-lucide="tag" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
+                            <input type="text" name="tags" id="tags" value="Metaads, Arquitectos" class="w-full pl-9 pr-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-600 shadow-inner">
+                        </div>
+                        <p class="text-[11px] text-zinc-500">Separar etiquetas con comas.</p>
                     </div>
                 </fieldset>
 
