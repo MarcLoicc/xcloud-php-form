@@ -8,80 +8,129 @@ $db = 'marc-loic';
 $username = 'contactomarc404@gmail.com';
 $password = 'fcbacb311626c453a04dfc3b59a434391bc1c0f1';
 
-echo "SINCRO CRM -> ODOO v1.0\n";
-echo "Conectando a Odoo en $url...\n\n";
+echo "SINCRO CRM (MODO CURL) -> ODOO v1.1\n";
+echo "Conectando sin XMLRPC (Usando cURL nativo)...\n\n";
 
-if (!function_exists('xmlrpc_encode_request')) {
-    die("ERROR: La extensión php-xmlrpc no está instalada en el servidor. Pide a soporte de xCloud que la active para usar Odoo.");
+function odoo_call($endpoint, $method, $params) {
+    global $url;
+    $xml = odoo_xml_request($method, $params);
+    
+    $ch = curl_init($endpoint);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: text/xml']);
+    $response = curl_exec($ch);
+    curl_close($ch);
+    
+    return odoo_parse_response($response);
 }
 
-// 1. Autenticación (Obtener UID)
-$common = "$url/xmlrpc/2/common";
-$request = xmlrpc_encode_request('authenticate', [$db, $username, $password, []]);
-$context = stream_context_create(['http' => ['method' => 'POST', 'header' => "Content-Type: text/xml", 'content' => $request]]);
-$file = file_get_contents($common, false, $context);
-$uid = xmlrpc_decode($file);
-
-if (!$uid) {
-    die("ERROR: Credenciales de Odoo incorrectas o denegadas.");
+function odoo_xml_request($method, $params) {
+    $xml = "<?xml version='1.0'?><methodCall><methodName>$method</methodName><params>";
+    foreach ($params as $p) {
+        $xml .= "<param><value>" . odoo_val($p) . "</value></param>";
+    }
+    $xml .= "</params></methodCall>";
+    return $xml;
 }
-echo "Autenticado con éxito (UID: $uid)\n";
 
-// 2. Buscar Oportunidades (crm.lead)
-$models = "$url/xmlrpc/2/object";
-$criteria = []; // Todos los leads por ahora
+function odoo_val($v) {
+    if (is_int($v)) return "<int>$v</int>";
+    if (is_float($v)) return "<double>$v</double>";
+    if (is_bool($v)) return "<boolean>" . ($v ? '1' : '0') . "</boolean>";
+    if (is_array($v)) {
+        if (array_values($v) === $v) { // indexed array
+            $xml = "<array><data>";
+            foreach ($v as $item) $xml .= "<value>" . odoo_val($item) . "</value>";
+            $xml .= "</data></array>";
+            return $xml;
+        } else { // associative
+            $xml = "<struct>";
+            foreach ($v as $k => $item) {
+                $xml .= "<member><name>$k</name><value>" . odoo_val($item) . "</value></member>";
+            }
+            $xml .= "</struct>";
+            return $xml;
+        }
+    }
+    return "<string>" . htmlspecialchars((string)$v) . "</string>";
+}
+
+function odoo_parse_response($xml) {
+    if (!$xml) return null;
+    $dom = new DOMDocument();
+    @$dom->loadXML($xml);
+    $values = $dom->getElementsByTagName('value');
+    if ($values->length == 0) return null;
+    return odoo_parse_node($values->item(0));
+}
+
+function odoo_parse_node($node) {
+    $child = $node->firstChild;
+    while ($child && $child->nodeType != XML_ELEMENT_NODE) $child = $child->nextSibling;
+    if (!$child) return (string)$node->nodeValue;
+    
+    switch ($child->tagName) {
+        case 'int': case 'i4': return (int)$child->nodeValue;
+        case 'double': return (float)$child->nodeValue;
+        case 'boolean': return (bool)$child->nodeValue;
+        case 'string': return (string)$child->nodeValue;
+        case 'array':
+            $arr = [];
+            $vals = $child->getElementsByTagName('value');
+            foreach ($vals as $v) $arr[] = odoo_parse_node($v);
+            return $arr;
+        case 'struct':
+            $obj = [];
+            $members = $child->getElementsByTagName('member');
+            foreach ($members as $m) {
+                $k = $m->getElementsByTagName('name')->item(0)->nodeValue;
+                $v = $m->getElementsByTagName('value')->item(0);
+                $obj[$k] = odoo_parse_node($v);
+            }
+            return $obj;
+    }
+    return (string)$child->nodeValue;
+}
+
+// 1. Autenticación
+$uid = odoo_call("$url/xmlrpc/2/common", 'authenticate', [$db, $username, $password, []]);
+if (!$uid) die("ERROR: Fallo de login en Odoo.\n");
+echo "UID: $uid (OK)\n";
+
+// 2. Buscar Oportunidades
 $fields = ['id', 'name', 'contact_name', 'email_from', 'phone', 'planned_revenue', 'stage_id', 'create_date'];
-$request = xmlrpc_encode_request('execute_kw', [$db, $uid, $password, 'crm.lead', 'search_read', [$criteria], ['fields' => $fields]]);
-$context = stream_context_create(['http' => ['method' => 'POST', 'header' => "Content-Type: text/xml", 'content' => $request]]);
-$file = file_get_contents($models, false, $context);
-$odooLeads = xmlrpc_decode($file);
+$odooLeads = odoo_call("$url/xmlrpc/2/object", 'execute_kw', [$db, $uid, $password, 'crm.lead', 'search_read', [[]], ['fields' => $fields]]);
 
-if (empty($odooLeads)) {
-    die("No se encontraron leads en Odoo.");
-}
-
-echo "Encontrados " . count($odooLeads) . " leads en Odoo. Iniciando sincronización...\n\n";
+if (empty($odooLeads)) die("No hay leads.\n");
 
 $inserted = 0;
-$skipped = 0;
-
 foreach ($odooLeads as $ol) {
-    $name = $ol['name'] ?? 'Odoo Lead';
-    $contact = $ol['contact_name'] ?? $name;
+    $contact = $ol['contact_name'] ?? ($ol['name'] ?? 'Odoo Lead');
     $email = $ol['email_from'] ?? '';
     $phone = $ol['phone'] ?? '';
     $revenue = (float)($ol['planned_revenue'] ?? 0);
     $created = $ol['create_date'] ?? date('Y-m-d H:i:s');
     
-    // Mapeo básico de estados (puedes ajustar esto luego)
+    // Mapeo simple de estados
     $stageName = is_array($ol['stage_id']) ? strtolower($ol['stage_id'][1]) : 'nuevo';
     $status = 'nuevo';
-    if (strpos($stageName, 'won') !== false || strpos($stageName, 'ganado') !== false) $status = 'ganado';
-    if (strpos($stageName, 'lost') !== false || strpos($stageName, 'perdido') !== false) $status = 'perdido';
+    if (stripos($stageName, 'won') !== false || stripos($stageName, 'ganado') !== false) $status = 'ganado';
+    if (stripos($stageName, 'lost') !== false || stripos($stageName, 'perdido') !== false) $status = 'perdido';
 
-    // Anti-Duplicados por Email o Nombre exacto
+    // Anti-Duplicados
     $stmt = $conn->prepare("SELECT id FROM leads WHERE (email = ? AND email != '') OR name = ?");
     $stmt->bind_param("ss", $email, $contact);
     $stmt->execute();
-    if ($stmt->get_result()->num_rows > 0) {
-        echo "SALTADO (Duplicado): $contact\n";
-        $skipped++;
-        continue;
-    }
+    if ($stmt->get_result()->num_rows > 0) continue;
 
     $ins = $conn->prepare("INSERT INTO leads (name, email, phone, proposal_price, status, source, created_at) VALUES (?, ?, ?, ?, ?, 'organico', ?)");
     $ins->bind_param("sssdss", $contact, $email, $phone, $revenue, $status, $created);
-    
     if ($ins->execute()) {
-        echo "IMPORTADO de ODOO: $contact (€$revenue)\n";
+        echo "Importado: $contact\n";
         $inserted++;
     }
 }
-
-echo "\n--- RESUMEN ODOO ---";
-echo "\nLeads nuevos traídos: $inserted";
-echo "\nLeads ya existentes (saltados): $skipped";
-echo "\nSINCRO COMPLETADA";
-
-$conn->close();
+echo "\nSINCRO COMPLETADA. Total nuevos de Odoo: $inserted\n";
 ?>
