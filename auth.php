@@ -26,7 +26,22 @@ $APP_PASS_HASH = '$2y$10$oXhOfV.b.A4M0r7G/w8w6O8U0h11v2rI.P.m87p.L.L.L.L.L.L.L.L
 $DEV_MODE = true; // ACTIVADO: El login se saltará automáticamente para pruebas/edición
 // ----------------------------------
 
-// CABECERAS DE SEGURIDAD INDUSTRIALES (Cerrando cada rincón de ataque)
+// CONFIGURACIÓN DE ERRORES (Anti-Information Leakage)
+if ($DEV_MODE) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+} else {
+    error_reporting(0);
+    ini_set('display_errors', 0);
+}
+
+// Regenerar ID de sesión cada vez que esté autenticado (Previene fijación)
+if (isset($_SESSION['authenticated']) && $_SESSION['authenticated'] === true) {
+    if (!isset($_SESSION['id_regenerated'])) {
+        session_regenerate_id(true);
+        $_SESSION['id_regenerated'] = true;
+    }
+}
 header("X-Frame-Options: DENY"); // Clickjacking
 header("X-XSS-Protection: 1; mode=block"); // XSS Filter Legacy
 header("X-Content-Type-Options: nosniff"); // MIME Sniffing
