@@ -30,10 +30,10 @@
             
             <div class="flex flex-wrap items-center gap-2">
                 <div class="flex bg-zinc-900 border border-zinc-800 rounded-lg p-1 overflow-hidden">
-                    <button onclick="updateRange('7', this)" class="range-btn filter-btn-active px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800">7D</button>
+                    <button onclick="updateRange('all', this)" class="range-btn filter-btn-active px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800">TODO</button>
+                    <button onclick="updateRange('7', this)" class="range-btn px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800 text-zinc-400">7D</button>
                     <button onclick="updateRange('14', this)" class="range-btn px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800 text-zinc-400">14D</button>
                     <button onclick="updateRange('30', this)" class="range-btn px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800 text-zinc-400">30D</button>
-                    <button onclick="updateRange('90', this)" class="range-btn px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800 text-zinc-400">3M</button>
                 </div>
                 
                 <div class="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1">
@@ -250,7 +250,7 @@
         }
 
         // Carga inicial
-        fetchStats('7');
+        fetchStats('all');
 
         // Polling cada 30 segundos para datos "Live"
         setInterval(() => {

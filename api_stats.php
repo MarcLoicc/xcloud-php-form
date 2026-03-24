@@ -3,14 +3,14 @@ require_once 'auth.php';
 require_once 'db.php';
 header('Content-Type: application/json');
 
-$range = $_GET['range'] ?? '7';
+$range = $_GET['range'] ?? 'all';
 $startDate = $_GET['start'] ?? null;
 $endDate = $_GET['end'] ?? null;
 
 $where = "WHERE 1=1";
 if ($startDate && $endDate) {
     $where .= " AND created_at BETWEEN '$startDate 00:00:00' AND '$endDate 23:59:59'";
-} else {
+} elseif ($range !== 'all') {
     $where .= " AND created_at >= DATE_SUB(NOW(), INTERVAL $range DAY)";
 }
 
