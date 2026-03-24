@@ -25,15 +25,15 @@
         <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-zinc-900 mb-8">
             <div>
                 <h1 class="text-3xl font-bold text-zinc-100 tracking-tight">Panel Avanzado de Analítica</h1>
-                <p class="text-[14px] text-zinc-400 mt-1 font-medium">Reportes en tiempo real y filtrado dinámico de rendimiento.</p>
+                <p class="text-[14px] text-zinc-400 mt-1 font-medium">Análisis de rendimiento semanal y conversión por canal.</p>
             </div>
             
             <div class="flex flex-wrap items-center gap-2">
                 <div class="flex bg-zinc-900 border border-zinc-800 rounded-lg p-1 overflow-hidden">
-                    <button onclick="updateRange('all', this)" class="range-btn filter-btn-active px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800">TODO</button>
-                    <button onclick="updateRange('7', this)" class="range-btn px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800 text-zinc-400">7D</button>
+                    <button onclick="updateRange('7', this)" class="range-btn filter-btn-active px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800">7D</button>
                     <button onclick="updateRange('14', this)" class="range-btn px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800 text-zinc-400">14D</button>
                     <button onclick="updateRange('30', this)" class="range-btn px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800 text-zinc-400">30D</button>
+                    <button onclick="updateRange('all', this)" class="range-btn px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800 text-zinc-400">TODO</button>
                 </div>
                 
                 <div class="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1">
@@ -54,71 +54,80 @@
         <!-- KPI Grid - Analytical Report -->
         <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
             <!-- PAGO Section -->
-            <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-inner border-l-4 border-l-indigo-500 overflow-hidden relative">
-                <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl"></div>
-                <div class="flex items-center justify-between mb-6 relative z-10">
+            <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-inner border-l-4 border-l-indigo-500 overflow-hidden relative group">
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-colors"></div>
+                <div class="flex items-center justify-between mb-4 relative z-10">
                     <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Tráfico de Pago (ADS)</span>
                     <i data-lucide="target" class="w-4 h-4 text-indigo-500"></i>
                 </div>
-                <div class="flex flex-col gap-6 relative z-10">
+                <div class="flex flex-col gap-5 relative z-10">
                     <div>
                         <span id="stat-pago-total" class="text-4xl font-black text-zinc-100 italic">0</span>
-                        <p class="text-[11px] text-zinc-500 font-bold uppercase mt-1">Leads Totales</p>
+                        <p class="text-[10px] text-zinc-500 font-bold uppercase mt-1">Leads Totales</p>
                     </div>
-                    <div class="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-800">
+                    <div class="grid grid-cols-3 gap-2 pt-4 border-t border-zinc-800/50">
                         <div>
-                            <span id="stat-pago-won" class="text-xl font-bold text-emerald-500 block">0</span>
-                            <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Cerrados</span>
+                            <span id="stat-pago-won" class="text-[16px] font-bold text-emerald-500 block">0</span>
+                            <span class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter">Cerrados</span>
                         </div>
                         <div>
-                            <span id="stat-pago-rev" class="text-xl font-bold text-indigo-400 block">€0</span>
-                            <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Facturación</span>
+                            <span id="stat-pago-lost" class="text-[16px] font-bold text-red-500/70 block">0</span>
+                            <span class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter">Perdidos</span>
+                        </div>
+                        <div>
+                            <span id="stat-pago-rev" class="text-[16px] font-bold text-indigo-400 block text-right">€0</span>
+                            <span class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter block text-right">Ingresos</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- ORGANICO Section -->
-            <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-inner border-l-4 border-l-cyan-500 overflow-hidden relative">
-                <div class="absolute -right-4 -top-4 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl"></div>
-                <div class="flex items-center justify-between mb-6 relative z-10">
+            <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-inner border-l-4 border-l-cyan-500 overflow-hidden relative group">
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-colors"></div>
+                <div class="flex items-center justify-between mb-4 relative z-10">
                     <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Tráfico Orgánico</span>
                     <i data-lucide="globe" class="w-4 h-4 text-cyan-500"></i>
                 </div>
-                <div class="flex flex-col gap-6 relative z-10">
+                <div class="flex flex-col gap-5 relative z-10">
                     <div>
                         <span id="stat-organico-total" class="text-4xl font-black text-zinc-100 italic">0</span>
-                        <p class="text-[11px] text-zinc-500 font-bold uppercase mt-1">Leads Totales</p>
+                        <p class="text-[10px] text-zinc-500 font-bold uppercase mt-1">Leads Totales</p>
                     </div>
-                    <div class="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-800">
+                    <div class="grid grid-cols-3 gap-2 pt-4 border-t border-zinc-800/50">
                         <div>
-                            <span id="stat-organico-won" class="text-xl font-bold text-emerald-500 block">0</span>
-                            <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Cerrados</span>
+                            <span id="stat-organico-won" class="text-[16px] font-bold text-emerald-500 block">0</span>
+                            <span class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter">Cerrados</span>
                         </div>
                         <div>
-                            <span id="stat-organico-rev" class="text-xl font-bold text-cyan-400 block">€0</span>
-                            <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Facturación</span>
+                            <span id="stat-organico-lost" class="text-[16px] font-bold text-red-500/70 block">0</span>
+                            <span class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter">Perdidos</span>
+                        </div>
+                        <div>
+                            <span id="stat-organico-rev" class="text-[16px] font-bold text-cyan-400 block text-right">€0</span>
+                            <span class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter block text-right">Ingresos</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Revenue Section -->
-            <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-inner border-l-4 border-l-yellow-500 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-6">
-                        <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Facturación Proyectada</span>
-                        <i data-lucide="line-chart" class="w-4 h-4 text-yellow-500"></i>
-                    </div>
-                    <div class="flex flex-col">
-                        <span id="stat-revenue" class="text-4xl font-black text-zinc-100 font-mono">€0</span>
-                        <p class="text-[11px] text-zinc-500 mt-2">Métrica basada en leads ganados y propuestas enviadas en el periodo.</p>
-                    </div>
+            <!-- Total Revenue Card -->
+            <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-inner border-l-4 border-l-yellow-500 overflow-hidden relative group">
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-yellow-500/5 rounded-full blur-2xl group-hover:bg-yellow-500/10 transition-colors"></div>
+                <div class="flex items-center justify-between mb-4 relative z-10">
+                    <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Facturación Total</span>
+                    <i data-lucide="banknote" class="w-4 h-4 text-yellow-500"></i>
                 </div>
-                <div class="pt-4 mt-4 border-t border-zinc-800">
-                    <div class="flex justify-between items-center">
-                        <span class="text-[11px] text-zinc-500 font-bold">TOTAL LEADS:</span>
-                        <span id="stat-total" class="text-[14px] font-mono text-zinc-300">0</span>
+                <div class="flex flex-col gap-5 relative z-10">
+                    <div>
+                        <span id="stat-revenue" class="text-4xl font-black text-zinc-100 font-mono tracking-tighter">€0</span>
+                        <p class="text-[10px] text-zinc-500 font-bold uppercase mt-1">Global Proyectado</p>
+                    </div>
+                    <div class="pt-4 border-t border-zinc-800/50">
+                        <div class="flex justify-between items-center bg-zinc-950/50 p-2 rounded-lg">
+                            <span class="text-[10px] text-zinc-500 font-bold uppercase">Leads Registrados Periodo:</span>
+                            <span id="stat-total" class="text-[16px] font-black text-zinc-300 italic">0</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -285,15 +294,15 @@
             fetchStats(null, start, end);
         }
 
-        // Carga inicial
-        fetchStats('all');
+        // Carga inicial (Ahora por defecto 7 días como solicitaste)
+        fetchStats('7');
 
-        // Polling cada 30 segundos para datos "Live"
-        setInterval(() => {
-            const start = document.getElementById('customStart').value;
-            const end = document.getElementById('customEnd').value;
-            if(!start || !end) fetchStats(currentRange);
-        }, 30000);
+        // Desactivado el refresco automático de 30s por comodidad del usuario
+        // setInterval(() => {
+        //     const start = document.getElementById('customStart').value;
+        //     const end = document.getElementById('customEnd').value;
+        //     if(!start || !end) fetchStats(currentRange);
+        // }, 30000);
     </script>
 </body>
 </html>
