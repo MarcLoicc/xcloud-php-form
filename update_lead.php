@@ -29,12 +29,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tags = $_POST['tags'] ?? '';
     $created_at = $_POST['created_at'] ?? date('Y-m-d H:i:s');
     $proposal_price = (float)($_POST['proposal_price'] ?? 0);
-    $message = $_POST['message'] ?? ''; // El mensaje se recibe pero NO se guardará en la tabla para evitar errores de longitud/SQL
+    $message = $_POST['message'] ?? '';
 
-    // Preparar campos dinámicos para el UPDATE (ELIMINADO MESSAGE DE AQUÍ)
-    $fields = "name=?, email=?, phone=?, company=?, website=?, source=?, status=?, tags=?, proposal_price=?, created_at=?";
-    $types = "ssssssssds";
-    $params = [$name, $email, $phone, $company, $website, $source, $status, $tags, $proposal_price, $created_at];
+    // Preparar campos dinámicos para el UPDATE (RE-ACTIVADO MESSAGE)
+    $fields = "name=?, email=?, phone=?, company=?, website=?, source=?, status=?, tags=?, proposal_price=?, message=?, created_at=?";
+    $types = "ssssssssdss";
+    $params = [$name, $email, $phone, $company, $website, $source, $status, $tags, $proposal_price, $message, $created_at];
 
     // Manejo de Archivo
     $upload_dir = 'uploads/';
