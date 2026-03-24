@@ -3,8 +3,8 @@ header('Content-Type: application/json');
 require_once 'auth.php';
 require_once 'db.php';
 
-// Activar visualización de errores para diagnóstico
-ini_set('display_errors', 1);
+// Desactivar visualización de errores HTML para evitar romper el JSON
+ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -29,12 +29,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tags = $_POST['tags'] ?? '';
     $created_at = $_POST['created_at'] ?? date('Y-m-d H:i:s');
     $proposal_price = (float)($_POST['proposal_price'] ?? 0);
-    $message = $_POST['message'] ?? '';
+    $message = $_POST['message'] ?? ''; // El mensaje se recibe pero NO se guardará en la tabla para evitar errores de longitud/SQL
 
-    // Preparar campos dinámicos para el UPDATE
-    $fields = "name=?, email=?, phone=?, company=?, website=?, source=?, status=?, tags=?, proposal_price=?, message=?, created_at=?";
-    $types = "ssssssssdss";
-    $params = [$name, $email, $phone, $company, $website, $source, $status, $tags, $proposal_price, $message, $created_at];
+    // Preparar campos dinámicos para el UPDATE (ELIMINADO MESSAGE DE AQUÍ)
+    $fields = "name=?, email=?, phone=?, company=?, website=?, source=?, status=?, tags=?, proposal_price=?, created_at=?";
+    $types = "ssssssssds";
+    $params = [$name, $email, $phone, $company, $website, $source, $status, $tags, $proposal_price, $created_at];
 
     // Manejo de Archivo
     $upload_dir = 'uploads/';
