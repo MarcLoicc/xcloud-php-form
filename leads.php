@@ -4,12 +4,12 @@ date_default_timezone_set('Europe/Madrid');
 require_once 'db.php';
 $result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
 
-$existingTags = ['vip', 'urgente', 'importante', 'pendiente']; // Predefined default tags
+$existingTags = ['Metaads', 'Arquitectos', 'VIP', 'Urgente']; // Predefined default tags
 $tagQuery = $conn->query("SELECT DISTINCT tags FROM leads WHERE tags IS NOT NULL AND tags != ''");
 if ($tagQuery) {
     while ($tRow = $tagQuery->fetch_assoc()) {
         foreach (explode(',', $tRow['tags']) as $p) {
-            $tag = strtolower(trim($p));
+            $tag = trim($p);
             if (!empty($tag) && !in_array($tag, $existingTags)) $existingTags[] = $tag;
         }
     }
@@ -243,6 +243,11 @@ function getStatusBadge($status) {
                             <fieldset class="space-y-4 pt-6 border-t border-zinc-800/50">
                                 <legend class="block text-[14px] font-bold text-zinc-100 mb-4">Información de Contacto</legend>
                                 <div class="relative">
+                                    <label for="det-website" class="sr-only">Sitio Web</label>
+                                    <i data-lucide="globe" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
+                                    <input type="url" name="website" id="det-website" class="w-full pl-10 pr-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-600 shadow-inner" placeholder="ej. https://www.empresa.com">
+                                </div>
+                                <div class="relative">
                                     <label for="det-email" class="sr-only">Correo electrónico</label>
                                     <i data-lucide="mail" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
                                     <input type="email" name="email" id="det-email" class="w-full pl-10 pr-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-600 shadow-inner" placeholder="ej. correo@empresa.com">
@@ -405,6 +410,7 @@ function getStatusBadge($status) {
             document.getElementById('det-id').value = data.id || '';
             document.getElementById('det-name').value = data.name || '';
             document.getElementById('det-company').value = data.company || '';
+            document.getElementById('det-website').value = data.website || '';
             document.getElementById('det-email').value = data.email || '';
             document.getElementById('det-phone').value = data.phone || '';
             document.getElementById('det-tags').value = data.tags || '';
