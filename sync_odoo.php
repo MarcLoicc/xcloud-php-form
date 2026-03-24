@@ -100,29 +100,29 @@ if (!$uid) die("ERROR: Fallo de login en Odoo.\n");
 echo "UID: $uid (OK)\n";
 
 // 2. Buscar Oportunidades
-$fields = ['id', 'name', 'contact_name', 'email_from', 'phone', 'planned_revenue', 'stage_id', 'create_date'];
+// 2. Buscar Oportunidades (Expected Revenue en lugar de Planned Revenue)
+$fields = ['id', 'name', 'contact_name', 'email_from', 'phone', 'expected_revenue', 'stage_id', 'create_date'];
 $odooLeads = odoo_call("$url/xmlrpc/2/object", 'execute_kw', [$db, $uid, $password, 'crm.lead', 'search_read', [[]], ['fields' => $fields]]);
 
-echo "RESULTADO CRUDO DE ODOO:\n";
-var_export($odooLeads);
-echo "\n------------------------\n";
-
-if (empty($odooLeads)) {
-    die("Odoo no devolvió nada en crm.lead.");
+if (!is_array($odooLeads) || isset($odooLeads['faultCode'])) {
+    die("Odoo Error: " . ($odooLeads['faultString'] ?? 'Error desconocido'));
 }
 
+echo "Registros encontrados en Odoo: " . count($odooLeads) . "\n\n";
+
 $inserted = 0;
+$skipped = 0;
 foreach ($odooLeads as $ol) {
     if (!is_array($ol)) continue;
 
-    // Intentar sacar un nombre de donde sea
-    $contact = $ol['contact_name'] ?? ($ol['display_name'] ?? ($ol['name'] ?? ('ID: ' . ($ol['id'] ?? 'Desconocido'))));
-    $email = $ol['email_from'] ?? ($ol['email'] ?? '');
-    $phone = $ol['phone'] ?? ($ol['mobile'] ?? '');
-    $revenue = (float)($ol['planned_revenue'] ?? 0);
+    // Mapeo Inteligente
+    $contact = !empty($ol['contact_name']) ? $ol['contact_name'] : $ol['name'];
+    $email = $ol['email_from'] ?? '';
+    $phone = $ol['phone'] ?? '';
+    $revenue = (float)($ol['expected_revenue'] ?? 0);
     $created = $ol['create_date'] ?? date('Y-m-d H:i:s');
     
-    // Mapeo de estados con mayor soporte
+    // Mapeo de estados
     $stageName = 'nuevo';
     if (isset($ol['stage_id']) && is_array($ol['stage_id'])) $stageName = strtolower($ol['stage_id'][1]);
 
@@ -130,21 +130,25 @@ foreach ($odooLeads as $ol) {
     if (stripos($stageName, 'won') !== false || stripos($stageName, 'ganado') !== false) $status = 'ganado';
     if (stripos($stageName, 'lost') !== false || stripos($stageName, 'perdido') !== false) $status = 'perdido';
 
-    // Para depuración: No saltar duplicados si estamos testeando qué llega
-    $stmt = $conn->prepare("SELECT id FROM leads WHERE (email = ? AND email != '') OR (name = ? AND name != 'Sin nombre')");
+    // Anti-Duplicados
+    $stmt = $conn->prepare("SELECT id FROM leads WHERE (email = ? AND email != '') OR name = ?");
     $stmt->bind_param("ss", $email, $contact);
     $stmt->execute();
     if ($stmt->get_result()->num_rows > 0) {
-        echo "Saltado repetido: $contact\n";
+        $skipped++;
         continue;
     }
 
     $ins = $conn->prepare("INSERT INTO leads (name, email, phone, proposal_price, status, source, created_at) VALUES (?, ?, ?, ?, ?, 'organico', ?)");
     $ins->bind_param("sssdss", $contact, $email, $phone, $revenue, $status, $created);
     if ($ins->execute()) {
-        echo "Importado: $contact\n";
+        echo "Importado: $contact (€$revenue)\n";
         $inserted++;
     }
 }
+echo "\n--- RESUMEN FINAL ---";
+echo "\nNuevos importados: $inserted";
+echo "\nYa existentes: $skipped";
+?>
 echo "\nSINCRO COMPLETADA. Total nuevos de Odoo: $inserted\n";
 ?>
