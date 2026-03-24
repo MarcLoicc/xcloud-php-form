@@ -61,7 +61,7 @@
                     <i data-lucide="target" class="w-4 h-4 text-indigo-500"></i>
                 </div>
                 <div class="flex flex-col gap-5 relative z-10">
-                    <div>
+                    <div class="flex flex-col">
                         <span id="stat-pago-total" class="text-4xl font-black text-zinc-100 italic">0</span>
                         <p class="text-[10px] text-zinc-500 font-bold uppercase mt-1">Leads Totales</p>
                     </div>
