@@ -1,6 +1,11 @@
 <?php
+header('Content-Type: application/json');
 require_once 'auth.php';
 require_once 'db.php';
+
+// Desactivar visualización de errores HTML para evitar romper el JSON
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
