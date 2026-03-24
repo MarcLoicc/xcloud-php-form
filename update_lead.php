@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['audio_file']) && $_FILES['audio_file']['error'] === UPLOAD_ERR_OK) {
         $audio_tmp = $_FILES['audio_file']['tmp_name'];
         $extension = strtolower(pathinfo($_FILES['audio_file']['name'], PATHINFO_EXTENSION));
-        // Permitir archivos de audio habituales (por navegador form submit puede no ser webm)
+        // Permitir archivos de audio habituales
         $allowed_audio = ['webm', 'mp3', 'ogg', 'wav', 'm4a'];
         if (in_array($extension, $allowed_audio) || strpos($_FILES['audio_file']['type'], 'audio/') === 0) {
             $ext = in_array($extension, $allowed_audio) ? $extension : 'mp3';
@@ -76,12 +76,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Agregar el ID al final de los parámetros
+    // EL ID SIEMPRE DEBE IR AL FINAL DE TODO
     $types .= "i";
     $params[] = $id;
 
     $query = "UPDATE leads SET $fields WHERE id=?";
     $stmt = $conn->prepare($query);
+    
+    if (!$stmt) {
+        // Si hay error aqui, es por el SQL generado
+        error_log("SQL Error: " . $conn->error . " Query: " . $query);
+        echo json_encode(['success' => false, 'message' => 'Error en estructura SQL: ' . $conn->error]);
+        exit;
+    }
     
     // Binding dinámico
     $stmt->bind_param($types, ...$params);
