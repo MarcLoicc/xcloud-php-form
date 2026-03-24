@@ -98,7 +98,7 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Auth - CRM Marcloi</title>
+    <title>Acceso Seguro - CRM Marcloi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
@@ -110,27 +110,27 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
             <div class="w-12 h-12 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center justify-center mx-auto mb-6 shadow-sm">
                 <i data-lucide="shield" class="w-6 h-6 text-zinc-100" aria-hidden="true"></i>
             </div>
-            <h1 class="text-2xl font-bold text-zinc-100 tracking-tight">Access System</h1>
-            <p class="text-[14px] text-zinc-400 mt-2 font-medium">Please verify your identity.</p>
+            <h1 class="text-2xl font-bold text-zinc-100 tracking-tight">Acceso Seguro</h1>
+            <p class="text-[14px] text-zinc-400 mt-2 font-medium">Por favor, verifica tu identidad.</p>
         </div>
 
         <div class="bg-zinc-900 border border-zinc-800 p-8 rounded-xl shadow-2xl">
             <form method="POST" class="space-y-6" aria-labelledby="form-heading">
-                <h2 id="form-heading" class="sr-only">Login Form</h2>
+                <h2 id="form-heading" class="sr-only">Formulario de Iniciar Sesión</h2>
                 
                 <div class="space-y-2">
-                    <label for="password" class="block text-[14px] font-semibold text-zinc-300">Master Access Key</label>
+                    <label for="password" class="block text-[14px] font-semibold text-zinc-300">Clave de Acceso Maestra</label>
                     <div class="relative">
                         <i data-lucide="key" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
                         <input type="password" id="password" name="password" required autofocus
                                aria-describedby="<?php echo isset($error) ? 'login-error' : ''; ?>"
                                class="w-full pl-10 pr-4 py-3 bg-zinc-950 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-600 shadow-inner"
-                               placeholder="Enter your security key">
+                               placeholder="Introduce tu clave de seguridad">
                     </div>
                 </div>
 
                 <button type="submit" class="w-full py-3 bg-zinc-100 text-zinc-950 text-[14px] font-bold rounded-lg hover:bg-zinc-300 transition-colors flex items-center justify-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
-                    Sign In <i data-lucide="arrow-right" class="w-4 h-4" aria-hidden="true"></i>
+                    Acceder <i data-lucide="arrow-right" class="w-4 h-4" aria-hidden="true"></i>
                 </button>
 
                 <?php if (isset($error)): ?>
