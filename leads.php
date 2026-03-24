@@ -240,9 +240,16 @@ function getStatusBadge($status) {
                                         <input type="number" step="0.01" name="proposal_price" id="det-price" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 pl-8 pr-3 text-zinc-100 font-medium focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] shadow-inner" placeholder="0.00">
                                     </div>
                                 </div>
-                                <div class="col-span-2">
-                                    <label for="det-date" class="block text-[13px] font-semibold text-zinc-300 mb-2">Fecha de Entrada del Lead</label>
-                                    <input type="datetime-local" name="created_at" id="det-date" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 px-3 text-[14px] text-zinc-100 focus:ring-2 focus:ring-indigo-500 transition-colors shadow-inner">
+                                <div class="grid grid-cols-2 gap-6 col-span-2">
+                                    <div>
+                                        <label for="det-date-only" class="block text-[13px] font-semibold text-zinc-300 mb-2">Fecha de Entrada</label>
+                                        <input type="date" id="det-date-only" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 px-3 text-[14px] text-zinc-100 focus:ring-2 focus:ring-indigo-500 transition-colors shadow-inner">
+                                    </div>
+                                    <div>
+                                        <label for="det-time-only" class="block text-[13px] font-semibold text-zinc-300 mb-2">Hora</label>
+                                        <input type="time" id="det-time-only" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 px-3 text-[14px] text-zinc-100 focus:ring-2 focus:ring-indigo-500 transition-colors shadow-inner">
+                                    </div>
+                                    <input type="hidden" name="created_at" id="det-full-date">
                                 </div>
                             </div>
 
@@ -297,7 +304,7 @@ function getStatusBadge($status) {
                                             <i data-lucide="file-text" class="w-4 h-4" aria-hidden="true"></i>
                                         </div>
                                         <div class="overflow-hidden">
-                                            <p class="text-[13px] font-medium text-zinc-200 truncate group-hover:text-indigo-300 transition-colors" id="det-file-name">Documento PDF</p>
+                                            <p class="text-[13px] font-medium text-zinc-200 truncate group-hover:text-indigo-300 transition-colors" id="det-file-name">Documento</p>
                                             <p class="text-[11px] text-zinc-500 uppercase tracking-widest mt-0.5">Ver archivo</p>
                                         </div>
                                     </a>
@@ -315,12 +322,8 @@ function getStatusBadge($status) {
 
                                 <div class="space-y-3">
                                     <div class="relative">
-                                        <label for="det-new-doc" class="block text-[12px] text-zinc-400 mb-1">Subir Documento (PDF, DOCX...)</label>
-                                        <input type="file" name="lead_file" id="det-new-doc" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.zip" class="block w-full text-[12px] text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[12px] file:font-semibold file:bg-zinc-800 file:text-zinc-100 hover:file:bg-zinc-700 transition-colors">
-                                    </div>
-                                    <div class="relative">
-                                        <label for="det-new-audio" class="block text-[12px] text-zinc-400 mb-1">Subir Audio (.webm, .mp3)</label>
-                                        <input type="file" name="audio_file" id="det-new-audio" accept="audio/*" class="block w-full text-[12px] text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[12px] file:font-semibold file:bg-zinc-800 file:text-zinc-100 hover:file:bg-zinc-700 transition-colors">
+                                        <label for="det-new-doc" class="block text-[12px] text-zinc-400 mb-2">Subir Nuevo Archivo (PDF, DOCX, Audio...)</label>
+                                        <input type="file" name="lead_file" id="det-new-doc" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.zip,audio/*" class="block w-full text-[12px] text-zinc-400 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-[12px] file:font-bold file:bg-zinc-800 file:text-zinc-100 hover:file:bg-zinc-700 transition-colors cursor-pointer">
                                     </div>
                                 </div>
                             </div>
@@ -426,13 +429,14 @@ function getStatusBadge($status) {
             document.getElementById('det-price').value = data.proposal_price || 0;
             document.getElementById('det-message').value = data.message || '';
             
-            // Formatear fecha para datetime-local (YYYY-MM-DDTHH:MM)
+            // Formatear fecha y hora por separado para mejor UX
             if(data.created_at) {
-                const dt = data.created_at.replace(' ', 'T').substring(0, 16);
-                document.getElementById('det-date').value = dt;
+                const parts = data.created_at.split(' ');
+                document.getElementById('det-date-only').value = parts[0];
+                document.getElementById('det-time-only').value = parts[1].substring(0, 5);
             }
             
-            // Handle Document display
+            // Handle Document display (Unified)
             const fileLink = document.getElementById('det-file-link');
             if(data.file_path) {
                 fileLink.href = 'download.php?file=' + encodeURIComponent(data.file_path);
@@ -485,6 +489,12 @@ function getStatusBadge($status) {
 
         editLeadForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Combinar fecha y hora antes de enviar
+            const d = document.getElementById('det-date-only').value;
+            const t = document.getElementById('det-time-only').value || '00:00:00';
+            if(d) document.getElementById('det-full-date').value = d + ' ' + t + ':00';
+
             const updateBtn = document.getElementById('updateBtn');
             updateBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Guardando...';
             updateBtn.classList.add('opacity-75', 'cursor-not-allowed');
