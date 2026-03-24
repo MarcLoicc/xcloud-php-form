@@ -26,11 +26,26 @@ $APP_PASS_HASH = '$2y$10$oXhOfV.b.A4M0r7G/w8w6O8U0h11v2rI.P.m87p.L.L.L.L.L.L.L.L
 $DEV_MODE = true; // ACTIVADO: El login se saltará automáticamente para pruebas/edición
 // ----------------------------------
 
-// CABECERAS DE SEGURIDAD (Previene ataques XSS y Clickjacking)
-header("X-Frame-Options: DENY"); // Evita que tu CRM se cargue en un frame ajeno
-header("X-XSS-Protection: 1; mode=block"); // Bloquea si detecta inyecciones en el navegador
-header("X-Content-Type-Options: nosniff"); // Protege contra engaños de tipos MIME
-header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"); // Obliga el uso de SSL/HTTPS
+// CABECERAS DE SEGURIDAD INDUSTRIALES (Cerrando cada rincón de ataque)
+header("X-Frame-Options: DENY"); // Clickjacking
+header("X-XSS-Protection: 1; mode=block"); // XSS Filter Legacy
+header("X-Content-Type-Options: nosniff"); // MIME Sniffing
+header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"); // HSTS (SSL Obligatorio)
+header("Referrer-Policy: strict-origin-when-cross-origin"); // Control de seguimiento
+header("Permissions-Policy: camera=(), geolocation=(), microphone=(self)"); // Bloqueo de hardware espía
+
+// CONTENT SECURITY POLICY (CSP): El Muro de Berlín de tu navegador
+// Permitimos solamente lo que usamos: CDN de confianza y recursos locales.
+$csp = "default-src 'self'; ";
+$csp .= "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.tailwindcss.com unpkg.com cdn.jsdelivr.net; ";
+$csp .= "style-src 'self' 'unsafe-inline' fonts.googleapis.com cdn.tailwindcss.com; ";
+$csp .= "font-src 'self' fonts.gstatic.com unpkg.com; ";
+$csp .= "img-src 'self' data: blob:; ";
+$csp .= "connect-src 'self'; ";
+$csp .= "media-src 'self' blob:; ";
+$csp .= "frame-ancestors 'none'; ";
+
+header("Content-Security-Policy: $csp");
 
 // Modo desarrollo salta el login
 if ($DEV_MODE) {
