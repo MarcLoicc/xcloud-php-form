@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $allowed_audio = ['webm', 'mp3', 'ogg', 'wav', 'm4a'];
         if (in_array($extension, $allowed_audio) || strpos($_FILES['audio_file']['type'], 'audio/') === 0) {
             $ext = in_array($extension, $allowed_audio) ? $extension : 'mp3';
-            $new_audio_name = "CALL_{$lead_name_clean}_{$timestamp}_{$id}.{$ext}";
+            $new_audio_name = "AUDIO_{$lead_name_clean}_{$timestamp}_{$id}.{$ext}";
             $target_audio = $upload_dir . $new_audio_name;
             if (move_uploaded_file($audio_tmp, $target_audio)) {
                 $fields .= ", audio_path=?";
