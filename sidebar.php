@@ -4,7 +4,6 @@ $navItems = [
     ['name' => 'Monitor', 'icon' => 'layout-dashboard', 'href' => 'index.php', 'id' => 'index.php'],
     ['name' => 'Leads', 'icon' => 'users', 'href' => 'leads.php', 'id' => 'leads.php'],
     ['name' => 'Archivo Maestro', 'icon' => 'folder-open', 'href' => 'explorer.php', 'id' => 'explorer.php'],
-    ['name' => 'Seguridad', 'icon' => 'shield-check', 'href' => '#', 'id' => 'security'],
 ];
 ?>
 <aside id="main-sidebar" class="hidden sm:flex fixed top-0 left-0 z-40 w-72 h-screen p-6 flex-col justify-between border-r border-white/60 bg-white/30 backdrop-blur-3xl shadow-[50px_0_100px_-50px_rgba(30,41,59,0.05)] transition-all overflow-y-auto">
