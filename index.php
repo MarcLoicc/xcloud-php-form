@@ -299,12 +299,17 @@
         // Carga inicial (Ahora por defecto 7 días como solicitaste)
         fetchStats('7');
 
-        // Desactivado el refresco automático de 30s por comodidad del usuario
-        // setInterval(() => {
-        //     const start = document.getElementById('customStart').value;
-        //     const end = document.getElementById('customEnd').value;
-        //     if(!start || !end) fetchStats(currentRange);
-        // }, 30000);
+        // RE-ACTIVADO: Sistema de Actualización Silenciosa (Live Dashboard)
+        // Se sincroniza con la base de datos automáticamente cada 30 segundos
+        setInterval(() => {
+            const start = document.getElementById('customStart').value;
+            const end = document.getElementById('customEnd').value;
+            
+            // Si el usuario no está usando un rango personalizado, refrescamos el rango actual
+            if(!start || !end) {
+                fetchStats(currentRange);
+            }
+        }, 30000); 
     </script>
 </body>
 </html>
