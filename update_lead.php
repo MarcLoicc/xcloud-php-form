@@ -21,12 +21,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $company = $_POST['company'] ?? '';
     $website = $_POST['website'] ?? '';
     $source = $_POST['source'] ?? '';
+    $status = $_POST['status'] ?? '';
     $tags = $_POST['tags'] ?? '';
     $proposal_price = (float)($_POST['proposal_price'] ?? 0);
     $message = $_POST['message'] ?? '';
 
-    $stmt = $conn->prepare("UPDATE leads SET name=?, email=?, phone=?, company=?, website=?, source=?, tags=?, proposal_price=?, message=? WHERE id=?");
-    $stmt->bind_param("sssssssdsi", $name, $email, $phone, $company, $website, $source, $tags, $proposal_price, $message, $id);
+    $stmt = $conn->prepare("UPDATE leads SET name=?, email=?, phone=?, company=?, website=?, source=?, status=?, tags=?, proposal_price=?, message=? WHERE id=?");
+    $stmt->bind_param("ssssssssdsi", $name, $email, $phone, $company, $website, $source, $status, $tags, $proposal_price, $message, $id);
 
     if ($stmt->execute()) {
         echo json_encode(['success' => true]);

@@ -43,7 +43,8 @@ $columns_to_add = [
     'tags' => "VARCHAR(255)",
     'proposal_price' => "DECIMAL(10, 2) DEFAULT 0.00",
     'file_path' => "VARCHAR(555)",
-    'audio_path' => "VARCHAR(555)"
+    'audio_path' => "VARCHAR(555)",
+    'status' => "ENUM('nuevo','no_responde','llamar_tarde','enviar_propuesta','propuesta_enviada','ganado','perdido','no_cualificado','interesado_tarde') DEFAULT 'nuevo'"
 ];
 
 foreach ($columns_to_add as $col => $type) {

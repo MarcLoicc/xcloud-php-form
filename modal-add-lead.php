@@ -66,24 +66,38 @@ if (isset($conn)) {
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 py-6 border-y border-slate-100">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 py-6 border-y border-slate-100">
                 <div class="space-y-2">
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Presupuesto Estimado (€)</label>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Presupuesto (€)</label>
                     <input type="number" step="0.01" name="proposal_price" placeholder="0.00"
                            class="block w-full px-5 py-3.5 bg-indigo-50 border border-indigo-100 rounded-2xl focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 text-indigo-700 placeholder-indigo-300 transition-all font-black text-2xl text-right">
                 </div>
                 <div class="space-y-2">
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 text-center">Procedencia del Prospecto</label>
-                    <div class="flex gap-3">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 text-center">Procedencia</label>
+                    <div class="flex gap-2">
                         <label class="flex-1 cursor-pointer">
                             <input type="radio" name="source" value="organico" class="hidden peer" checked>
-                            <div class="py-4 text-center bg-slate-50 border border-slate-200 rounded-2xl text-[10px] font-black text-slate-400 peer-checked:bg-indigo-600 peer-checked:border-indigo-600 peer-checked:text-white transition-all shadow-sm">ORGÁNICO</div>
+                            <div class="py-4 text-center bg-slate-50 border border-slate-200 rounded-2xl text-[9px] font-black text-slate-400 peer-checked:bg-indigo-600 peer-checked:border-indigo-600 peer-checked:text-white transition-all shadow-sm">ORG</div>
                         </label>
                         <label class="flex-1 cursor-pointer">
                             <input type="radio" name="source" value="pago" class="hidden peer">
-                            <div class="py-4 text-center bg-slate-50 border border-slate-200 rounded-2xl text-[10px] font-black text-slate-400 peer-checked:bg-indigo-600 peer-checked:border-indigo-600 peer-checked:text-white transition-all shadow-sm">PAGO ADS</div>
+                            <div class="py-4 text-center bg-slate-50 border border-slate-200 rounded-2xl text-[9px] font-black text-slate-400 peer-checked:bg-indigo-600 peer-checked:border-indigo-600 peer-checked:text-white transition-all shadow-sm">ADS</div>
                         </label>
                     </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 text-center">Estado</label>
+                    <select name="status" class="w-full bg-indigo-50 border border-indigo-100 rounded-2xl py-3 px-4 text-[10px] text-indigo-700 font-black outline-none focus:ring-2 focus:ring-indigo-600/20 uppercase appearance-none cursor-pointer h-[54px]">
+                        <option value="nuevo">Nuevo lead</option>
+                        <option value="no_responde">No responde</option>
+                        <option value="llamar_tarde">Llamar tarde</option>
+                        <option value="enviar_propuesta">Enviar prop.</option>
+                        <option value="propuesta_enviada">Prop. enviada</option>
+                        <option value="ganado">Ganado</option>
+                        <option value="perdido">Perdido</option>
+                        <option value="no_cualificado">No cualif.</option>
+                        <option value="interesado_tarde">Interesado +</option>
+                    </select>
                 </div>
             </div>
 
