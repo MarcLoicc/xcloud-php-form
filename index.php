@@ -1,177 +1,143 @@
 <?php require_once 'auth.php'; ?>
-<?php
-require_once 'db.php';
-
-// Métricas de Cabecera
-$totalLeads = $conn->query("SELECT COUNT(*) as total FROM leads")->fetch_assoc()['total'];
-$revenue = $conn->query("SELECT SUM(proposal_price) as total FROM leads WHERE status IN ('ganado', 'propuesta_enviada')")->fetch_assoc()['total'] ?? 0;
-$statusCounts = $conn->query("SELECT status, COUNT(*) as count FROM leads GROUP BY status");
-$sources = $conn->query("SELECT source, COUNT(*) as count FROM leads GROUP BY source");
-
-// Datos para Gráfica de Tendencia (Últimos 7 días)
-$historyData = $conn->query("
-    SELECT DATE(created_at) as date, COUNT(*) as count 
-    FROM leads 
-    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) 
-    GROUP BY DATE(created_at) 
-    ORDER BY date ASC
-");
-$dates = []; $counts = [];
-while($h = $historyData->fetch_assoc()) {
-    $dates[] = date('d M', strtotime($h['date']));
-    $counts[] = (int)$h['count'];
-}
-
-// Datos para Gráfica de Origen (Donut)
-$sourceData = [];
-$sourcesResult = $conn->query("SELECT source, COUNT(*) as count FROM leads GROUP BY source");
-while($s = $sourcesResult->fetch_assoc()) { $sourceData[$s['source']] = $s['count']; }
-
-$recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 5");
-?>
+<?php require_once 'db.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analíticas - CRM Marcloi</title>
+    <title>Analíticas Maestras - CRM Marcloi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #09090b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+        .filter-btn-active { background-color: #f4f4f5 !important; color: #09090b !important; }
+    </style>
 </head>
 <body class="bg-zinc-950 min-h-screen text-zinc-100 antialiased">
     <?php include 'sidebar.php'; ?>
 
     <main class="sm:ml-64 min-h-screen p-8 lg:p-12" id="main-content">
         <!-- Dashboard Header -->
-        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-zinc-900 mb-10">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-zinc-900 mb-8">
             <div>
                 <h1 class="text-3xl font-bold text-zinc-100 tracking-tight">Panel Avanzado de Analítica</h1>
-                <p class="text-[14px] text-zinc-400 mt-1 font-medium">Control total sobre el rendimiento de captación y ventas.</p>
+                <p class="text-[14px] text-zinc-400 mt-1 font-medium">Reportes en tiempo real y filtrado dinámico de rendimiento.</p>
             </div>
-            <div class="flex items-center gap-3">
-                <button onclick="toggleModal()" class="px-5 py-2.5 bg-zinc-100 rounded-md text-[14px] font-bold text-zinc-950 hover:bg-zinc-300 transition-all flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
+            
+            <div class="flex flex-wrap items-center gap-2">
+                <div class="flex bg-zinc-900 border border-zinc-800 rounded-lg p-1 overflow-hidden">
+                    <button onclick="updateRange('7', this)" class="range-btn filter-btn-active px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800">7D</button>
+                    <button onclick="updateRange('14', this)" class="range-btn px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800 text-zinc-400">14D</button>
+                    <button onclick="updateRange('30', this)" class="range-btn px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800 text-zinc-400">30D</button>
+                    <button onclick="updateRange('90', this)" class="range-btn px-3 py-1.5 text-[12px] font-bold rounded-md transition-colors hover:bg-zinc-800 text-zinc-400">3M</button>
+                </div>
+                
+                <div class="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1">
+                    <input type="date" id="customStart" class="bg-transparent border-0 text-[12px] text-zinc-300 outline-none p-1">
+                    <span class="text-zinc-600">→</span>
+                    <input type="date" id="customEnd" class="bg-transparent border-0 text-[12px] text-zinc-300 outline-none p-1">
+                    <button onclick="applyCustom()" class="p-1 text-indigo-400 hover:text-indigo-300 transition-colors">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <button onclick="toggleModal()" class="px-5 py-2.5 bg-zinc-100 rounded-md text-[14px] font-bold text-zinc-950 hover:bg-zinc-300 transition-all flex items-center gap-2 shadow-lg">
                     <i data-lucide="plus" class="w-4 h-4"></i> Nuevo Lead
                 </button>
             </div>
         </header>
 
-        <!-- KPI Grid -->
+        <!-- KPI Grid - Analytical Report -->
         <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-inner group hover:border-zinc-700 transition-colors">
+            <!-- Leads Section (Separated) -->
+            <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-inner border-l-4 border-l-indigo-500">
                 <div class="flex items-center justify-between mb-4">
-                    <span class="text-[12px] font-bold text-zinc-500 uppercase tracking-widest">Leads Totales</span>
+                    <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Leads Totales</span>
                     <i data-lucide="users" class="w-4 h-4 text-indigo-500"></i>
                 </div>
-                <div class="flex items-baseline gap-2">
-                    <span class="text-3xl font-bold text-zinc-100"><?php echo number_format($totalLeads); ?></span>
-                    <span class="text-[12px] text-emerald-500 font-bold">+12%</span>
+                <div class="flex flex-col gap-1">
+                    <span id="stat-total" class="text-3xl font-bold text-zinc-100 italic">0</span>
+                    <div class="flex gap-3 text-[12px]">
+                        <span class="text-indigo-400 font-bold"><span id="stat-pago">0</span> Ads</span>
+                        <span class="text-cyan-400 font-bold"><span id="stat-organico">0</span> Org.</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-inner group hover:border-zinc-700 transition-colors">
+            <!-- Conversion Section -->
+            <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-inner border-l-4 border-l-emerald-500">
                 <div class="flex items-center justify-between mb-4">
-                    <span class="text-[12px] font-bold text-zinc-500 uppercase tracking-widest">Ingresos Proyectados</span>
-                    <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-500"></i>
+                    <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Estado de Conversión</span>
+                    <i data-lucide="activity" class="w-4 h-4 text-emerald-500"></i>
                 </div>
-                <div class="flex items-baseline gap-2">
-                    <span class="text-3xl font-bold text-zinc-100">€<?php echo number_format($revenue, 0, '.', ','); ?></span>
-                    <span class="text-[12px] text-emerald-500 font-bold">Live</span>
+                <div class="flex items-baseline gap-4">
+                    <div class="flex flex-col">
+                        <span id="stat-won" class="text-3xl font-bold text-zinc-100">0</span>
+                        <span class="text-[11px] text-emerald-500 font-bold uppercase tracking-tight">Cerrados</span>
+                    </div>
+                    <div class="flex flex-col border-l border-zinc-800 pl-4 text-zinc-500">
+                        <span id="stat-lost" class="text-3xl font-bold text-zinc-500">0</span>
+                        <span class="text-[11px] font-bold uppercase tracking-tight">Perdidos</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-inner group hover:border-zinc-700 transition-colors">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-[12px] font-bold text-zinc-500 uppercase tracking-widest">Conversión Ads</span>
-                    <i data-lucide="target" class="w-4 h-4 text-red-500"></i>
+            <!-- Revenue Section -->
+            <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-inner border-l-4 border-l-yellow-500 col-span-1 md:col-span-2">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Facturación Proyectada / Mes</span>
+                    <i data-lucide="line-chart" class="w-4 h-4 text-yellow-500"></i>
                 </div>
-                <div class="flex items-baseline gap-2">
-                    <span class="text-3xl font-bold text-zinc-100"><?php echo $sourceData['pago'] ?? 0; ?></span>
-                    <span class="text-[12px] text-zinc-500 font-medium">Leads</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-[14px] text-zinc-500 font-medium">TOTAL PROYECTADO:</span>
+                    <span id="stat-revenue" class="text-4xl font-black text-zinc-100 font-mono">€0</span>
                 </div>
-            </div>
-
-            <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-xl shadow-inner group hover:border-zinc-700 transition-colors">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-[12px] font-bold text-zinc-500 uppercase tracking-widest">Traf. Orgánico</span>
-                    <i data-lucide="globe" class="w-4 h-4 text-cyan-500"></i>
-                </div>
-                <div class="flex items-baseline gap-2">
-                    <span class="text-3xl font-bold text-zinc-100"><?php echo $sourceData['organico'] ?? 0; ?></span>
-                    <span class="text-[12px] text-zinc-500 font-medium">Leads</span>
-                </div>
+                <p class="text-[11px] text-zinc-500 mt-2">Métrica basada en leads ganados y propuestas enviadas en el periodo.</p>
             </div>
         </section>
 
-        <!-- Charts Row -->
-        <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-            <!-- Main Chart Area -->
-            <div class="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-inner">
-                <div class="flex items-center justify-between mb-8">
-                    <h3 class="text-[16px] font-bold text-zinc-100">Tendencia Semanal de Captación</h3>
-                    <select class="bg-zinc-950 border border-zinc-800 text-[12px] text-zinc-400 rounded-md px-2 py-1 outline-none">
-                        <option>Últimos 7 días</option>
-                    </select>
+        <!-- Charts Row: Detailed Comparison -->
+        <section class="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-10">
+            <!-- Main Separated Trend Chart -->
+            <div class="lg:col-span-3 bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-inner relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[100px] -z-0"></div>
+                <div class="flex items-center justify-between mb-8 relative z-10">
+                    <div>
+                        <h3 class="text-[16px] font-bold text-zinc-100">Comparativa de Captación</h3>
+                        <p class="text-[12px] text-zinc-500">Desglose diario entre tráfico de Pago vs Orgánico</p>
+                    </div>
                 </div>
-                <div class="h-[300px] w-full">
+                <div class="h-[400px] w-full relative z-10">
                     <canvas id="leadsTrendChart"></canvas>
                 </div>
             </div>
 
-            <!-- Distribution Chart -->
-            <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-inner">
-                <h3 class="text-[16px] font-bold text-zinc-100 mb-8">Distribución por Origen</h3>
-                <div class="relative h-[240px] w-full flex items-center justify-center">
-                    <canvas id="sourceDonutChart"></canvas>
-                </div>
-                <div class="mt-6 space-y-3">
-                    <div class="flex items-center justify-between text-[13px]">
-                        <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-indigo-500"></div> Ads de Pago</span>
-                        <span class="font-bold text-zinc-100"><?php echo $sourceData['pago'] ?? 0; ?></span>
+            <!-- Side Widgets -->
+            <div class="lg:col-span-1 flex flex-col gap-6">
+                <!-- Source Percentages -->
+                <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-inner flex flex-col items-center">
+                    <h3 class="text-[14px] font-bold text-zinc-100 mb-6 uppercase tracking-wider text-center">Cuota de Origen</h3>
+                    <div class="h-[180px] w-full mb-4">
+                        <canvas id="sourceDonutChart"></canvas>
                     </div>
-                    <div class="flex items-center justify-between text-[13px]">
-                        <span class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-cyan-500"></div> Orgánico</span>
-                        <span class="font-bold text-zinc-100"><?php echo $sourceData['organico'] ?? 0; ?></span>
+                    <div class="w-full space-y-3 mt-4">
+                        <div class="flex items-center justify-between p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+                            <span class="text-[12px] font-bold text-indigo-400">ADS DE PAGO (FB/META)</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+                            <span class="text-[12px] font-bold text-cyan-400">TRÁFICO ORGÁNICO</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- Activity & Recent Table -->
-        <section class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-inner">
-            <div class="flex items-center justify-between p-6 border-b border-zinc-800">
-                <h2 class="text-[16px] font-bold text-zinc-100">Últimos Movimientos</h2>
-                <a href="leads.php" class="text-[14px] font-medium text-indigo-400 hover:text-indigo-300">Explorar CRM completo</a>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-[14px]">
-                    <thead class="bg-zinc-950/50 text-zinc-500 font-semibold border-b border-zinc-800">
-                        <tr>
-                            <td class="px-6 py-4 uppercase text-[11px] tracking-widest">Cliente / Empresa</td>
-                            <td class="px-6 py-4 uppercase text-[11px] tracking-widest">Valor</td>
-                            <td class="px-6 py-4 uppercase text-[11px] tracking-widest">Estado</td>
-                            <td class="px-6 py-4 uppercase text-[11px] tracking-widest text-right">Fecha</td>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-zinc-800">
-                        <?php while($row = $recentLeads->fetch_assoc()): ?>
-                        <tr class="hover:bg-zinc-800/30 transition-colors">
-                            <td class="px-6 py-4">
-                                <span class="font-bold text-zinc-100 block"><?php echo htmlspecialchars($row['name']); ?></span>
-                                <span class="text-[12px] text-zinc-500"><?php echo htmlspecialchars($row['company'] ?: 'Particular'); ?></span>
-                            </td>
-                            <td class="px-6 py-4 font-mono text-emerald-400">€<?php echo number_format($row['proposal_price'] ?? 0, 0); ?></td>
-                            <td class="px-6 py-4">
-                                <span class="px-2 py-0.5 rounded-full bg-zinc-800 border border-zinc-700 text-[11px] text-zinc-300 font-bold uppercase tracking-tighter">
-                                    <?php echo str_replace('_', ' ', $row['status']); ?>
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right text-zinc-500 text-[13px]"><?php echo date('d/m/Y', strtotime($row['created_at'])); ?></td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
+                
+                <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-inner flex-1 flex flex-col justify-center text-center">
+                    <i data-lucide="info" class="w-6 h-6 text-zinc-700 mx-auto mb-2"></i>
+                    <p class="text-[12px] text-zinc-500">Los datos se actualizan automáticamente al detectar nuevas inserciones en la base de datos.</p>
+                </div>
             </div>
         </section>
     </main>
@@ -181,53 +147,117 @@ $recentLeads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 
     <script>
         lucide.createIcons();
 
-        // Configuración de Gráficas
-        const ctxTrend = document.getElementById('leadsTrendChart').getContext('2d');
-        new Chart(ctxTrend, {
-            type: 'line',
-            data: {
-                labels: <?php echo json_encode($dates); ?>,
-                datasets: [{
-                    label: 'Leads Captados',
-                    data: <?php echo json_encode($counts); ?>,
-                    borderColor: '#6366f1',
-                    borderWidth: 3,
-                    tension: 0.4,
-                    fill: true,
-                    backgroundColor: 'rgba(99, 102, 241, 0.05)',
-                    pointBackgroundColor: '#6366f1',
-                    pointRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: '#71717a' } },
-                    y: { grid: { color: 'rgba(39, 39, 42, 0.5)' }, ticks: { stepSize: 1, color: '#71717a' } }
-                }
-            }
-        });
+        let trendChart, donutChart;
+        let currentRange = '7';
 
-        const ctxDonut = document.getElementById('sourceDonutChart').getContext('2d');
-        new Chart(ctxDonut, {
-            type: 'doughnut',
-            data: {
-                datasets: [{
-                    data: [<?php echo $sourceData['pago'] ?? 0; ?>, <?php echo $sourceData['organico'] ?? 0; ?>],
-                    backgroundColor: ['#6366f1', '#06b6d4'],
-                    borderWidth: 0,
-                    hoverOffset: 10
-                }]
-            },
-            options: {
-                cutout: '80%',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
-            }
-        });
+        async function fetchStats(range = '7', start = null, end = null) {
+            let url = `api_stats.php?range=${range}`;
+            if (start && end) url += `&start=${start}&end=${end}`;
+            
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            // Actualizar Tarjetas
+            document.getElementById('stat-total').innerText = data.metrics.totalLeads;
+            document.getElementById('stat-revenue').innerText = '€' + data.metrics.revenue;
+            document.getElementById('stat-won').innerText = data.metrics.wonLeads;
+            document.getElementById('stat-lost').innerText = data.metrics.lostLeads;
+            document.getElementById('stat-pago').innerText = data.metrics.pago;
+            document.getElementById('stat-organico').innerText = data.metrics.organico;
+
+            // Actualizar Gráfica Tendencia
+            if (trendChart) trendChart.destroy();
+            trendChart = new Chart(document.getElementById('leadsTrendChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: data.chart.labels,
+                    datasets: [
+                        {
+                            label: 'ADS (Pago)',
+                            data: data.chart.pago,
+                            backgroundColor: '#6366f1',
+                            borderRadius: 4,
+                            barThickness: 12
+                        },
+                        {
+                            label: 'Orgánico',
+                            data: data.chart.organico,
+                            backgroundColor: '#06b6d4',
+                            borderRadius: 4,
+                            barThickness: 12
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { 
+                            position: 'top', 
+                            labels: { color: '#a1a1aa', font: { weight: 'bold', size: 10 } } 
+                        } 
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#71717a' } },
+                        y: { grid: { color: 'rgba(39, 39, 42, 0.5)' }, ticks: { stepSize: 1, color: '#71717a' } }
+                    }
+                }
+            });
+
+            // Actualizar Donut
+            if (donutChart) donutChart.destroy();
+            donutChart = new Chart(document.getElementById('sourceDonutChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: data.donut.data,
+                        backgroundColor: ['#6366f1', '#06b6d4'],
+                        borderWidth: 0,
+                        hoverOffset: 12
+                    }]
+                },
+                options: {
+                    cutout: '80%',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function updateRange(range, btn) {
+            document.querySelectorAll('.range-btn').forEach(b => {
+                b.classList.remove('filter-btn-active');
+                b.classList.add('text-zinc-400');
+            });
+            btn.classList.add('filter-btn-active');
+            btn.classList.remove('text-zinc-400');
+            currentRange = range;
+            fetchStats(range);
+        }
+
+        function applyCustom() {
+            const start = document.getElementById('customStart').value;
+            const end = document.getElementById('customEnd').value;
+            if(!start || !end) return alert('Selecciona ambas fechas');
+            
+            document.querySelectorAll('.range-btn').forEach(b => {
+                b.classList.remove('filter-btn-active');
+                b.classList.add('text-zinc-400');
+            });
+            
+            fetchStats(null, start, end);
+        }
+
+        // Carga inicial
+        fetchStats('7');
+
+        // Polling cada 30 segundos para datos "Live"
+        setInterval(() => {
+            const start = document.getElementById('customStart').value;
+            const end = document.getElementById('customEnd').value;
+            if(!start || !end) fetchStats(currentRange);
+        }, 30000);
     </script>
 </body>
 </html>
