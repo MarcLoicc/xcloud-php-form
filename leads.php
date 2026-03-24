@@ -76,8 +76,14 @@ function getStatusBadge($status) {
                     <select id="filterStatus" class="bg-zinc-900 border border-zinc-800 rounded-md pl-4 pr-10 py-2 text-[14px] font-medium text-zinc-300 focus:ring-2 focus:ring-indigo-500 transition-colors appearance-none cursor-pointer">
                         <option value="all">Cualquier estado</option>
                         <option value="nuevo">Nuevo</option>
+                        <option value="no_responde">Sin Respuesta</option>
+                        <option value="llamar_tarde">Llamar más tarde</option>
+                        <option value="interesado_tarde">Interesado (Futuro)</option>
+                        <option value="enviar_propuesta">Enviar Propuesta</option>
+                        <option value="propuesta_enviada">Propuesta Enviada</option>
                         <option value="ganado">Ganado</option>
                         <option value="perdido">Perdido</option>
+                        <option value="no_cualificado">No Cualificado</option>
                     </select>
                     <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" aria-hidden="true"></i>
                 </div>
