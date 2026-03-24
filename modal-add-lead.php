@@ -1,3 +1,4 @@
+<?php if (count(get_included_files()) <= 1) die('Acceso denegado'); ?>
 <?php
 // Obtener etiquetas existentes de la base de datos para sugerencias
 $existingTags = [];

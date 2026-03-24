@@ -5,7 +5,7 @@ require_once 'env_loader.php';
 // --- CONFIGURACIÓN DE SEGURIDAD PRO ---
 // Contraseña predeterminada: crm_marcloi_2024 (Hasheada con BCRYPT)
 $APP_PASS_HASH = '$2y$10$oXhOfV.b.A4M0r7G/w8w6O8U0h11v2rI.P.m87p.L.L.L.L.L.L.L.L.L.L.L.L.L.L.L.L.L.L.L'; 
-$DEV_MODE = true; // CAMBIAR A 'false' PARA ACTIVAR PASSWORD NUEVAMENTE (En modo edición por petición del usuario)
+$DEV_MODE = false; // DESACTIVADO: La contraseña es obligatoria en producción
 // ----------------------------------
 
 // CABECERAS DE SEGURIDAD (Previene ataques XSS y Clickjacking)

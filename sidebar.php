@@ -1,3 +1,4 @@
+<?php if (count(get_included_files()) <= 1) die('Acceso denegado'); ?>
 <!-- Tailwind CSS & Lucide Icons -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>

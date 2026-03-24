@@ -1,3 +1,4 @@
+<?php if (count(get_included_files()) <= 1) die('Acceso denegado'); ?>
 <?php
 require_once 'env_loader.php';
 
