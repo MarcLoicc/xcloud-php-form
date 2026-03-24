@@ -18,146 +18,157 @@ sort($existingTags);
 
 function getStatusBadge($status) {
     $map = [
-        'nuevo' => ['label' => 'NUEVO LOG', 'class' => 'bg-indigo-950 text-indigo-400 border-indigo-900 shadow-xl'],
-        'no_responde' => ['label' => 'SIN RESPUESTA', 'class' => 'bg-slate-900 text-slate-500 border-slate-800'],
-        'llamar_tarde' => ['label' => 'SEGUIMIENTO', 'class' => 'bg-amber-950 text-amber-500 border-amber-900 shadow-xl'],
-        'enviar_propuesta' => ['label' => 'PROPUESTA', 'class' => 'bg-white text-slate-950 border-white shadow-2xl'],
-        'propuesta_enviada' => ['label' => 'ENVIADA', 'class' => 'bg-purple-950 text-purple-400 border-purple-900 shadow-xl'],
-        'ganado' => ['label' => 'GANADO', 'class' => 'bg-emerald-950 text-emerald-400 border-emerald-900 shadow-xl'],
-        'perdido' => ['label' => 'PERDIDO', 'class' => 'bg-red-950 text-red-500 border-red-900 shadow-xl'],
-        'no_cualificado' => ['label' => 'BAJA CALIDAD', 'class' => 'bg-slate-900 text-slate-600 border-slate-800'],
-        'interesado_tarde' => ['label' => 'INTERÉS TARDÍO', 'class' => 'bg-cyan-950 text-cyan-400 border-cyan-900 shadow-xl'],
+        'nuevo' => ['label' => 'New', 'class' => 'bg-indigo-900/30 text-indigo-300 ring-1 ring-inset ring-indigo-500/30'],
+        'no_responde' => ['label' => 'No Response', 'class' => 'bg-zinc-800 text-zinc-300 ring-1 ring-inset ring-zinc-600'],
+        'llamar_tarde' => ['label' => 'Follow Up', 'class' => 'bg-amber-900/30 text-amber-300 ring-1 ring-inset ring-amber-500/30'],
+        'enviar_propuesta' => ['label' => 'Proposal', 'class' => 'bg-blue-900/30 text-blue-300 ring-1 ring-inset ring-blue-500/30'],
+        'propuesta_enviada' => ['label' => 'Sent', 'class' => 'bg-purple-900/30 text-purple-300 ring-1 ring-inset ring-purple-500/30'],
+        'ganado' => ['label' => 'Won', 'class' => 'bg-emerald-900/30 text-emerald-300 ring-1 ring-inset ring-emerald-500/30'],
+        'perdido' => ['label' => 'Lost', 'class' => 'bg-red-900/30 text-red-300 ring-1 ring-inset ring-red-500/30'],
+        'no_cualificado' => ['label' => 'Unqualified', 'class' => 'bg-zinc-800 text-zinc-400 ring-1 ring-inset ring-zinc-700'],
+        'interesado_tarde' => ['label' => 'Postponed', 'class' => 'bg-cyan-900/30 text-cyan-300 ring-1 ring-inset ring-cyan-500/30'],
     ];
-    return $map[$status] ?? ['label' => $status, 'class' => 'bg-slate-900 text-slate-500 border-slate-800'];
+    return $map[$status] ?? ['label' => ucfirst(str_replace('_', ' ', $status)), 'class' => 'bg-zinc-800 text-zinc-300 ring-1 ring-inset ring-zinc-600'];
 }
 ?>
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-    <title>Master Leads (Dark) | Console v5</title>
+    <title>Customers - Acme SaaS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-950 min-h-screen text-slate-100 antialiased">
+<body class="bg-zinc-950 min-h-screen text-zinc-100 antialiased">
     <?php include 'sidebar.php'; ?>
 
-    <main class="sm:ml-64 min-h-screen p-8 lg:p-14 space-y-12">
-        <!-- Leads Header Dark -->
-        <header class="flex flex-col md:flex-row md:items-end justify-between gap-12 pb-12 border-b border-slate-800 group">
+    <main class="sm:ml-64 min-h-screen p-8 lg:p-12 mb-20" id="main-content">
+        <!-- Leads Header -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-zinc-900 mb-8">
             <div>
-                <div class="flex items-center gap-5 mb-5">
-                    <div class="w-12 h-12 bg-white text-slate-950 rounded-lg flex items-center justify-center text-slate-600 shadow-2xl border border-white group-hover:rotate-12 transition-all">
-                        <i data-lucide="users" class="w-7 h-7 stroke-[3]"></i>
-                    </div>
-                    <h1 class="text-4xl font-black text-white tracking-widest uppercase italic leading-none">GESTIÓN <span class="text-indigo-500 not-italic">MASTER</span></h1>
-                </div>
-                <p class="text-slate-500 font-bold max-w-md mt-4 text-[14px] leading-relaxed italic uppercase opacity-60">Control jerárquico de prospectos comerciales y flujo de capital.</p>
+                <h1 class="text-3xl font-bold text-zinc-100 tracking-tight">Customers</h1>
+                <p class="text-[14px] text-zinc-400 mt-1 font-medium">Manage your client registry and track statuses.</p>
             </div>
             
-            <div class="flex gap-4">
-                <button class="px-7 py-4 bg-slate-900 border border-slate-800 rounded-lg text-[12px] font-black text-slate-500 hover:text-white hover:border-slate-600 transition-all shadow-xl flex items-center gap-3 group uppercase tracking-widest active:scale-95">
-                    <i data-lucide="download" class="w-5 h-5 group-hover:translate-y-1 transition-all text-indigo-500"></i> EXPORT LOGS
+            <div class="flex gap-3">
+                <button class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-md text-[14px] font-semibold text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 transition-colors flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
+                    <i data-lucide="download" class="w-4 h-4" aria-hidden="true"></i> Export
                 </button>
-                <button onclick="toggleModal()" class="px-10 py-5 bg-white rounded-lg text-[12px] font-black text-slate-950 hover:bg-slate-200 transition-all shadow-2xl flex items-center gap-4 active:scale-95 uppercase tracking-[0.2em]">
-                    <i data-lucide="plus" class="w-6 h-6"></i> ALTA REGISTRO
+                <button onclick="toggleModal()" aria-haspopup="dialog" aria-expanded="false" aria-controls="addLeadModal" class="px-4 py-2 bg-zinc-100 rounded-md text-[14px] font-bold text-zinc-950 hover:bg-zinc-300 transition-colors flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
+                    <i data-lucide="plus" class="w-4 h-4" aria-hidden="true"></i> Create New
                 </button>
             </div>
         </header>
 
-        <!-- Search Controls Dark -->
-        <section class="flex flex-col lg:flex-row items-center justify-between gap-8 p-8 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl">
-            <div class="flex items-center gap-4 w-full lg:w-auto">
-                <div class="relative w-full lg:w-[500px] group">
-                    <i data-lucide="search" class="w-6 h-6 absolute left-6 top-1/2 -translate-y-1/2 text-slate-700 group-focus-within:text-white transition-all"></i>
-                    <input type="text" id="filterGlobal" placeholder="SCANNING UID / EMPRESA / NOMBRE..." class="w-full pl-16 pr-8 py-5 bg-slate-950 border border-slate-800 rounded-lg focus:ring-4 focus:ring-slate-800 focus:border-indigo-500 focus:outline-none transition-all text-[15px] font-black text-white placeholder-slate-800 shadow-inner italic uppercase">
-                </div>
+        <!-- Search Controls -->
+        <section aria-labelledby="filters-heading" class="mb-6 flex flex-col lg:flex-row items-center justify-between gap-4">
+            <h2 id="filters-heading" class="sr-only">Table Filters</h2>
+            
+            <div class="w-full lg:w-1/3 relative">
+                <label for="filterGlobal" class="sr-only">Search customers</label>
+                <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
+                <input type="text" id="filterGlobal" placeholder="Search by name or company..." class="w-full pl-10 pr-4 py-2 bg-zinc-900 border border-zinc-800 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-500">
             </div>
 
-            <div class="flex items-center gap-6 w-full lg:w-auto overflow-x-auto pb-4 lg:pb-0 scrollbar-none">
-                <select id="filterStatus" class="bg-slate-950 border border-slate-800 rounded-lg px-6 py-3 text-[12px] font-black text-slate-400 uppercase tracking-widest outline-none focus:ring-4 focus:ring-slate-800 appearance-none cursor-pointer h-14 min-w-[200px] text-center italic group hover:border-slate-600 transition-colors">
-                    <option value="all">TODOS LOS STATUS</option>
-                    <option value="nuevo">NUEVOS</option>
-                    <option value="ganado">GANADOS</option>
-                    <option value="perdido">PERDIDOS</option>
-                </select>
-                <select id="filterSource" class="bg-slate-950 border border-slate-800 rounded-lg px-6 py-3 text-[12px] font-black text-slate-400 uppercase tracking-widest outline-none focus:ring-4 focus:ring-slate-800 appearance-none cursor-pointer h-14 min-w-[200px] text-center italic group hover:border-slate-600 transition-colors">
-                    <option value="all">TODAS LAS FUENTES</option>
-                    <option value="pago">PAID ADS</option>
-                    <option value="organico">ORGANIC</option>
-                </select>
-                <div class="bg-white rounded-lg px-8 py-3 text-center shadow-2xl flex flex-col justify-center min-w-[100px] border border-white">
-                    <span id="visibleLeadsCount" class="text-2xl font-black text-slate-950 tabular-nums leading-none italic"><?php echo $result->num_rows; ?></span>
-                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mt-2 opacity-80">Sync</span>
+            <div class="flex items-center gap-3 w-full lg:w-auto overflow-x-auto pb-2 lg:pb-0 scrollbar-none">
+                <div class="relative">
+                    <label for="filterStatus" class="sr-only">Filter by status</label>
+                    <select id="filterStatus" class="bg-zinc-900 border border-zinc-800 rounded-md pl-4 pr-10 py-2 text-[14px] font-medium text-zinc-300 focus:ring-2 focus:ring-indigo-500 transition-colors appearance-none cursor-pointer">
+                        <option value="all">Every status</option>
+                        <option value="nuevo">New</option>
+                        <option value="ganado">Won</option>
+                        <option value="perdido">Lost</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" aria-hidden="true"></i>
+                </div>
+                
+                <div class="relative">
+                    <label for="filterSource" class="sr-only">Filter by source</label>
+                    <select id="filterSource" class="bg-zinc-900 border border-zinc-800 rounded-md pl-4 pr-10 py-2 text-[14px] font-medium text-zinc-300 focus:ring-2 focus:ring-indigo-500 transition-colors appearance-none cursor-pointer">
+                        <option value="all">Every source</option>
+                        <option value="pago">Paid Ads</option>
+                        <option value="organico">Organic</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" aria-hidden="true"></i>
+                </div>
+
+                <div class="bg-zinc-900 border border-zinc-800 rounded-md px-4 py-2 flex items-center gap-2" aria-live="polite" aria-atomic="true">
+                    <span id="visibleLeadsCount" class="text-[14px] font-bold text-zinc-100"><?php echo $result->num_rows; ?></span>
+                    <span class="text-[14px] text-zinc-500">records</span>
                 </div>
             </div>
         </section>
 
-        <!-- Leads Table Dark -->
-        <div class="bg-slate-900 border border-slate-800 rounded-xl shadow-2xl overflow-hidden group">
+        <!-- Data Table -->
+        <section aria-labelledby="table-heading" class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+            <h2 id="table-heading" class="sr-only">Customer Database</h2>
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse table-fixed">
+                <table class="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
-                        <tr class="bg-slate-950 text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 border-b border-slate-800 italic">
-                            <th class="px-12 py-7 w-[40%]">MASTER IDENTIFIER</th>
-                            <th class="px-8 py-7 text-center w-[15%]">AUDIT STATUS</th>
-                            <th class="px-8 py-7 text-center w-[15%]">ORIGIN</th>
-                            <th class="px-8 py-7 text-right w-[15%]">CAPITAL</th>
-                            <th class="px-12 py-7 text-right w-[15%]">CMD</th>
+                        <tr class="bg-zinc-950/50 border-b border-zinc-800">
+                            <th scope="col" class="px-6 py-4 text-[12px] font-semibold text-zinc-400 uppercase tracking-wider">Customer</th>
+                            <th scope="col" class="px-6 py-4 text-[12px] font-semibold text-zinc-400 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-4 text-[12px] font-semibold text-zinc-400 uppercase tracking-wider">Source</th>
+                            <th scope="col" class="px-6 py-4 text-[12px] font-semibold text-zinc-400 uppercase tracking-wider text-right">Value</th>
+                            <th scope="col" class="px-6 py-4 text-[12px] font-semibold text-zinc-400 uppercase tracking-wider text-right">Added</th>
+                            <th scope="col" class="sr-only">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-800/50">
+                    <tbody class="divide-y divide-zinc-800">
                         <?php while($row = $result->fetch_assoc()): 
                             $json_data = htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8');
                             $rowDate = date('Y-m-d', strtotime($row['created_at']));
                             $statusInfo = getStatusBadge($row['status'] ?? 'nuevo');
                         ?>
-                        <tr class="lead-row hover:bg-slate-800/50 transition-all group/row cursor-pointer" 
-                            onclick='showLeadDetails(<?php echo $json_data; ?>)'
+                        <tr class="lead-row hover:bg-zinc-800/30 transition-colors group" 
                             data-source="<?php echo $row['source']; ?>"
                             data-price="<?php echo $row['proposal_price'] ?? 0; ?>"
                             data-date="<?php echo $rowDate; ?>"
                             data-status="<?php echo $row['status'] ?? 'nuevo'; ?>">
-                            <td class="px-12 py-8">
-                                <div class="flex items-center gap-6">
-                                    <div class="w-14 h-14 bg-slate-950 text-white rounded-lg border border-slate-800 flex items-center justify-center font-black text-xl shadow-xl group-hover/row:bg-white group-hover/row:text-slate-950 transition-all overflow-hidden uppercase italic">
+                            
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-md bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[12px] font-bold text-zinc-300" aria-hidden="true">
                                         <?php echo substr($row['name'], 0, 1); ?>
                                     </div>
-                                    <div class="flex flex-col overflow-hidden">
-                                        <span class="text-xl font-black text-white group-hover/row:text-indigo-400 transition-all tracking-tighter leading-none italic uppercase truncate"><?php echo htmlspecialchars($row['name']); ?></span>
-                                        <div class="flex items-center gap-3 mt-3">
-                                            <span class="text-[11px] font-black text-slate-600 uppercase tracking-widest truncate max-w-[150px] opacity-80"><?php echo htmlspecialchars($row['company'] ?: 'ENTITY_NULL'); ?></span>
-                                            <span class="w-1.5 h-1.5 bg-slate-800 rounded-full"></span>
-                                            <span class="text-[11px] font-black text-slate-700 tabular-nums italic"><?php echo date('d.m.Y', strtotime($row['created_at'])); ?></span>
-                                        </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-[14px] font-bold text-zinc-100"><?php echo htmlspecialchars($row['name']); ?></span>
+                                        <span class="text-[12px] text-zinc-500"><?php echo htmlspecialchars($row['company'] ?: 'Individual'); ?></span>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-8 py-8 text-center">
-                                <span class="px-5 py-2 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all shadow-xl group-hover/row:scale-105 <?php echo $statusInfo['class']; ?>">
+                            
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-2 py-1 rounded-md text-[12px] font-medium <?php echo $statusInfo['class']; ?>">
                                     <?php echo $statusInfo['label']; ?>
                                 </span>
                             </td>
-                            <td class="px-8 py-8 text-center">
-                                <div class="flex items-center justify-center gap-3">
+                            
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
                                     <?php if($row['source'] == 'pago'): ?>
-                                        <i data-lucide="zap" class="w-4 h-4 text-amber-500 fill-amber-500/20"></i>
-                                        <span class="text-[10px] font-black uppercase tracking-[0.25em] text-amber-600 italic">PAID_ADS</span>
+                                        <i data-lucide="target" class="w-3.5 h-3.5 text-zinc-400" aria-hidden="true"></i>
+                                        <span class="text-[13px] text-zinc-300">Paid</span>
                                     <?php else: ?>
-                                        <i data-lucide="leaf" class="w-4 h-4 text-emerald-500"></i>
-                                        <span class="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-600 italic">ORGANIC_LOG</span>
+                                        <i data-lucide="globe" class="w-3.5 h-3.5 text-zinc-400" aria-hidden="true"></i>
+                                        <span class="text-[13px] text-zinc-300">Organic</span>
                                     <?php endif; ?>
                                 </div>
                             </td>
-                            <td class="px-8 py-8 text-right">
-                                <span class="text-2xl font-black text-white tracking-tighter tabular-nums italic group-hover/row:text-indigo-400 transition-all leading-none"><?php echo number_format($row['proposal_price'] ?? 0, 0, ',', '.'); ?>€</span>
+                            
+                            <td class="px-6 py-4 text-right">
+                                <span class="text-[14px] font-medium text-zinc-200">€<?php echo number_format($row['proposal_price'] ?? 0, 2, '.', ','); ?></span>
                             </td>
-                            <td class="px-12 py-8 text-right">
-                                <button class="p-3 bg-slate-950 border border-slate-800 rounded-lg text-slate-700 hover:text-white hover:border-slate-600 transition-all active:scale-95 shadow-lg">
-                                    <i data-lucide="more-vertical" class="w-5 h-5"></i>
+
+                            <td class="px-6 py-4 text-right">
+                                <span class="text-[13px] text-zinc-400"><?php echo date('M d, Y', strtotime($row['created_at'])); ?></span>
+                            </td>
+                            
+                            <td class="px-6 py-4 text-right">
+                                <button onclick='showLeadDetails(<?php echo $json_data; ?>)' aria-label="Edit <?php echo htmlspecialchars($row['name']); ?>" class="p-2 text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
+                                    <i data-lucide="edit-2" class="w-4 h-4" aria-hidden="true"></i>
                                 </button>
                             </td>
                         </tr>
@@ -165,98 +176,107 @@ function getStatusBadge($status) {
                     </tbody>
                 </table>
             </div>
-
-            <!-- Table Footer Dark -->
-            <div class="p-8 bg-slate-950/50 border-t border-slate-800 flex justify-between items-center">
-                <span class="text-[10px] font-black text-slate-700 uppercase tracking-[0.4em] ml-6 italic opacity-60">AUDIT_LOG_SYNC_STATE: OK :: xCLOUD_DB ACTIVE</span>
-                <div class="flex gap-4">
-                    <button class="px-6 py-2.5 bg-slate-900 border border-slate-800 rounded text-[11px] font-black text-slate-600 hover:text-white transition-all uppercase tracking-widest">PREV_SET</button>
-                    <button class="px-6 py-2.5 bg-slate-900 border border-slate-800 rounded text-[11px] font-black text-slate-600 hover:text-white transition-all uppercase tracking-widest">NEXT_SET</button>
-                </div>
+            
+            <div class="px-6 py-4 border-t border-zinc-800 flex items-center justify-between text-[13px] text-zinc-500 border-t border-zinc-800">
+                <p>End of results.</p>
             </div>
-        </div>
+        </section>
     </main>
 
-    <!-- Modal Detalle Dark Maestro -->
-    <div id="detailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 overflow-y-auto">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl shadow-[0_50px_100px_-20px_#000000] p-12 transform transition-all animate-in zoom-in duration-200">
+    <!-- Modal Detail SaaS Accessible -->
+    <div id="detailModal" role="dialog" aria-modal="true" aria-labelledby="modal-title" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm p-4 overflow-y-auto">
+        <div class="bg-zinc-900 border border-zinc-800 w-full max-w-2xl rounded-xl shadow-2xl p-8 transform transition-all animate-in zoom-in duration-200" id="detailModalContent" tabindex="-1">
             <form id="editLeadForm">
                 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                 <input type="hidden" name="id" id="det-id">
                 
-                <div class="flex justify-between items-start mb-14 pb-8 border-b border-slate-800">
-                    <div class="w-full mr-12 group">
-                        <label class="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] block mb-4 ml-1 italic opacity-80">Master UID Identity</label>
-                        <input type="text" name="name" id="det-name" class="w-full bg-transparent border-0 focus:ring-0 text-4xl font-black text-white transition-all px-0 italic uppercase tracking-tighter outline-none leading-none shadow-text-indigo-900">
-                        <input type="text" name="company" id="det-company" class="w-full bg-transparent border-0 focus:ring-0 text-slate-500 text-xl mt-3 px-0 font-black outline-none block uppercase italic tracking-widest opacity-80">
+                <div class="flex justify-between items-start mb-8 pb-6 border-b border-zinc-800">
+                    <div class="w-full mr-8">
+                        <label for="det-name" class="sr-only">Customer Name</label>
+                        <input type="text" name="name" id="det-name" class="w-full bg-transparent border-0 focus:ring-2 focus:ring-indigo-500 rounded-md text-2xl font-bold text-zinc-100 transition-colors px-2 py-1 -ml-2" required>
+                        
+                        <label for="det-company" class="sr-only">Company</label>
+                        <input type="text" name="company" id="det-company" class="w-full bg-transparent border-0 focus:ring-2 focus:ring-indigo-500 rounded-md text-zinc-400 text-[15px] mt-1 px-2 py-1 -ml-2 transition-colors">
                     </div>
-                    <button type="button" onclick="closeDetailModal()" class="p-4 bg-slate-950 hover:bg-red-950 hover:text-red-500 border border-slate-800 rounded-xl transition-all text-slate-700 active:scale-90 shadow-2xl flex items-center justify-center"><i data-lucide="x" class="w-6 h-6"></i></button>
+                    <button type="button" onclick="closeDetailModal()" aria-label="Close modal" class="p-2 text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
+                        <i data-lucide="x" class="w-5 h-5" aria-hidden="true"></i>
+                    </button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-14">
-                    <div class="space-y-12">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div class="space-y-6">
                         <div>
-                            <label class="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] block mb-6 ml-1 italic">Audit Operational Status</label>
-                            <select name="status" id="det-status" class="w-full bg-white border-0 rounded-lg py-5 px-6 text-[12px] text-slate-950 font-black uppercase outline-none focus:ring-8 focus:ring-indigo-600/30 transition-all shadow-3xl appearance-none tracking-widest cursor-pointer text-center h-16 italic">
-                                <option value="nuevo">NUEVO LOG</option>
-                                <option value="no_responde">SIN RESPUESTA</option>
-                                <option value="enviar_propuesta">EXPEDIR PROPUESTA</option>
-                                <option value="propuesta_enviada">LOG ENVIADO</option>
-                                <option value="ganado">MASTER WIN</option>
-                                <option value="perdido">MASTER LOSS</option>
+                            <label for="det-status" class="block text-[13px] font-semibold text-zinc-300 mb-2">Stage</label>
+                            <select name="status" id="det-status" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 px-3 text-[14px] text-zinc-100 focus:ring-2 focus:ring-indigo-500 transition-colors">
+                                <option value="nuevo">New</option>
+                                <option value="no_responde">No Response</option>
+                                <option value="enviar_propuesta">Proposal</option>
+                                <option value="propuesta_enviada">Sent</option>
+                                <option value="ganado">Won</option>
+                                <option value="perdido">Lost</option>
                             </select>
                         </div>
-                        <div class="space-y-6">
-                            <label class="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] block mb-2 ml-1 italic">Contact Endpoint Metadata</label>
-                            <div class="relative group/field">
-                                <i data-lucide="mail" class="w-5 h-5 absolute left-5 top-1/2 -translate-y-1/2 text-slate-800 group-focus-within/field:text-indigo-400 transition-all"></i>
-                                <input type="text" name="email" id="det-email" class="w-full pl-14 pr-6 bg-slate-950 border border-slate-800 rounded-lg focus:border-indigo-600 focus:outline-none text-[15px] py-5 font-black text-white shadow-inner uppercase italic">
+                        
+                        <fieldset class="space-y-4">
+                            <legend class="block text-[13px] font-semibold text-zinc-300 mb-2">Contact Info</legend>
+                            <div class="relative">
+                                <label for="det-email" class="sr-only">Email address</label>
+                                <i data-lucide="mail" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
+                                <input type="email" name="email" id="det-email" class="w-full pl-9 pr-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-600">
                             </div>
-                            <div class="relative group/field">
-                                <i data-lucide="phone" class="w-5 h-5 absolute left-5 top-1/2 -translate-y-1/2 text-slate-800 group-focus-within/field:text-indigo-400 transition-all"></i>
-                                <input type="text" name="phone" id="det-phone" class="w-full pl-14 pr-6 bg-slate-950 border border-slate-800 rounded-lg focus:border-indigo-600 focus:outline-none text-[15px] py-5 font-black text-white shadow-inner tabular-nums italic">
+                            <div class="relative">
+                                <label for="det-phone" class="sr-only">Phone number</label>
+                                <i data-lucide="phone" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
+                                <input type="tel" name="phone" id="det-phone" class="w-full pl-9 pr-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-600">
                             </div>
-                        </div>
+                        </fieldset>
                     </div>
 
-                    <div class="space-y-12">
-                        <div>
-                            <label class="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] block mb-6 ml-1 italic">Financial Capital Asset</label>
-                            <div class="grid grid-cols-2 gap-5">
-                                <div class="relative">
-                                    <span class="absolute left-5 top-1/2 -translate-y-1/2 text-indigo-500 font-black text-xl italic">€</span>
-                                    <input type="number" step="0.01" name="proposal_price" id="det-price" class="w-full bg-slate-950 border border-slate-800 rounded-lg py-5 px-6 pl-10 text-white font-black text-right outline-none focus:ring-4 focus:ring-indigo-900 focus:border-indigo-600 text-2xl shadow-inner tabular-nums italic placeholder:text-slate-800">
+                    <div class="space-y-6">
+                        <fieldset>
+                            <legend class="block text-[13px] font-semibold text-zinc-300 mb-2">Deal Details</legend>
+                            <div class="flex gap-3">
+                                <div class="relative flex-1">
+                                    <label for="det-price" class="sr-only">Proposal Price</label>
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-[14px]" aria-hidden="true">€</span>
+                                    <input type="number" step="0.01" name="proposal_price" id="det-price" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 pl-8 pr-3 text-zinc-100 font-medium focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px]">
                                 </div>
-                                <select name="source" id="det-source" class="w-full bg-slate-800 border border-slate-700 rounded-lg py-5 px-4 text-[11px] text-slate-300 font-black uppercase tracking-widest outline-none focus:ring-4 focus:ring-slate-700 appearance-none text-center cursor-pointer h-16 shadow-lg">
-                                    <option value="organico">ORGANIC_LOG</option>
-                                    <option value="pago">PAID_ADS_MASTER</option>
-                                </select>
+                                <div class="w-1/3">
+                                    <label for="det-source" class="sr-only">Source</label>
+                                    <select name="source" id="det-source" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 px-3 text-[14px] text-zinc-100 focus:ring-2 focus:ring-indigo-500 transition-colors">
+                                        <option value="organico">Organic</option>
+                                        <option value="pago">Paid</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
+                        </fieldset>
+
                         <div>
-                            <label class="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] block mb-6 ml-1 italic">Master Logic Segments</label>
-                            <input type="text" name="tags" id="det-tags" placeholder="VIP_CLIENT, URGENT_FLOW..." class="w-full bg-slate-950 border border-slate-800 rounded-lg text-[11px] py-5 px-6 text-white focus:ring-4 focus:ring-indigo-900 focus:border-indigo-600 focus:outline-none mb-6 font-black shadow-inner uppercase tracking-[0.2em] italic">
-                            <div class="flex flex-wrap gap-3">
+                            <label for="det-tags" class="block text-[13px] font-semibold text-zinc-300 mb-2">Tags</label>
+                            <input type="text" name="tags" id="det-tags" placeholder="e.g. vip, pending" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 px-3 text-[14px] text-zinc-100 focus:ring-2 focus:ring-indigo-500 transition-colors mb-3">
+                            <div class="flex flex-wrap gap-2" role="group" aria-label="Suggested Tags">
                                 <?php foreach($existingTags as $tag): ?>
-                                    <button type="button" onclick="addTagEdit('<?php echo $tag; ?>')" class="px-3.5 py-2.5 bg-slate-950 border border-slate-800 hover:bg-white hover:text-slate-950 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all shadow-xl">+ <?php echo $tag; ?></button>
+                                    <button type="button" onclick="addTagEdit('<?php echo htmlspecialchars($tag); ?>')" class="px-2.5 py-1 bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 rounded text-[12px] font-medium text-zinc-300 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
+                                        + <?php echo htmlspecialchars($tag); ?>
+                                    </button>
                                 <?php endforeach; ?>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-10 mb-14 shadow-inner">
-                    <label class="text-[10px] font-black text-slate-700 uppercase tracking-[0.4em] block mb-6 ml-1 italic opacity-60">Technical Operational Logs</label>
-                    <textarea name="message" id="det-message" class="w-full bg-transparent border-0 focus:ring-0 outline-none min-h-[120px] text-[16px] font-semibold text-slate-400 placeholder-slate-800 italic uppercase leading-relaxed" placeholder="ADD SYSTEM NOTES..."></textarea>
+                <div class="mb-8">
+                    <label for="det-message" class="block text-[13px] font-semibold text-zinc-300 mb-2">Notes</label>
+                    <textarea name="message" id="det-message" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-3 px-3 focus:ring-2 focus:ring-indigo-500 outline-none min-h-[100px] text-[14px] text-zinc-100 transition-colors placeholder:text-zinc-600"></textarea>
                 </div>
 
-                <div class="flex items-center justify-between mt-14 pt-10 border-t border-slate-800">
-                    <button type="button" onclick="deleteLead()" class="text-slate-700 hover:text-red-500 text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-3 active:scale-95 group">
-                        <i data-lucide="trash-2" class="w-5 h-5 text-red-900 group-hover:text-red-500"></i> PURGE_RECORD
+                <div class="flex items-center justify-between pt-6 border-t border-zinc-800">
+                    <button type="button" onclick="deleteLead()" class="text-red-400 hover:text-red-300 text-[14px] font-semibold transition-colors flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-500 rounded-md px-2 py-1">
+                        <i data-lucide="trash-2" class="w-4 h-4" aria-hidden="true"></i> Delete
                     </button>
-                    <div class="flex gap-4 items-center">
-                        <button type="button" onclick="closeDetailModal()" class="px-8 py-4 text-slate-600 text-[11px] font-black rounded-lg uppercase tracking-widest hover:text-white transition-colors">ABORT_SYNC</button>
-                        <button type="submit" class="px-12 py-5 bg-white hover:bg-slate-200 text-slate-950 text-[12px] font-black rounded-lg uppercase tracking-[0.3em] shadow-3xl active:scale-95 border border-white">SYNC & SAVE</button>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="closeDetailModal()" class="px-4 py-2 text-zinc-400 text-[14px] font-semibold rounded-md hover:text-zinc-100 hover:bg-zinc-800 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-zinc-500">Cancel</button>
+                        <button type="submit" class="px-6 py-2 bg-zinc-100 hover:bg-zinc-300 text-zinc-950 text-[14px] font-bold rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">Save Changes</button>
                     </div>
                 </div>
             </form>
@@ -277,6 +297,7 @@ function getStatusBadge($status) {
             }
         }
 
+        /* Accessibile Filtering via JS */
         const globalInp = document.getElementById('filterGlobal');
         const statusSel = document.getElementById('filterStatus');
         const sourceSel = document.getElementById('filterSource');
@@ -309,10 +330,15 @@ function getStatusBadge($status) {
             el.addEventListener('input', applyFilters);
         });
 
+        /* Accessible Modal Focus Trapping / Handling */
         const modalD = document.getElementById('detailModal');
+        const modalContent = document.getElementById('detailModalContent');
         const editLeadForm = document.getElementById('editLeadForm');
+        let previousActiveElement;
         
         function showLeadDetails(data) {
+            previousActiveElement = document.activeElement; // Save previously focused element
+            
             document.getElementById('det-id').value = data.id;
             document.getElementById('det-name').value = data.name;
             document.getElementById('det-company').value = data.company || '';
@@ -323,19 +349,26 @@ function getStatusBadge($status) {
             document.getElementById('det-status').value = data.status || 'nuevo';
             document.getElementById('det-price').value = data.proposal_price || 0;
             document.getElementById('det-message').value = data.message || '';
+            
             modalD.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
             lucide.createIcons();
+            
+            // Set focus inside modal
+            setTimeout(() => { document.getElementById('det-name').focus(); }, 50);
         }
 
         function closeDetailModal() {
             modalD.classList.add('hidden');
             document.body.style.overflow = 'auto';
+            if (previousActiveElement) {
+                previousActiveElement.focus();
+            }
         }
 
         function deleteLead() {
             const id = document.getElementById('det-id').value;
-            if(!confirm('¿CONFIRMAR PURGA PERMANENTE DEL REGISTRO?')) return;
+            if(!confirm('Are you sure you want to permanently delete this record?')) return;
             const fd = new FormData();
             fd.append('id', id);
             fd.append('csrf_token', '<?php echo $_SESSION['csrf_token']; ?>');
@@ -355,7 +388,16 @@ function getStatusBadge($status) {
             });
         });
 
-        window.onclick = e => { if(e.target == modalD) closeDetailModal(); }
+        // Close on ESC and backdrop click
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modalD.classList.contains('hidden')) {
+                closeDetailModal();
+            }
+        });
+        
+        modalD.addEventListener('click', (e) => {
+            if (e.target === modalD) closeDetailModal();
+        });
     </script>
 </body>
 </html>

@@ -102,53 +102,51 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
-    <style>
-      body { height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; background-color: #f8fafc; }
-    </style>
 </head>
-<body>
-    <div class="fixed inset-0 z-[-1] overflow-hidden opacity-40">
-        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-50 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2"></div>
-        <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-slate-100 blur-[120px] rounded-full -translate-x-1/2 translate-y-1/2"></div>
-    </div>
-
-    <div class="w-full max-w-md p-8">
-        <div class="bg-white border border-slate-200 p-12 rounded-2xl shadow-2xl relative group">
-            <div class="text-center mb-12">
-                <div class="w-16 h-16 bg-slate-900 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-slate-200 ring-4 ring-slate-50 transform group-hover:scale-105 transition-all">
-                    <i data-lucide="shield-check" class="w-8 h-8 text-white stroke-[2.5]"></i>
-                </div>
-                <h1 class="text-2xl font-bold text-slate-900 tracking-tight uppercase italic leading-none">CRM MARCLOI</h1>
-                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-4 opacity-80 italic">Authorized Access Only :: Terminal_v5</p>
+<body class="bg-zinc-950 flex flex-col items-center justify-center min-h-screen p-4">
+    <main class="w-full max-w-[400px]">
+        
+        <div class="text-center mb-8">
+            <div class="w-12 h-12 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <i data-lucide="shield" class="w-6 h-6 text-zinc-100" aria-hidden="true"></i>
             </div>
+            <h1 class="text-2xl font-bold text-zinc-100 tracking-tight">Access System</h1>
+            <p class="text-[14px] text-zinc-400 mt-2 font-medium">Please verify your identity.</p>
+        </div>
 
-            <form method="POST" class="space-y-8">
-                <div class="space-y-3">
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Master Access Key</label>
-                    <div class="relative group/inp">
-                        <i data-lucide="key-round" class="w-4 h-4 absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/inp:text-slate-900 transition-all"></i>
-                        <input type="password" name="password" required autofocus
-                               class="w-full pl-14 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-lg focus:ring-4 focus:ring-slate-100 focus:border-slate-800 outline-none transition-all text-lg font-black text-slate-800 tracking-widest placeholder:text-slate-200 shadow-inner"
-                               placeholder="••••••••••••">
+        <div class="bg-zinc-900 border border-zinc-800 p-8 rounded-xl shadow-2xl">
+            <form method="POST" class="space-y-6" aria-labelledby="form-heading">
+                <h2 id="form-heading" class="sr-only">Login Form</h2>
+                
+                <div class="space-y-2">
+                    <label for="password" class="block text-[14px] font-semibold text-zinc-300">Master Access Key</label>
+                    <div class="relative">
+                        <i data-lucide="key" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
+                        <input type="password" id="password" name="password" required autofocus
+                               aria-describedby="<?php echo isset($error) ? 'login-error' : ''; ?>"
+                               class="w-full pl-10 pr-4 py-3 bg-zinc-950 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors text-[14px] text-zinc-100 placeholder:text-zinc-600 shadow-inner"
+                               placeholder="Enter your security key">
                     </div>
                 </div>
 
-                <button type="submit" class="w-full py-5 bg-slate-900 text-white text-[11px] font-bold rounded-lg uppercase tracking-widest hover:bg-black transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3">
-                    Unlock Console <i data-lucide="chevron-right" class="w-4 h-4 text-indigo-400"></i>
+                <button type="submit" class="w-full py-3 bg-zinc-100 text-zinc-950 text-[14px] font-bold rounded-lg hover:bg-zinc-300 transition-colors flex items-center justify-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                    Sign In <i data-lucide="arrow-right" class="w-4 h-4" aria-hidden="true"></i>
                 </button>
 
                 <?php if (isset($error)): ?>
-                    <div class="px-5 py-3 bg-red-50 border border-red-100 rounded-lg text-[9px] font-bold text-red-500 uppercase tracking-widest text-center animate-pulse">
-                        <?php echo $error; ?>
+                    <div id="login-error" role="alert" class="px-4 py-3 bg-red-950/50 border border-red-900 rounded-lg text-[14px] font-medium text-red-200 mt-4 flex items-start gap-3">
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-red-400 shrink-0 mt-0.5" aria-hidden="true"></i>
+                        <span><?php echo $error; ?></span>
                     </div>
                 <?php endif; ?>
             </form>
-
-            <div class="mt-12 text-center">
-                <p class="text-[8px] font-bold text-slate-300 uppercase tracking-widest opacity-60 italic leading-loose">© 2026 Marcloi Solutions / Engineering Division</p>
-            </div>
         </div>
-    </div>
+
+        <footer class="mt-8 text-center">
+            <p class="text-[14px] text-zinc-500 font-medium">© 2026 Marcloi Solutions</p>
+        </footer>
+
+    </main>
 
     <script>
         lucide.createIcons();

@@ -1,129 +1,123 @@
 <?php if (count(get_included_files()) <= 1) die('Acceso denegado'); ?>
-<div id="addLeadModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 hidden overflow-y-auto">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl shadow-[0_50px_100px_-20px_#000000] p-12 transform transition-all animate-in zoom-in duration-200">
+<div id="addLeadModal" role="dialog" aria-modal="true" aria-labelledby="addLeadModalTitle" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm p-4 hidden overflow-y-auto">
+    <div class="bg-zinc-900 w-full max-w-2xl rounded-xl shadow-2xl p-8 transform transition-all animate-in zoom-in duration-200 border border-zinc-800" tabindex="-1" id="addLeadModalContent">
         
-        <div class="flex justify-between items-start mb-14 pb-10 border-b border-slate-800">
+        <div class="flex justify-between items-start mb-8 pb-6 border-b border-zinc-800">
             <div>
-                <div class="flex items-center gap-2 mb-3">
-                    <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse shadow-md shadow-indigo-600"></div>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] opacity-80">PROX_SYNC OPERATOR: MARC</span>
-                </div>
-                <h2 class="text-4xl font-black text-white tracking-tighter italic uppercase underline decoration-indigo-600 decoration-4 underline-offset-8">ALTA <span class="text-indigo-500 not-italic">MASTER</span></h2>
-                <p class="text-slate-500 text-[14px] font-bold mt-8 uppercase tracking-widest opacity-60 italic">Ingreso jerárquico de metadatos comerciales.</p>
+                <h2 id="addLeadModalTitle" class="text-2xl font-bold text-zinc-100 tracking-tight">New Customer Record</h2>
+                <p class="text-[14px] text-zinc-400 mt-2 font-medium">Add a new client to the database.</p>
             </div>
-            <button onclick="toggleModal()" class="p-4 bg-slate-950 hover:bg-red-950 hover:text-red-500 border border-slate-800 rounded-xl transition-all text-slate-700">
-                <i data-lucide="x" class="w-7 h-7"></i>
+            <button onclick="toggleModal()" aria-label="Close modal" class="p-2 text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 rounded-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
+                <i data-lucide="x" class="w-5 h-5" aria-hidden="true"></i>
             </button>
         </div>
 
-        <form id="addLeadForm" enctype="multipart/form-data" class="space-y-12">
+        <form id="addLeadForm" enctype="multipart/form-data" class="space-y-8">
             <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
             
-            <!-- Dark Form Fields -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div class="space-y-4 group">
-                    <label class="block text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] ml-1 italic">UID / IDENTIDAD LOG</label>
-                    <div class="relative">
-                        <i data-lucide="user" class="w-5 h-5 absolute left-6 top-1/2 -translate-y-1/2 text-slate-800 group-focus-within:text-indigo-400 transition-all"></i>
-                        <input type="text" name="name" required placeholder="NOMBRE_UID" 
-                               class="block w-full pl-16 pr-6 py-5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-4 focus:ring-slate-800 focus:border-indigo-600 focus:bg-slate-950 text-white font-black outline-none transition-all shadow-inner text-[15px] italic uppercase">
-                    </div>
-                </div>
-                <div class="space-y-4 group">
-                    <label class="block text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] ml-1 italic">TELÉFONO ENDPOINT</label>
-                    <div class="relative">
-                        <i data-lucide="phone" class="w-5 h-5 absolute left-6 top-1/2 -translate-y-1/2 text-slate-800 group-focus-within:text-indigo-400 transition-all"></i>
-                        <input type="tel" name="phone" required placeholder="+34 XXX XXX XXX" 
-                               class="block w-full pl-16 pr-6 py-5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-4 focus:ring-slate-800 focus:border-indigo-600 focus:bg-slate-950 text-white font-black outline-none transition-all shadow-inner text-[15px] tabular-nums italic">
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div class="space-y-4 group">
-                    <label class="block text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] ml-1 italic">CORPORACIÓN / ASOCIADO</label>
-                    <div class="relative">
-                        <i data-lucide="building-2" class="w-5 h-5 absolute left-6 top-1/2 -translate-y-1/2 text-slate-800 group-focus-within:text-indigo-400 transition-all"></i>
-                        <input type="text" name="company" placeholder="ENTITY_DESCRIPTION" 
-                               class="block w-full pl-16 pr-6 py-5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-4 focus:ring-slate-800 focus:border-indigo-600 focus:bg-slate-950 text-white font-black outline-none transition-all shadow-inner text-[15px] italic uppercase">
-                    </div>
-                </div>
-                <div class="space-y-4 group">
-                    <label class="block text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] ml-1 italic">E-MAIL CANAL</label>
-                    <div class="relative">
-                        <i data-lucide="mail" class="w-5 h-5 absolute left-6 top-1/2 -translate-y-1/2 text-slate-800 group-focus-within:text-indigo-400 transition-all"></i>
-                        <input type="email" name="email" placeholder="ADMIN@MASTER.DAT" 
-                               class="block w-full pl-16 pr-6 py-5 bg-slate-950 border border-slate-800 rounded-xl focus:ring-4 focus:ring-slate-800 focus:border-indigo-600 focus:bg-slate-950 text-white font-black outline-none transition-all shadow-inner text-[15px] italic uppercase">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Financial Assets Dark -->
-            <div class="p-10 bg-slate-950 border border-slate-800 rounded-2xl relative overflow-hidden group/bits shadow-3xl">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-10 relative z-10">
-                    <div class="space-y-4">
-                        <label class="block text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] text-center italic">CAPITAL €</label>
-                        <input type="number" step="0.01" name="proposal_price" placeholder="0.00"
-                               class="block w-full px-6 py-5 bg-slate-900 border border-slate-800 rounded-xl focus:ring-4 focus:ring-indigo-900 text-white font-black text-3xl text-center outline-none transition-all tabular-nums italic placeholder:text-slate-800">
-                    </div>
-                    <div class="space-y-4">
-                        <label class="block text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] text-center italic">ORIGEN_SET</label>
-                        <div class="flex gap-3 p-2 bg-slate-900 rounded-xl h-[76px] border border-slate-800">
-                            <label class="flex-1 cursor-pointer">
-                                <input type="radio" name="source" value="pago" class="hidden peer" checked>
-                                <div class="h-full flex items-center justify-center text-[11px] font-black text-slate-700 rounded-lg peer-checked:bg-white peer-checked:text-slate-950 transition-all uppercase tracking-widest shadow-2xl border border-transparent peer-checked:border-white italic">PAID</div>
-                            </label>
-                            <label class="flex-1 cursor-pointer">
-                                <input type="radio" name="source" value="organico" class="hidden peer">
-                                <div class="h-full flex items-center justify-center text-[11px] font-black text-slate-700 rounded-lg peer-checked:bg-white peer-checked:text-slate-950 transition-all uppercase tracking-widest shadow-2xl border border-transparent peer-checked:border-white italic">ORG</div>
-                            </label>
+            <fieldset class="space-y-4">
+                <legend class="text-[15px] font-bold text-zinc-100 border-b border-zinc-800 pb-2 w-full mb-4">Identity</legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="new-name" class="block text-[13px] font-semibold text-zinc-300">Customer Name *</label>
+                        <div class="relative">
+                            <i data-lucide="user" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
+                            <input type="text" id="new-name" name="name" required placeholder="John Doe" 
+                                   class="block w-full pl-9 pr-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-zinc-100 outline-none transition-colors text-[14px] placeholder:text-zinc-600">
                         </div>
                     </div>
-                    <div class="space-y-4">
-                        <label class="block text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] text-center italic">STATUS_CMD</label>
-                        <select name="status" class="w-full bg-slate-900 border border-slate-800 rounded-xl py-5 px-4 text-[11px] text-white font-black uppercase outline-none focus:ring-4 focus:ring-indigo-900 transition-all tracking-widest h-[76px] appearance-none cursor-pointer text-center italic shadow-inner">
-                            <option value="nuevo">NUEVO LOG</option>
-                            <option value="enviar_propuesta">EXP_PROPUESTA</option>
-                            <option value="interesado_tarde">POST_RESERVA</option>
+                    <div class="space-y-2">
+                        <label for="new-company" class="block text-[13px] font-semibold text-zinc-300">Company</label>
+                        <div class="relative">
+                            <i data-lucide="building-2" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
+                            <input type="text" id="new-company" name="company" placeholder="Acme Corp" 
+                                   class="block w-full pl-9 pr-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-zinc-100 outline-none transition-colors text-[14px] placeholder:text-zinc-600">
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="space-y-4">
+                <legend class="text-[15px] font-bold text-zinc-100 border-b border-zinc-800 pb-2 w-full mb-4">Contact Details</legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="new-phone" class="block text-[13px] font-semibold text-zinc-300">Phone Number *</label>
+                        <div class="relative">
+                            <i data-lucide="phone" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
+                            <input type="tel" id="new-phone" name="phone" required placeholder="+1 234 567 8900" 
+                                   class="block w-full pl-9 pr-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-zinc-100 outline-none transition-colors text-[14px] placeholder:text-zinc-600">
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label for="new-email" class="block text-[13px] font-semibold text-zinc-300">Email Address</label>
+                        <div class="relative">
+                            <i data-lucide="mail" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
+                            <input type="email" id="new-email" name="email" placeholder="john@acme.com" 
+                                   class="block w-full pl-9 pr-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-zinc-100 outline-none transition-colors text-[14px] placeholder:text-zinc-600">
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="space-y-4">
+                <legend class="text-[15px] font-bold text-zinc-100 border-b border-zinc-800 pb-2 w-full mb-4">Deal Information</legend>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-2">
+                        <label for="new-price" class="block text-[13px] font-semibold text-zinc-300">Value (€)</label>
+                        <input type="number" id="new-price" step="0.01" name="proposal_price" placeholder="0.00"
+                               class="block w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-zinc-100 outline-none transition-colors text-[14px] placeholder:text-zinc-600">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="new-status" class="block text-[13px] font-semibold text-zinc-300">Initial Stage</label>
+                        <select id="new-status" name="status" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-2.5 px-3 text-[14px] text-zinc-100 focus:ring-2 focus:ring-indigo-500 transition-colors">
+                            <option value="nuevo">New</option>
+                            <option value="enviar_propuesta">Proposal</option>
+                            <option value="interesado_tarde">Postponed</option>
                         </select>
                     </div>
-                </div>
-            </div>
-
-            <!-- Master Audio Recording Dark -->
-            <div class="space-y-5">
-                <label class="block text-[10px] font-black text-slate-700 uppercase tracking-[0.4em] ml-2 flex items-center gap-3 italic">
-                    VOICE_LOG CAPTURE (CLOUD STREAM)
-                    <span class="w-2 h-2 bg-red-600 rounded-full animate-pulse shadow-[0_0_15px_#dc2626]"></span>
-                </label>
-                <div class="flex items-center gap-6 p-6 bg-slate-950 border border-slate-800 rounded-2xl shadow-3xl relative overflow-hidden group/record">
-                    <button type="button" id="startBtn" class="w-16 h-16 bg-white hover:bg-slate-200 text-slate-950 rounded-xl flex items-center justify-center transition-all shadow-2xl group hover:scale-105 active:scale-95 relative z-10 border-4 border-white">
-                        <i data-lucide="mic" class="w-8 h-8"></i>
-                    </button>
-                    <button type="button" id="stopBtn" disabled class="w-16 h-16 bg-slate-900 hover:bg-red-950 hover:text-red-500 text-slate-500 rounded-xl flex items-center justify-center transition-all disabled:opacity-20 relative z-10 border border-slate-800">
-                        <i data-lucide="square" class="w-8 h-8 fill-slate-800"></i>
-                    </button>
-                    <div class="flex-1 flex flex-col px-6 relative z-10">
-                        <div class="flex items-center gap-3 mb-2">
-                            <span id="timerText" class="text-2xl font-black text-white tabular-nums tracking-tighter italic leading-none">00:00</span>
-                            <div class="w-2 h-2 rounded-full bg-slate-800" id="recIndicator"></div>
+                    <div class="space-y-2">
+                        <span class="block text-[13px] font-semibold text-zinc-300 mb-2">Acquisition Source</span>
+                        <div class="flex gap-2" role="radiogroup" aria-label="Acquisition Source">
+                            <label class="flex-1 relative cursor-pointer group">
+                                <input type="radio" name="source" value="pago" class="sr-only peer" checked>
+                                <span class="flex items-center justify-center p-2.5 text-[13px] font-medium rounded-md border border-zinc-800 bg-zinc-950 text-zinc-400 peer-checked:bg-zinc-100 peer-checked:text-zinc-950 peer-checked:border-zinc-100 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500">Paid</span>
+                            </label>
+                            <label class="flex-1 relative cursor-pointer group">
+                                <input type="radio" name="source" value="organico" class="sr-only peer">
+                                <span class="flex items-center justify-center p-2.5 text-[13px] font-medium rounded-md border border-zinc-800 bg-zinc-950 text-zinc-400 peer-checked:bg-zinc-100 peer-checked:text-zinc-950 peer-checked:border-zinc-100 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500">Organic</span>
+                            </label>
                         </div>
-                        <span id="audioStatus" class="text-[10px] font-black text-slate-700 uppercase tracking-[0.4em] leading-none italic">AWAITING_CMD_FROM_MASTER_USER...</span>
-                    </div>
-                    <div id="audioPreviewContainer" class="hidden ml-auto relative z-10">
-                        <div class="px-6 py-3 bg-emerald-950 border border-emerald-900 rounded-full text-[10px] font-black text-emerald-400 uppercase italic tracking-widest animate-pulse border-2">LOGGED ✅</div>
                     </div>
                 </div>
-            </div>
+            </fieldset>
 
-            <div class="pt-12 border-t border-slate-800 flex items-center justify-between">
-                <p class="text-[9px] font-black text-slate-700 italic max-w-sm uppercase leading-loose opacity-60 tracking-widest">WARNING: DATA PERMANENCY IN CLUSTER IS GUARANTEED ONCE SYNCED.</p>
-                <div class="flex gap-4">
-                    <button type="button" onclick="toggleModal()" class="px-8 py-5 text-slate-600 text-[11px] font-black rounded-xl uppercase tracking-widest hover:text-white transition-all">ABORT_CMD</button>
-                    <button type="submit" class="px-12 py-5 bg-white text-slate-950 text-[12px] font-black rounded-xl uppercase tracking-[0.3em] hover:bg-slate-200 transition-all shadow-3xl active:scale-95 flex items-center gap-4 group border border-white">
-                        SYNC_RECORD <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-2 transition-all text-indigo-600"></i>
+            <fieldset class="space-y-4">
+                <legend class="text-[15px] font-bold text-zinc-100 border-b border-zinc-800 pb-2 w-full mb-4">Voice Note (Optional)</legend>
+                <div class="flex items-center gap-4 p-4 bg-zinc-950 border border-zinc-800 rounded-lg">
+                    <button type="button" id="startBtn" aria-label="Start recording" class="w-10 h-10 bg-zinc-100 hover:bg-zinc-300 text-zinc-900 rounded-full flex items-center justify-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
+                        <i data-lucide="mic" class="w-5 h-5" aria-hidden="true"></i>
                     </button>
+                    <button type="button" id="stopBtn" aria-label="Stop recording" disabled class="w-10 h-10 bg-zinc-900 border border-zinc-800 text-zinc-500 rounded-full flex items-center justify-center transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 hover:text-red-400">
+                        <i data-lucide="square" class="w-4 h-4 fill-current" aria-hidden="true"></i>
+                    </button>
+                    
+                    <div class="flex-1 flex items-center gap-3">
+                        <span id="timerText" class="text-[14px] font-medium text-zinc-300 tabular-nums" aria-live="polite">00:00</span>
+                        <div class="w-2 h-2 rounded-full bg-zinc-700" id="recIndicator" aria-hidden="true"></div>
+                        <span id="audioStatus" class="sr-only" aria-live="polite">Ready to record</span>
+                    </div>
+                    
+                    <div id="audioPreviewContainer" class="hidden" aria-live="polite">
+                        <span class="px-3 py-1 bg-emerald-900/30 border border-emerald-500/30 rounded-md text-[12px] font-medium text-emerald-400">Recorded</span>
+                    </div>
                 </div>
+            </fieldset>
+
+            <div class="pt-6 border-t border-zinc-800 flex justify-end gap-3 mt-8">
+                <button type="button" onclick="toggleModal()" class="px-5 py-2.5 text-zinc-400 text-[14px] font-medium rounded-md hover:text-zinc-100 hover:bg-zinc-800 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">Cancel</button>
+                <button type="submit" class="px-6 py-2.5 bg-zinc-100 text-zinc-950 text-[14px] font-bold rounded-md hover:bg-zinc-300 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 shadow-sm">
+                    Create Record
+                </button>
             </div>
         </form>
     </div>
@@ -135,11 +129,23 @@
     let startTime;
     let timerInterval;
 
+    let triggerBtn = null; // To restore focus when modal closes
+
     function toggleModal() {
         const modal = document.getElementById('addLeadModal');
-        modal.classList.toggle('hidden');
-        document.body.style.overflow = modal.classList.contains('hidden') ? 'auto' : 'hidden';
-        lucide.createIcons();
+        const isHidden = modal.classList.contains('hidden');
+        
+        if (isHidden) {
+            triggerBtn = document.activeElement;
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+            setTimeout(() => { document.getElementById('new-name').focus(); }, 50);
+        } else {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            if (triggerBtn) triggerBtn.focus();
+        }
     }
 
     const startBtn = document.getElementById('startBtn');
@@ -149,45 +155,53 @@
     const indicator = document.getElementById('recIndicator');
 
     startBtn.onclick = async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.start();
-        audioChunks = [];
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+            audioChunks = [];
 
-        startTime = Date.now();
-        timerInterval = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
-            const s = (elapsed % 60).toString().padStart(2, '0');
-            timerText.innerText = `${m}:${s}`;
-        }, 1000);
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const s = (elapsed % 60).toString().padStart(2, '0');
+                timerText.innerText = `${m}:${s}`;
+            }, 1000);
 
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
-        statusText.innerText = "CAPTURING_AUDIO_METADATA...";
-        statusText.classList.replace('text-slate-700', 'text-indigo-400');
-        indicator.classList.replace('bg-slate-800', 'bg-indigo-600');
-        indicator.classList.add('animate-ping');
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            statusText.innerText = "Recording started";
+            indicator.classList.replace('bg-zinc-700', 'bg-red-500');
+            indicator.classList.add('animate-pulse');
 
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            
+            // Move focus to stop button logically
+            stopBtn.focus();
+        } catch(err) {
+            alert('Microphone access denied or not available.');
+        }
     };
 
     stopBtn.onclick = () => {
-        mediaRecorder.stop();
-        clearInterval(timerInterval);
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
-        statusText.innerText = "CAPTURE_COMPLETED_SUCCESSFULLY.";
-        statusText.classList.replace('text-indigo-400', 'text-emerald-500');
-        indicator.classList.remove('animate-ping');
-        indicator.classList.replace('bg-indigo-600', 'bg-emerald-500');
-        document.getElementById('audioPreviewContainer').classList.remove('hidden');
+        if(mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+            clearInterval(timerInterval);
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            statusText.innerText = "Recording finished";
+            indicator.classList.remove('animate-pulse');
+            indicator.classList.replace('bg-red-500', 'bg-emerald-500');
+            document.getElementById('audioPreviewContainer').classList.remove('hidden');
+            startBtn.focus();
+        }
     };
 
     document.getElementById('addLeadForm').onsubmit = async (e) => {
         e.preventDefault();
         const submitBtn = e.target.querySelector('button[type="submit"]');
-        submitBtn.innerHTML = "SYNCING...";
+        submitBtn.innerHTML = "Creating...";
         submitBtn.disabled = true;
 
         const formData = new FormData(e.target);
@@ -196,15 +210,29 @@
             formData.append('audio_file', audioBlob, 'capture.webm');
         }
 
-        const res = await fetch('insert.php', { method: 'POST', body: formData });
-        const data = await res.json();
+        try {
+            const res = await fetch('insert.php', { method: 'POST', body: formData });
+            const data = await res.json();
 
-        if (data.status === 'success') {
-            location.reload();
-        } else {
-            alert("MASTER_ERROR_xCLOUD: " + data.message);
-            submitBtn.innerHTML = "SYNC_RECORD";
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert("Error: " + data.message);
+                submitBtn.innerHTML = "Create Record";
+                submitBtn.disabled = false;
+            }
+        } catch (err) {
+            alert('A network error occurred.');
+            submitBtn.innerHTML = "Create Record";
             submitBtn.disabled = false;
         }
     };
+
+    // Close Add modal on ESC
+    window.addEventListener('keydown', (e) => {
+        const modal = document.getElementById('addLeadModal');
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            toggleModal();
+        }
+    });
 </script>

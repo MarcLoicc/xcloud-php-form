@@ -1,17 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  --bg-main: #020617; /* Slate 950 */
-  --bg-card: #0f172a; /* Slate 900 */
-  --bg-card-hover: #1e293b; /* Slate 800 */
-  --border-color: #334155; /* Slate 700 */
-  --text-main: #f8fafc; /* Slate 50 */
-  --text-dim: #94a3b8; /* Slate 400 */
-  --indigo-accent: #6366f1;
+  /* High Contrast Dark Palette (WCAG AA compliant) */
+  --bg-main: #09090b; /* Zinc 950 - Deepest background */
+  --bg-card: #18181b; /* Zinc 900 - Cards/Modals */
+  --bg-card-hover: #27272a; /* Zinc 800 - Hover states */
+  --border-color: #3f3f46; /* Zinc 700 - Explicit borders for separation */
+  --border-focus: #818cf8; /* Indigo 400 - High visibility focus */
+  
+  /* Text Colors */
+  --text-main: #ffffff; /* Pure white for max contrast (Headings/Data) */
+  --text-dim: #d4d4d8; /* Zinc 300 for secondary text (Must exceed 4.5:1 against bg-main/bg-card) */
+  --text-muted: #a1a1aa; /* Zinc 400 for tertiary text (Min 4.5:1 against bg-card) */
+  
+  --indigo-accent: #6366f1; /* Indigo 500 */
 }
 
 html {
-  font-size: 14px; /* Mínimo 14px pedido */
+  font-size: 14px; /* Strict minimum 14px scaling */
 }
 
 body {
@@ -22,21 +28,36 @@ body {
   letter-spacing: -0.01em;
   margin: 0;
   font-size: 1rem; /* 14px */
+  line-height: 1.5; /* Improved readability */
+}
+
+/* Accessibility: Focus Rings */
+*:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Accessible Forms */
+input, select, textarea {
+  font-size: 1rem !important; /* Force min 14px on iOS/Mobile */
+  color: var(--text-main);
+}
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 1; /* Override browser defaults for contrast */
 }
 
 /* Serious Dark UI Components */
 .card-premium {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-premium:hover {
-  background: var(--bg-card-hover);
   border-color: var(--indigo-accent);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-  transform: translateY(-2px);
 }
 
 .sidebar-serious {
@@ -44,15 +65,10 @@ body {
   border-right: 1px solid var(--border-color);
 }
 
-.nav-item-active {
-  background-color: var(--indigo-accent);
-  color: white;
-}
-
 /* Typography Continuity */
 h1, h2, h3, h4, .font-heading {
   font-weight: 700;
-  color: white;
+  color: var(--text-main);
   letter-spacing: -0.01em;
 }
 
@@ -60,42 +76,66 @@ h1, h2, h3, h4, .font-heading {
   color: var(--text-dim);
   font-size: 0.85rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   font-weight: 700;
 }
 
 /* Precise Dark Controls */
-.btn-serious {
-  background: white;
+.btn-primary {
+  background: var(--text-main);
   color: var(--bg-main);
-  border-radius: 4px;
+  border-radius: 6px;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.btn-primary:hover {
+  background: var(--text-dim);
+  color: var(--bg-main);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
   transition: all 0.2s;
 }
 
-.btn-serious:hover {
-  background: var(--text-dim);
-  transform: scale(0.98);
-}
-
-/* Input Fields */
-input, select, textarea {
-  font-size: 1rem !important; /* Forzar min 14px */
+.btn-secondary:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--text-main);
 }
 
 /* Custom Scrollbar Dark */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px; /* Slightly wider for a11y */
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-main);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--border-color);
-  border-radius: 10px;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-dim);
+}
+
+/* Screen Reader Only Utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
