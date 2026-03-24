@@ -103,20 +103,12 @@ echo "UID: $uid (OK)\n";
 $fields = ['id', 'name', 'contact_name', 'email_from', 'phone', 'planned_revenue', 'stage_id', 'create_date'];
 $odooLeads = odoo_call("$url/xmlrpc/2/object", 'execute_kw', [$db, $uid, $password, 'crm.lead', 'search_read', [[]], ['fields' => $fields]]);
 
+echo "RESULTADO CRUDO DE ODOO:\n";
+var_export($odooLeads);
+echo "\n------------------------\n";
+
 if (empty($odooLeads)) {
-    echo "No se encontraron registros en crm.lead. Probando en res.partner...\n";
-    $odooLeads = odoo_call("$url/xmlrpc/2/object", 'execute_kw', [$db, $uid, $password, 'res.partner', 'search_read', [[['customer_rank', '>', 0]]], ['fields' => ['id', 'name', 'email', 'phone']]]);
-}
-
-if (!is_array($odooLeads)) {
-    die("Odoo devolvió un formato inesperado: " . print_r($odooLeads, true));
-}
-
-echo "Registros totales encontrados: " . count($odooLeads) . "\n";
-if(count($odooLeads) > 0) {
-    echo "--- MUESTRA DEL PRIMER REGISTRO ---\n";
-    print_r($odooLeads[0]);
-    echo "\n---------------------------------\n";
+    die("Odoo no devolvió nada en crm.lead.");
 }
 
 $inserted = 0;
