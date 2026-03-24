@@ -291,7 +291,7 @@ if (isset($conn)) {
         const formData = new FormData(e.target);
         if (audioBlob) formData.append('audio_file', audioBlob, 'record.webm');
         try {
-            const r = await fetch('insert.php', { method: 'POST', body: formData });
+            const r = await fetch('insert', { method: 'POST', body: formData });
             const res = await r.json();
             if (res.status === 'success') {
                 setTimeout(() => location.reload(), 800);

@@ -294,7 +294,7 @@ sort($existingTags);
             const fd = new FormData();
             fd.append('id', id);
 
-            fetch('delete_lead.php', { method: 'POST', body: fd })
+            fetch('delete_lead', { method: 'POST', body: fd })
             .then(r => r.json())
             .then(res => {
                 if(res.success) location.reload();
@@ -307,7 +307,7 @@ sort($existingTags);
             const sts = document.getElementById('saveStatus');
             sts.classList.remove('hidden');
             const fd = new FormData(this);
-            fetch('update_lead.php', { method: 'POST', body: fd })
+            fetch('update_lead', { method: 'POST', body: fd })
             .then(r => r.json())
             .then(res => {
                 if(res.success) {

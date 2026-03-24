@@ -107,7 +107,7 @@ $files = array_reverse($files); // Recientes primero
                                 <?php echo $size; ?> MB
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <a href="download.php?file=<?php echo urlencode($dir . $file); ?>" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-border rounded-lg text-zinc-300 text-xs font-medium hover:bg-zinc-800 transition-all">
+                                <a href="download?file=<?php echo urlencode($dir . $file); ?>" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-border rounded-lg text-zinc-300 text-xs font-medium hover:bg-zinc-800 transition-all">
                                     <i data-lucide="<?php echo $isAudio ? 'play' : 'external-link'; ?>" class="w-3.5 h-3.5"></i>
                                     <?php echo $isAudio ? 'Oír' : 'Ver'; ?>
                                 </a>
