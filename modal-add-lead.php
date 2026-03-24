@@ -1,11 +1,4 @@
 <?php if (count(get_included_files()) <= 1) die('Acceso denegado'); ?>
-<div id="addLeadModal" role="dialog" aria-modal="true" aria-labelledby="addLeadModalTitle" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm p-4 hidden overflow-y-auto">
-    <div class="bg-zinc-900 w-full max-w-2xl rounded-xl shadow-2xl p-8 transform transition-all animate-in zoom-in duration-200 border border-zinc-800" tabindex="-1" id="addLeadModalContent">
-        
-        <div class="flex justify-between items-start mb-8 pb-6 border-b border-zinc-800">
-            <div>
-                <h2 id="addLeadModalTitle" class="text-2xl font-bold text-zinc-100 tracking-tight">New Customer Record</h2>
-                <p class="text-[14px] text-zinc-400 mt-2 font-medium">Add a new client to the database.</p>
 <!-- Accessible Modal para Nuevo Cliente -->
 <div id="addLeadModal" role="dialog" aria-modal="true" aria-labelledby="add-modal-title" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm p-4 overflow-y-auto">
     <div class="bg-zinc-900 border border-zinc-800 w-full max-w-2xl rounded-xl shadow-2xl p-8 transform transition-all animate-in zoom-in duration-200" id="addLeadModalContent" tabindex="-1">

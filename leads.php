@@ -54,11 +54,8 @@ function getStatusBadge($status) {
             </div>
             
             <div class="flex gap-3">
-                <button class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-md text-[14px] font-semibold text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 transition-colors flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
-                    <i data-lucide="download" class="w-4 h-4" aria-hidden="true"></i> Exportar
-                </button>
-                <button onclick="toggleModal()" aria-haspopup="dialog" aria-expanded="false" aria-controls="addLeadModal" class="px-4 py-2 bg-zinc-100 rounded-md text-[14px] font-bold text-zinc-950 hover:bg-zinc-300 transition-colors flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
-                    <i data-lucide="plus" class="w-4 h-4" aria-hidden="true"></i> Crear Nuevo
+                <button onclick="toggleModal()" aria-haspopup="dialog" aria-expanded="false" aria-controls="addLeadModal" class="px-5 py-2.5 bg-zinc-100 rounded-md text-[14px] font-bold text-zinc-950 hover:bg-zinc-300 transition-colors flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 shadow-sm">
+                    <i data-lucide="plus" class="w-4 h-4" aria-hidden="true"></i> Crear Nuevo Cliente
                 </button>
             </div>
         </header>
