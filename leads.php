@@ -438,21 +438,23 @@ function getStatusBadge($status) {
             
             // Handle Document display (Unified)
             const fileLink = document.getElementById('det-file-link');
-            if(data.file_path) {
-                fileLink.href = 'download.php?file=' + encodeURIComponent(data.file_path);
-                document.getElementById('det-file-name').textContent = data.file_path.split('/').pop() || 'Documento';
+            if(data.file_path && data.file_path !== "") {
+                const fileNameOnly = data.file_path.split('/').pop();
+                fileLink.href = 'download.php?file=' + fileNameOnly;
+                document.getElementById('det-file-name').textContent = fileNameOnly || 'Documento';
                 fileLink.classList.remove('hidden');
                 fileLink.classList.add('flex');
             } else {
                 fileLink.classList.add('hidden');
                 fileLink.classList.remove('flex');
             }
-
+ 
             // Handle Audio display
             const audioLink = document.getElementById('det-audio-link');
-            if(data.audio_path) {
-                audioLink.href = 'download.php?file=' + encodeURIComponent(data.audio_path);
-                document.getElementById('det-audio-name').textContent = data.audio_path.split('/').pop() || 'Grabación de Audio';
+            if(data.audio_path && data.audio_path !== "") {
+                const audioNameOnly = data.audio_path.split('/').pop();
+                audioLink.href = 'download.php?file=' + audioNameOnly;
+                document.getElementById('det-audio-name').textContent = audioNameOnly || 'Grabación de Audio';
                 audioLink.classList.remove('hidden');
                 audioLink.classList.add('flex');
             } else {
