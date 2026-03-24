@@ -107,6 +107,15 @@ if (!is_array($odooLeads)) {
     die("Odoo devolvió un formato inesperado o error: " . print_r($odooLeads, true));
 }
 
+echo "Leads totales encontrados en Odoo: " . count($odooLeads) . "\n";
+if(count($odooLeads) > 0) {
+    echo "Primeros 3 nombres detectados en Odoo: \n";
+    for($i=0; $i<min(3, count($odooLeads)); $i++) {
+        echo "- " . ($odooLeads[$i]['contact_name'] ?? $odooLeads[$i]['name'] ?? 'Sin nombre') . "\n";
+    }
+}
+echo "\nIniciando proceso de volcado...\n";
+
 $inserted = 0;
 foreach ($odooLeads as $ol) {
     if (!is_array($ol)) continue; // Saltar si no es un registro válido
