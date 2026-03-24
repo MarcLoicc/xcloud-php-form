@@ -19,14 +19,14 @@ $totalLeads = $conn->query("SELECT COUNT(*) as total FROM leads $where")->fetch_
 $revenue = $conn->query("SELECT SUM(proposal_price) as total FROM leads $where AND status IN ('ganado', 'propuesta_enviada')")->fetch_assoc()['total'] ?? 0;
 
 // Desglose Pago
-$wonPago = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'pago' AND status = 'ganado'")->fetch_assoc()['total'];
-$lostPago = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'pago' AND status = 'perdido'")->fetch_assoc()['total'];
-$revPago = $conn->query("SELECT SUM(proposal_price) as total FROM leads $where AND source = 'pago' AND status IN ('ganado', 'propuesta_enviada')")->fetch_assoc()['total'] ?? 0;
+$wonPago = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'pago' AND LOWER(status) = 'ganado'")->fetch_assoc()['total'];
+$lostPago = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'pago' AND LOWER(status) = 'perdido'")->fetch_assoc()['total'];
+$revPago = $conn->query("SELECT SUM(proposal_price) as total FROM leads $where AND source = 'pago' AND LOWER(status) IN ('ganado', 'propuesta_enviada')")->fetch_assoc()['total'] ?? 0;
 
 // Desglose Orgánico
-$wonOrganico = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'organico' AND status = 'ganado'")->fetch_assoc()['total'];
-$lostOrganico = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'organico' AND status = 'perdido'")->fetch_assoc()['total'];
-$revOrganico = $conn->query("SELECT SUM(proposal_price) as total FROM leads $where AND source = 'organico' AND status IN ('ganado', 'propuesta_enviada')")->fetch_assoc()['total'] ?? 0;
+$wonOrganico = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'organico' AND LOWER(status) = 'ganado'")->fetch_assoc()['total'];
+$lostOrganico = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'organico' AND LOWER(status) = 'perdido'")->fetch_assoc()['total'];
+$revOrganico = $conn->query("SELECT SUM(proposal_price) as total FROM leads $where AND source = 'organico' AND LOWER(status) IN ('ganado', 'propuesta_enviada')")->fetch_assoc()['total'] ?? 0;
 
 // 2. Gráfica de Tendencia Séparada (Pago vs Orgánico)
 $historyQuery = "
