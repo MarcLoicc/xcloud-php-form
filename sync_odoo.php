@@ -103,44 +103,49 @@ echo "UID: $uid (OK)\n";
 $fields = ['id', 'name', 'contact_name', 'email_from', 'phone', 'planned_revenue', 'stage_id', 'create_date'];
 $odooLeads = odoo_call("$url/xmlrpc/2/object", 'execute_kw', [$db, $uid, $password, 'crm.lead', 'search_read', [[]], ['fields' => $fields]]);
 
-if (!is_array($odooLeads)) {
-    die("Odoo devolvió un formato inesperado o error: " . print_r($odooLeads, true));
+if (empty($odooLeads)) {
+    echo "No se encontraron registros en crm.lead. Probando en res.partner...\n";
+    $odooLeads = odoo_call("$url/xmlrpc/2/object", 'execute_kw', [$db, $uid, $password, 'res.partner', 'search_read', [[['customer_rank', '>', 0]]], ['fields' => ['id', 'name', 'email', 'phone']]]);
 }
 
-echo "Leads totales encontrados en Odoo: " . count($odooLeads) . "\n";
-if(count($odooLeads) > 0) {
-    echo "Primeros 3 nombres detectados en Odoo: \n";
-    for($i=0; $i<min(3, count($odooLeads)); $i++) {
-        echo "- " . ($odooLeads[$i]['contact_name'] ?? $odooLeads[$i]['name'] ?? 'Sin nombre') . "\n";
-    }
+if (!is_array($odooLeads)) {
+    die("Odoo devolvió un formato inesperado: " . print_r($odooLeads, true));
 }
-echo "\nIniciando proceso de volcado...\n";
+
+echo "Registros totales encontrados: " . count($odooLeads) . "\n";
+if(count($odooLeads) > 0) {
+    echo "--- MUESTRA DEL PRIMER REGISTRO ---\n";
+    print_r($odooLeads[0]);
+    echo "\n---------------------------------\n";
+}
 
 $inserted = 0;
 foreach ($odooLeads as $ol) {
-    if (!is_array($ol)) continue; // Saltar si no es un registro válido
+    if (!is_array($ol)) continue;
 
-    $contact = $ol['contact_name'] ?? ($ol['name'] ?? 'Odoo Lead');
-    $email = $ol['email_from'] ?? '';
-    $phone = $ol['phone'] ?? '';
+    // Intentar sacar un nombre de donde sea
+    $contact = $ol['contact_name'] ?? ($ol['display_name'] ?? ($ol['name'] ?? ('ID: ' . ($ol['id'] ?? 'Desconocido'))));
+    $email = $ol['email_from'] ?? ($ol['email'] ?? '');
+    $phone = $ol['phone'] ?? ($ol['mobile'] ?? '');
     $revenue = (float)($ol['planned_revenue'] ?? 0);
     $created = $ol['create_date'] ?? date('Y-m-d H:i:s');
     
-    // Mapeo de estados
+    // Mapeo de estados con mayor soporte
     $stageName = 'nuevo';
-    if (isset($ol['stage_id']) && is_array($ol['stage_id']) && isset($ol['stage_id'][1])) {
-        $stageName = strtolower($ol['stage_id'][1]);
-    }
-    
+    if (isset($ol['stage_id']) && is_array($ol['stage_id'])) $stageName = strtolower($ol['stage_id'][1]);
+
     $status = 'nuevo';
     if (stripos($stageName, 'won') !== false || stripos($stageName, 'ganado') !== false) $status = 'ganado';
     if (stripos($stageName, 'lost') !== false || stripos($stageName, 'perdido') !== false) $status = 'perdido';
 
-    // Anti-Duplicados
-    $stmt = $conn->prepare("SELECT id FROM leads WHERE (email = ? AND email != '') OR name = ?");
+    // Para depuración: No saltar duplicados si estamos testeando qué llega
+    $stmt = $conn->prepare("SELECT id FROM leads WHERE (email = ? AND email != '') OR (name = ? AND name != 'Sin nombre')");
     $stmt->bind_param("ss", $email, $contact);
     $stmt->execute();
-    if ($stmt->get_result()->num_rows > 0) continue;
+    if ($stmt->get_result()->num_rows > 0) {
+        echo "Saltado repetido: $contact\n";
+        continue;
+    }
 
     $ins = $conn->prepare("INSERT INTO leads (name, email, phone, proposal_price, status, source, created_at) VALUES (?, ?, ?, ?, ?, 'organico', ?)");
     $ins->bind_param("sssdss", $contact, $email, $phone, $revenue, $status, $created);
