@@ -1,69 +1,67 @@
-<?php if (count(get_included_files()) <= 1) die('Acceso denegado'); ?>
-<!-- Tailwind Configuration & Theme Support -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          bg: '#f8fafc',
-          card: '#ffffff',
-          sidebar: '#ffffff',
-          border: '#e2e8f0',
-          primary: '#4f46e5',
-          'text-main': '#0f172a',
-          'text-muted': '#64748b'
-        },
-        fontFamily: {
-          sans: ['Outfit', 'sans-serif'],
-        },
-      }
-    }
-  }
-</script>
-
-<aside class="fixed left-0 top-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0 bg-white border-r border-slate-200">
-   <div class="h-full px-6 py-10 overflow-y-auto flex flex-col">
-      <a href="index" class="flex items-center ps-2 mb-10 group">
-         <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
-            <i data-lucide="zap" class="w-5 h-5 text-white"></i>
-         </div>
-         <span class="self-center text-xl font-bold whitespace-nowrap text-slate-900 ml-3 tracking-tight">CRM <span class="text-indigo-600">Pro</span></span>
-      </a>
-      
-      <ul class="space-y-1.5 font-medium flex-1">
-         <?php 
-            $current_page = basename($_SERVER['PHP_SELF']); 
-            $nav_items = [
-                ['url' => 'index', 'icon' => 'layout-dashboard', 'label' => 'Dashboard', 'match' => 'index.php'],
-                ['url' => 'leads', 'icon' => 'layers', 'label' => 'Leads', 'match' => 'leads.php'],
-                ['url' => 'explorer', 'icon' => 'folder', 'label' => 'Archivos', 'match' => 'explorer.php']
-            ];
-            foreach($nav_items as $item):
-                $is_active = ($current_page == $item['match']);
-         ?>
-         <li>
-            <a href="<?php echo $item['url']; ?>" class="flex items-center px-4 py-3 rounded-xl transition-all group <?php echo $is_active ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'; ?>">
-               <i data-lucide="<?php echo $item['icon']; ?>" class="w-4 h-4 <?php echo $is_active ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'; ?>"></i>
-               <span class="ms-3 text-sm font-semibold"><?php echo $item['label']; ?></span>
-            </a>
-         </li>
-         <?php endforeach; ?>
-      </ul>
-
-      <div class="pt-4 mt-4 border-t border-slate-100">
-         <a href="?logout=1" class="flex items-center px-4 py-3 text-slate-400 rounded-xl hover:bg-red-50 hover:text-red-600 transition-all group">
-            <i data-lucide="log-out" class="w-4 h-4"></i>
-            <span class="ms-3 text-sm font-semibold">Cerrar Sesión</span>
-         </a>
+<?php
+$current_page = basename($_SERVER['PHP_SELF']);
+$navItems = [
+    ['name' => 'Monitor', 'icon' => 'layout-dashboard', 'href' => 'index.php', 'id' => 'index.php'],
+    ['name' => 'Leads', 'icon' => 'users', 'href' => 'leads.php', 'id' => 'leads.php'],
+    ['name' => 'Archivo Maestro', 'icon' => 'folder-open', 'href' => 'explorer.php', 'id' => 'explorer.php'],
+    ['name' => 'Seguridad', 'icon' => 'shield-check', 'href' => '#', 'id' => 'security'],
+];
+?>
+<aside id="main-sidebar" class="hidden sm:flex fixed top-0 left-0 z-40 w-72 h-screen p-6 flex-col justify-between border-r border-white/60 bg-white/30 backdrop-blur-3xl shadow-[50px_0_100px_-50px_rgba(30,41,59,0.05)] transition-all overflow-y-auto">
+  <div>
+    <!-- Brand -->
+    <div class="flex items-center gap-4 mb-14 px-2">
+      <div class="w-14 h-14 bg-indigo-600 rounded-[2rem] flex items-center justify-center transform hover:rotate-6 transition-all shadow-xl shadow-indigo-100 ring-4 ring-white/40">
+        <i data-lucide="shield-check" class="w-8 h-8 text-white stroke-[2.5]"></i>
       </div>
-   </div>
-</aside>
+      <div>
+        <h2 class="text-xl font-black text-slate-800 tracking-tighter leading-none italic">CRM <span class="text-indigo-600 not-italic">MARCLOI</span></h2>
+        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-100/60 px-2 py-0.5 rounded-full mt-1.5 inline-block">Enterprise 5.4</span>
+      </div>
+    </div>
 
-<!-- Cargar el Modal en todas las páginas donde esté el sidebar -->
-<?php include 'modal-add-lead.php'; ?>
-<script>lucide.createIcons();</script>
+    <nav class="space-y-3">
+      <?php foreach ($navItems as $item): 
+          $isActive = ($current_page == $item['id']);
+      ?>
+        <a href="<?php echo $item['href']; ?>" class="group relative flex items-center justify-between px-5 py-4 rounded-3xl transition-all <?php echo $isActive ? 'bg-indigo-600 shadow-2xl shadow-indigo-200' : 'hover:bg-white/50 border border-transparent hover:border-white/80'; ?>">
+          <div class="flex items-center gap-4">
+            <i data-lucide="<?php echo $item['icon']; ?>" class="w-6 h-6 transition-all <?php echo $isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-500'; ?> stroke-[2.5]"></i>
+            <span class="text-[13px] font-black transition-all <?php echo $isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-900'; ?> uppercase tracking-tight"><?php echo $item['name']; ?></span>
+          </div>
+          <?php if ($item['name'] == 'Leads'): ?>
+            <span class="flex h-6 min-w-6 items-center justify-center rounded-full bg-indigo-50 px-2 text-[9px] font-black text-indigo-600 ring-2 ring-white/10 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+              24
+            </span>
+          <?php endif; ?>
+          <?php if ($isActive): ?>
+            <div class="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-8 bg-white rounded-full"></div>
+          <?php endif; ?>
+        </a>
+      <?php endforeach; ?>
+    </nav>
+  </div>
+
+  <div class="space-y-6 pt-6 border-t border-white/80">
+    <button onclick="toggleModal()" class="w-full flex items-center justify-center gap-3 py-5 bg-slate-900 rounded-[2rem] text-xs font-black text-white hover:bg-black transition-all shadow-2xl shadow-slate-200 hover:shadow-indigo-100 active:scale-95 group overflow-hidden relative">
+      <div class="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+      <i data-lucide="plus-circle" class="w-5 h-5 group-hover:rotate-90 transition-all opacity-80"></i>
+      <span class="tracking-[0.2em] uppercase">Nuevo Registro</span>
+    </button>
+
+    <div class="flex items-center justify-between px-2">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 bg-indigo-100 rounded-2xl border-2 border-white flex items-center justify-center overflow-hidden shadow-sm ring-2 ring-indigo-50">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Marc" alt="User" class="w-full h-full object-cover">
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[11px] font-black text-slate-800 tracking-tight leading-none uppercase">Loi Marc</span>
+          <span class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1 italic">Master Admin</span>
+        </div>
+      </div>
+      <a href="logout.php" class="p-3 bg-red-50 hover:bg-red-500 hover:text-white text-red-500 rounded-2xl transition-all shadow-sm" title="Salir de Sesión">
+        <i data-lucide="log-out" class="w-5 h-5"></i>
+      </a>
+    </div>
+  </div>
+</aside>

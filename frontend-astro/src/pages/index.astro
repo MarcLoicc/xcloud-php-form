@@ -1,0 +1,148 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Sidebar from '../components/Sidebar.astro';
+import { ArrowUpRight, TrendingUp, Coins, Users, Zap, Leaf } from '@lucide/astro';
+
+const stats = [
+  { name: 'Total Revenue', value: '1,240,500€', icon: Coins, color: 'indigo', growth: '+12.5%' },
+  { name: 'Active Leads', value: '3,842', icon: Users, color: 'blue', growth: '+5.2%' },
+  { name: 'Conversion Rate', value: '24.8%', icon: Zap, color: 'amber', growth: '+3.1%' },
+  { name: 'Organic Reach', value: '450k', icon: Leaf, color: 'emerald', growth: '+1.8%' }
+];
+---
+
+<Layout title="Dashboard Premium - CRM Marcloi">
+	<Sidebar />
+	
+	<main class="sm:ml-72 min-h-screen p-8 lg:p-12 space-y-12">
+		<!-- Header Section -->
+		<header class="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-10 border-b border-white/40 group">
+			<div>
+				<div class="flex items-center gap-3 mb-3">
+					<div class="w-3 h-3 bg-indigo-600 rounded-full animate-pulse shadow-lg shadow-indigo-200"></div>
+					<span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Panel en tiempo real</span>
+				</div>
+				<h1 class="text-5xl font-black text-slate-800 tracking-tighter italic">Monitor <span class="text-indigo-600 not-italic font-medium">Empresarial</span></h1>
+				<p class="text-slate-500 text-sm mt-3 font-medium max-w-lg">Control total sobre tus activos comerciales y el rendimiento de tus fuentes de adquisición.</p>
+			</div>
+			<div class="flex items-center gap-4">
+				<div class="text-right hidden lg:block">
+					<span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Última sync</span>
+					<span class="text-sm font-bold text-slate-700 tabular-nums">12:35 PM, 24 MAR 2026</span>
+				</div>
+				<button class="px-8 py-4 bg-white border border-slate-200 rounded-3xl text-sm font-black text-slate-700 hover:bg-slate-50 transition-all shadow-xl shadow-slate-100 flex items-center gap-3 active:scale-95">
+					<span class="w-2 h-2 bg-indigo-600 rounded-full"></span>
+					Reporte Semanal
+				</button>
+			</div>
+		</header>
+
+		<!-- Statistics Grid -->
+		<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+			{stats.map((stat) => {
+        const Icon = stat.icon;
+        return (
+          <div class="group relative p-8 bg-white/40 border border-white/60 rounded-[3rem] backdrop-blur-3xl shadow-2xl shadow-slate-200 transition-all hover:-translate-y-2 hover:bg-white/60 overflow-hidden">
+            {/* Neon Glow */}
+            <div class={`absolute -right-8 -top-8 w-24 h-24 bg-${stat.color}-500/10 blur-[60px] rounded-full group-hover:bg-${stat.color}-500/20 transition-all duration-500`}></div>
+            
+            <div class="flex justify-between items-start mb-10">
+              <div class={`w-14 h-14 bg-${stat.color}-100/50 rounded-2xl flex items-center justify-center text-${stat.color}-600 border border-white shadow-inner`}>
+                <Icon class="w-7 h-7 stroke-[2.5]" />
+              </div>
+              <div class="px-3 py-1 bg-white border border-slate-100 rounded-full flex items-center gap-1.5 shadow-sm">
+                <TrendingUp class="w-3 h-3 text-emerald-500" />
+                <span class="text-[10px] font-black text-slate-700 uppercase">{stat.growth}</span>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">{stat.name}</h3>
+              <div class="text-4xl font-black text-slate-800 tracking-tight tabular-nums px-1">{stat.value}</div>
+            </div>
+          </div>
+        );
+      })}
+		</section>
+
+		<!-- Charts Section -->
+		<section class="grid grid-cols-1 lg:grid-cols-12 gap-10 min-h-[500px]">
+			<!-- Main Chart Card -->
+			<div class="lg:col-span-8 p-10 bg-white/50 border border-white rounded-[3.5rem] backdrop-blur-3xl shadow-2xl shadow-slate-100 transition-all relative overflow-hidden group">
+				<div class="flex items-center justify-between mb-12">
+					<div>
+						<h3 class="text-2xl font-black text-slate-800 tracking-tight italic">Crecimiento <span class="text-indigo-600 not-italic">Ads vs Orgánico</span></h3>
+						<p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-2">Distribución de conversión semanal</p>
+					</div>
+					<div class="flex gap-2">
+						<button class="px-4 py-2 bg-slate-900 border border-slate-800 text-[10px] font-black text-white rounded-xl uppercase tracking-widest hover:bg-black transition-all">Semanas</button>
+						<button class="px-4 py-2 bg-white border border-slate-200 text-[10px] font-black text-slate-400 rounded-xl uppercase tracking-widest hover:border-slate-800 transition-all">Meses</button>
+					</div>
+				</div>
+
+				{/* Mock Chart Visualization */}
+				<div class="h-80 flex items-end justify-between gap-4 px-2 relative">
+          {/* Chart Grid Lines */}
+          <div class="absolute inset-0 flex flex-col justify-between py-2 z-0">
+            {[...Array(5)].map(() => (
+              <div class="w-full h-px bg-slate-200/50"></div>
+            ))}
+          </div>
+
+          {[60, 85, 45, 95, 70, 80, 50].map((h, i) => (
+            <div class="relative flex-1 group z-10 h-full flex items-end">
+              <div class="w-full bg-slate-100 rounded-t-2xl transition-all h-[100%] absolute bottom-0"></div>
+              <div style={`height: ${h}%`} class="w-full bg-indigo-600 rounded-2xl relative overflow-hidden transition-all group-hover:bg-indigo-500 shadow-xl shadow-indigo-100/50">
+                <div class="absolute top-0 left-0 w-full h-1/2 bg-white/20 blur-xl"></div>
+              </div>
+              <span class="absolute -bottom-10 left-1/2 -translate-x-1/2 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Lun, Mar, Mié, Jue, Vie, Sáb, Dom</span>
+            </div>
+          ))}
+				</div>
+			</div>
+
+			<!-- Secondary Card (Conversion Stats) -->
+			<div class="lg:col-span-4 p-10 bg-slate-900 rounded-[3.5rem] text-white shadow-2xl shadow-slate-300 relative overflow-hidden flex flex-col justify-between group">
+				<div class="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-all duration-500"></div>
+        <div class="relative z-10">
+					<div class="flex items-center gap-3 mb-10">
+            <div class="w-10 h-10 bg-indigo-500 rounded-2xl flex items-center justify-center text-white ring-4 ring-indigo-500/20">
+              <Zap class="w-5 h-5 fill-white" />
+            </div>
+						<h3 class="text-xl font-bold tracking-tight italic">Eficacia Comercial</h3>
+					</div>
+					
+					<div class="space-y-8">
+						<div class="space-y-4">
+							<div class="flex justify-between items-end">
+								<span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Tasa de Cierre</span>
+								<span class="text-2xl font-black italic">68.4% <ArrowUpRight class="inline w-5 h-5 text-indigo-400" /></span>
+							</div>
+							<div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700 p-0.5">
+								<div class="w-[68%] h-full bg-indigo-500 rounded-full shadow-[0_0_20px_#4f46e5]"></div>
+							</div>
+						</div>
+						<div class="space-y-4">
+							<div class="flex justify-between items-end">
+								<span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Leads en Flujo</span>
+								<span class="text-2xl font-black italic">1,245 <ArrowUpRight class="inline w-5 h-5 text-indigo-400" /></span>
+							</div>
+							<div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700 p-0.5">
+								<div class="w-[85%] h-full bg-blue-500 rounded-full shadow-[0_0_20px_#3b82f6]"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="relative z-10 mt-12">
+					<button class="w-full py-5 bg-white text-slate-900 font-black rounded-3xl text-sm uppercase tracking-widest hover:scale-[1.02] transition-all shadow-xl shadow-slate-900/50">
+						Ver Embudo Completo
+					</button>
+				</div>
+			</div>
+		</section>
+	</main>
+</Layout>
+
+<style>
+	/* Global Utility / Custom CSS if needed */
+</style>

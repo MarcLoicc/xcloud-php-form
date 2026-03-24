@@ -1,0 +1,71 @@
+---
+import { LayoutDashboard, Users, FolderOpen, Kanban, ShieldCheck, LogOut, PlusCircle } from '@lucide/astro';
+
+const navItems = [
+  { name: 'Monitor', icon: LayoutDashboard, href: '/', active: true },
+  { name: 'Leads', icon: Users, href: '/leads' },
+  { name: 'Flujo Kanban', icon: Kanban, href: '/kanban' },
+  { name: 'Archivo Maestro', icon: FolderOpen, href: '/explorer' },
+  { name: 'Seguridad CRM', icon: ShieldCheck, href: '/security' }
+];
+---
+<aside id="main-sidebar" class="hidden sm:flex fixed top-0 left-0 z-40 w-72 h-screen p-6 flex-col justify-between border-r border-white/40 bg-white/20 backdrop-blur-3xl shadow-[50px_0_100px_-50px_rgba(30,41,59,0.05)] transition-all">
+  <div>
+    <!-- Brand -->
+    <div class="flex items-center gap-4 mb-12 px-2">
+      <div class="w-14 h-14 bg-indigo-600 rounded-3xl flex items-center justify-center transform hover:rotate-6 transition-all shadow-xl shadow-indigo-100 ring-4 ring-white/50">
+        <ShieldCheck class="w-8 h-8 text-white stroke-[2.5]" />
+      </div>
+      <div>
+        <h2 class="text-xl font-black text-slate-800 tracking-tighter leading-none">CRM <span class="text-indigo-600">MARCLOI</span></h2>
+        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100/50 px-2 py-0.5 rounded-full mt-1 inline-block">Enterprise 5.0</span>
+      </div>
+    </div>
+
+    <nav class="space-y-2">
+      {navItems.map((item) => {
+        const Icon = item.icon;
+        return (
+          <a href={item.href} class={`group relative flex items-center justify-between px-5 py-4 rounded-3xl transition-all ${item.active ? 'bg-indigo-600 shadow-2xl shadow-indigo-200' : 'hover:bg-indigo-50/50'}`}>
+            <div class="flex items-center gap-4">
+              <Icon class={`w-6 h-6 transition-all ${item.active ? 'text-white' : 'text-slate-400 group-hover:text-indigo-500'}`} />
+              <span class={`text-[13px] font-bold transition-all ${item.active ? 'text-white' : 'text-slate-500 group-hover:text-slate-800'}`}>{item.name}</span>
+            </div>
+            {item.name === 'Leads' && (
+              <span class="flex h-6 min-w-6 items-center justify-center rounded-full bg-indigo-50 px-2 text-[10px] font-black text-indigo-600 ring-2 ring-white/10 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                24
+              </span>
+            )}
+            {item.active && (
+              <div class="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-8 bg-white rounded-full"></div>
+            )}
+          </a>
+        );
+      })}
+    </nav>
+  </div>
+
+  <div class="space-y-6 pt-6 border-t border-white/50">
+    <!-- Quick Action / Add -->
+    <button class="w-full flex items-center justify-center gap-3 py-5 bg-slate-900 rounded-3xl text-sm font-black text-white hover:bg-black transition-all shadow-2xl shadow-slate-200 active:scale-95 group">
+      <PlusCircle class="w-5 h-5 group-hover:rotate-90 transition-all opacity-80" />
+      <span class="tracking-widest uppercase">Nuevo Registro</span>
+    </button>
+
+    <!-- User Section -->
+    <div class="flex items-center justify-between px-2">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 bg-indigo-100 rounded-2xl border-2 border-white flex items-center justify-center overflow-hidden shadow-sm">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Marc" alt="User" class="w-full h-full object-cover" />
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[11px] font-black text-slate-800 tracking-tight leading-none uppercase">Loi Marc</span>
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Súper Admin</span>
+        </div>
+      </div>
+      <button class="p-3 bg-red-50 hover:bg-red-100 text-red-500 rounded-2xl transition-all" title="Logout">
+        <LogOut class="w-5 h-5" />
+      </button>
+    </div>
+  </div>
+</aside>
