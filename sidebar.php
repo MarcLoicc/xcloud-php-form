@@ -18,7 +18,7 @@ $navItems = [
         <h2 class="text-[16px] font-bold text-zinc-100 tracking-tight leading-none">CRM Marcloi</h2>
         <div class="flex items-center gap-1.5 mt-1.5">
           <span class="flex h-1 w-1 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span class="text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest bg-zinc-900 px-1 py-0.5 rounded border border-zinc-800/50">v.723b521</span>
+          <span class="text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest bg-zinc-900 px-1 py-0.5 rounded border border-zinc-800/50">v.c6d5331</span>
         </div>
       </div>
     </a>

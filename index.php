@@ -24,7 +24,7 @@
         <!-- Dashboard Header -->
         <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-zinc-900 mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-zinc-100 tracking-tight">Hello 👋 Marc Loic</h1>
+                <h1 class="text-3xl font-bold text-zinc-100 tracking-tight">Hello Marc Loic👋</h1>
                 <p class="text-[14px] text-zinc-400 mt-1 font-medium">Análisis de rendimiento semanal y conversión por canal.</p>
             </div>
             
@@ -132,9 +132,9 @@
                         <p class="text-[10px] text-zinc-500 font-bold uppercase mt-1">Global Proyectado</p>
                     </div>
                     <div class="pt-4 border-t border-zinc-800/50 space-y-2">
-                        <div class="flex justify-between items-center bg-transparent border border-zinc-800/50 p-2 rounded-lg">
-                            <span class="text-[10px] text-zinc-500 font-bold uppercase italic">Valor Promedio x Lead:</span>
-                            <span id="stat-avg-revenue" class="text-[16px] font-black text-yellow-500 italic">€0</span>
+                        <div class="flex flex-col items-center bg-transparent border border-zinc-800/50 p-2 rounded-lg">
+                            <span class="text-[10px] text-zinc-500 font-bold uppercase italic text-center">Ticket Promedio por Venta:</span>
+                            <span id="stat-avg-revenue" class="text-[20px] font-black text-yellow-500 italic">€0</span>
                         </div>
                         <div class="flex justify-between items-center bg-zinc-950/50 p-2 rounded-lg">
                             <span class="text-[10px] text-zinc-500 font-bold uppercase">Leads Registrados Periodo:</span>
@@ -206,10 +206,11 @@
             document.getElementById('stat-total').innerText = data.metrics.totalLeads;
             document.getElementById('stat-revenue').innerText = '€' + data.metrics.revenue;
             
-            // Calcular y actualizar Valor Promedio por Lead
+            // Calcular y actualizar Ticket Promedio por Venta (Solo Won Leads)
+            const totalWon = (data.metrics.pago.won + data.metrics.organico.won) || 0;
             const rawRev = parseFloat(data.metrics.revenue.replace(/,/g, '')) || 0;
-            const avgRev = data.metrics.totalLeads > 0 ? (rawRev / data.metrics.totalLeads).toFixed(0) : 0;
-            document.getElementById('stat-avg-revenue').innerText = '€' + parseInt(avgRev).toLocaleString();
+            const avgWonValue = totalWon > 0 ? (rawRev / totalWon).toFixed(0) : 0;
+            document.getElementById('stat-avg-revenue').innerText = '€' + parseInt(avgWonValue).toLocaleString();
 
             // Pago (Cálculos de %)
             const pTotal = data.metrics.pago.total || 0;
