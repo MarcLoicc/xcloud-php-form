@@ -4,6 +4,7 @@ $navItems = [
     ['name' => 'Panel de Control', 'icon' => 'layout', 'href' => 'index', 'id' => 'index.php'],
     ['name' => 'Clientes', 'icon' => 'users', 'href' => 'leads', 'id' => 'leads.php'],
     ['name' => 'Documentos', 'icon' => 'folder', 'href' => 'explorer', 'id' => 'explorer.php'],
+    ['name' => 'Estadísticas', 'icon' => 'bar-chart-2', 'href' => 'stats', 'id' => 'stats.php'],
 ];
 ?>
 <aside id="main-sidebar" aria-label="Navegación Principal" class="hidden sm:flex fixed top-0 left-0 z-40 w-64 h-screen flex-col justify-between bg-zinc-950 border-r border-zinc-800">
@@ -17,7 +18,7 @@ $navItems = [
         <h2 class="text-[16px] font-bold text-zinc-100 tracking-tight leading-none">CRM Marcloi</h2>
         <div class="flex items-center gap-1.5 mt-1.5">
           <span class="flex h-1 w-1 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span class="text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest bg-zinc-900 px-1 py-0.5 rounded border border-zinc-800/50">v.2c82f9e</span>
+          <span class="text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest bg-zinc-900 px-1 py-0.5 rounded border border-zinc-800/50">v.ea1f787</span>
         </div>
       </div>
     </a>
