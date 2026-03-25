@@ -232,7 +232,7 @@
         }
 
         try {
-            const res = await fetch('insert.php', { method: 'POST', body: formData });
+            const res = await fetch('insert', { method: 'POST', body: formData });
             
             const contentType = res.headers.get("content-type");
             if (contentType && contentType.indexOf("application/json") !== -1) {

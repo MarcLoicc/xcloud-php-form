@@ -483,7 +483,7 @@ function getStatusBadge($status) {
             const fd = new FormData();
             fd.append('id', id);
             fd.append('csrf_token', '<?php echo $_SESSION['csrf_token']; ?>');
-            fetch('delete_lead.php', { method: 'POST', body: fd })
+            fetch('delete_lead', { method: 'POST', body: fd })
             .then(r => r.json()).then(res => {
                 if(res.success) location.reload();
             });
@@ -503,7 +503,7 @@ function getStatusBadge($status) {
             lucide.createIcons();
 
             const fd = new FormData(this);
-            fetch('update_lead.php', { method: 'POST', body: fd })
+            fetch('update_lead', { method: 'POST', body: fd })
             .then(async response => {
                 const text = await response.text(); 
                 try {

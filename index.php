@@ -192,7 +192,7 @@
         let currentRange = '7';
 
         async function fetchStats(range = '7', start = null, end = null) {
-            let url = `api_stats.php?range=${range}`;
+            let url = `api_stats?range=${range}`;
             if (start && end) url += `&start=${start}&end=${end}`;
             
             const res = await fetch(url);

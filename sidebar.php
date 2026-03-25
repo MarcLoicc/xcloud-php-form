@@ -1,15 +1,15 @@
 <?php
 $current_page = basename($_SERVER['PHP_SELF']);
 $navItems = [
-    ['name' => 'Panel de Control', 'icon' => 'layout', 'href' => 'index.php', 'id' => 'index.php'],
-    ['name' => 'Clientes', 'icon' => 'users', 'href' => 'leads.php', 'id' => 'leads.php'],
-    ['name' => 'Documentos', 'icon' => 'folder', 'href' => 'explorer.php', 'id' => 'explorer.php'],
+    ['name' => 'Panel de Control', 'icon' => 'layout', 'href' => 'index', 'id' => 'index.php'],
+    ['name' => 'Clientes', 'icon' => 'users', 'href' => 'leads', 'id' => 'leads.php'],
+    ['name' => 'Documentos', 'icon' => 'folder', 'href' => 'explorer', 'id' => 'explorer.php'],
 ];
 ?>
 <aside id="main-sidebar" aria-label="Navegación Principal" class="hidden sm:flex fixed top-0 left-0 z-40 w-64 h-screen flex-col justify-between bg-zinc-950 border-r border-zinc-800">
   <div class="px-6 py-8">
     <!-- Brand -->
-    <a href="index.php" class="flex items-center gap-3 mb-10 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-500 rounded-md" aria-label="Ir al Panel de Control">
+    <a href="index" class="flex items-center gap-3 mb-10 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-500 rounded-md" aria-label="Ir al Panel de Control">
       <div class="w-8 h-8 bg-zinc-100 rounded-md flex items-center justify-center border border-zinc-300 transition-colors group-hover:bg-zinc-200" aria-hidden="true">
         <i data-lucide="triangle" class="w-5 h-5 text-zinc-950 fill-zinc-950"></i>
       </div>
@@ -57,7 +57,7 @@ $navItems = [
           <span class="text-[12px] text-zinc-500 leading-tight block">admin@marcloi.es</span>
         </div>
       </div>
-      <a href="logout.php" aria-label="Cerrar Sesión" class="p-2 text-zinc-500 hover:text-zinc-200 transition-colors rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
+      <a href="logout" aria-label="Cerrar Sesión" class="p-2 text-zinc-500 hover:text-zinc-200 transition-colors rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">
         <i data-lucide="log-out" class="w-4 h-4" aria-hidden="true"></i>
       </a>
     </div>
