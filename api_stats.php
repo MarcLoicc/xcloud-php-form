@@ -21,11 +21,13 @@ $revenue = $conn->query("SELECT SUM(proposal_price) as total FROM leads $where A
 // Desglose Pago
 $wonPago = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'pago' AND LOWER(status) = 'ganado'")->fetch_assoc()['total'];
 $lostPago = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'pago' AND LOWER(status) = 'perdido'")->fetch_assoc()['total'];
+$unqualifiedPago = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'pago' AND LOWER(status) = 'no_cualificado'")->fetch_assoc()['total'];
 $revPago = $conn->query("SELECT SUM(proposal_price) as total FROM leads $where AND source = 'pago' AND LOWER(status) IN ('ganado', 'propuesta_enviada')")->fetch_assoc()['total'] ?? 0;
 
 // Desglose Orgánico
 $wonOrganico = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'organico' AND LOWER(status) = 'ganado'")->fetch_assoc()['total'];
 $lostOrganico = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'organico' AND LOWER(status) = 'perdido'")->fetch_assoc()['total'];
+$unqualifiedOrganico = $conn->query("SELECT COUNT(*) as total FROM leads $where AND source = 'organico' AND LOWER(status) = 'no_cualificado'")->fetch_assoc()['total'];
 $revOrganico = $conn->query("SELECT SUM(proposal_price) as total FROM leads $where AND source = 'organico' AND LOWER(status) IN ('ganado', 'propuesta_enviada')")->fetch_assoc()['total'] ?? 0;
 
 // 2. Gráfica de Tendencia Séparada (Pago vs Orgánico)
@@ -63,12 +65,14 @@ $response = [
             'total' => (int)$sourceData['pago'],
             'won' => (int)$wonPago,
             'lost' => (int)$lostPago,
+            'unqualified' => (int)$unqualifiedPago,
             'revenue' => number_format((float)$revPago, 0, '.', ',')
         ],
         'organico' => [
             'total' => (int)$sourceData['organico'],
             'won' => (int)$wonOrganico,
             'lost' => (int)$lostOrganico,
+            'unqualified' => (int)$unqualifiedOrganico,
             'revenue' => number_format((float)$revOrganico, 0, '.', ',')
         ]
     ],

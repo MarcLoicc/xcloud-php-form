@@ -65,7 +65,7 @@
                         <span id="stat-pago-total" class="text-4xl font-black text-zinc-100 italic">0</span>
                         <p class="text-[10px] text-zinc-500 font-bold uppercase mt-1">Leads Totales</p>
                     </div>
-                    <div class="grid grid-cols-3 gap-2 pt-4 border-t border-zinc-800/50">
+                    <div class="grid grid-cols-4 gap-2 pt-4 border-t border-zinc-800/50">
                         <div>
                             <span id="stat-pago-won" class="text-[16px] font-bold text-emerald-500 block">0</span>
                             <span class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter">Cerrados</span>
@@ -73,6 +73,10 @@
                         <div>
                             <span id="stat-pago-lost" class="text-[16px] font-bold text-red-500/70 block">0</span>
                             <span class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter">Perdidos</span>
+                        </div>
+                        <div>
+                            <span id="stat-pago-unqualified" class="text-[16px] font-bold text-zinc-500 block">0</span>
+                            <span class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter">No Cualif.</span>
                         </div>
                         <div>
                             <span id="stat-pago-rev" class="text-[16px] font-bold text-indigo-400 block text-right">€0</span>
@@ -94,7 +98,7 @@
                         <span id="stat-organico-total" class="text-4xl font-black text-zinc-100 italic">0</span>
                         <p class="text-[10px] text-zinc-500 font-bold uppercase mt-1">Leads Totales</p>
                     </div>
-                    <div class="grid grid-cols-3 gap-2 pt-4 border-t border-zinc-800/50">
+                    <div class="grid grid-cols-4 gap-2 pt-4 border-t border-zinc-800/50">
                         <div>
                             <span id="stat-organico-won" class="text-[16px] font-bold text-emerald-500 block">0</span>
                             <span class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter">Cerrados</span>
@@ -102,6 +106,10 @@
                         <div>
                             <span id="stat-organico-lost" class="text-[16px] font-bold text-red-500/70 block">0</span>
                             <span class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter">Perdidos</span>
+                        </div>
+                        <div>
+                            <span id="stat-organico-unqualified" class="text-[16px] font-bold text-zinc-500 block">0</span>
+                            <span class="text-[9px] text-zinc-500 font-bold uppercase tracking-tighter">No Cualif.</span>
                         </div>
                         <div>
                             <span id="stat-organico-rev" class="text-[16px] font-bold text-cyan-400 block text-right">€0</span>
@@ -198,12 +206,14 @@
             document.getElementById('stat-pago-total').innerText = data.metrics.pago.total;
             document.getElementById('stat-pago-won').innerText = data.metrics.pago.won;
             document.getElementById('stat-pago-lost').innerText = data.metrics.pago.lost;
+            document.getElementById('stat-pago-unqualified').innerText = data.metrics.pago.unqualified;
             document.getElementById('stat-pago-rev').innerText = '€' + data.metrics.pago.revenue;
             
             // Orgánico
             document.getElementById('stat-organico-total').innerText = data.metrics.organico.total;
             document.getElementById('stat-organico-won').innerText = data.metrics.organico.won;
             document.getElementById('stat-organico-lost').innerText = data.metrics.organico.lost;
+            document.getElementById('stat-organico-unqualified').innerText = data.metrics.organico.unqualified;
             document.getElementById('stat-organico-rev').innerText = '€' + data.metrics.organico.revenue;
 
             // Actualizar Gráfica Tendencia
