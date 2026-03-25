@@ -10,7 +10,7 @@ if (function_exists('opcache_reset')) {
     echo "Opcache: No disponible en este servidor.\n";
 }
 
-$commit_id = "v.1736_Fuerza";
+$commit_id = "v.e358b1f";
 echo "VERSION EN DISCO: " . $commit_id . "\n";
 echo "FECHA ACTUAL: " . date('Y-m-d H:i:s') . "\n";
 echo "Sincronización forzada completada.";
