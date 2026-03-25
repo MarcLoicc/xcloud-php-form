@@ -24,7 +24,7 @@
         <!-- Dashboard Header -->
         <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-zinc-900 mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-zinc-100 tracking-tight">Hello 👋 Marc Loic</h1>
+                <h1 class="text-3xl font-bold text-zinc-100 tracking-tight">Hello 👋 Marc Loic ❤️</h1>
                 <p class="text-[14px] text-zinc-400 mt-1 font-medium">Análisis de rendimiento semanal y conversión por canal.</p>
             </div>
             
