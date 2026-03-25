@@ -207,9 +207,9 @@
             const getP = (val) => pTotal > 0 ? `(${Math.round((val/pTotal)*100)}%)` : '(0%)';
             
             document.getElementById('stat-pago-total').innerText = pTotal;
-            document.getElementById('stat-pago-won').innerHTML = `${data.metrics.pago.won} <span class="text-[10px] opacity-40 font-normal ml-0.5">${getP(data.metrics.pago.won)}</span>`;
-            document.getElementById('stat-pago-lost').innerHTML = `${data.metrics.pago.lost} <span class="text-[10px] opacity-40 font-normal ml-0.5">${getP(data.metrics.pago.lost)}</span>`;
-            document.getElementById('stat-pago-unqualified').innerHTML = `${data.metrics.pago.unqualified} <span class="text-[10px] opacity-40 font-normal ml-0.5">${getP(data.metrics.pago.unqualified)}</span>`;
+            document.getElementById('stat-pago-won').innerHTML = `<span class="text-[20px] font-bold">${data.metrics.pago.won}</span> <span class="text-[15px] font-medium opacity-60 ml-0.5">${getP(data.metrics.pago.won)}</span>`;
+            document.getElementById('stat-pago-lost').innerHTML = `<span class="text-[20px] font-bold">${data.metrics.pago.lost}</span> <span class="text-[15px] font-medium opacity-60 ml-0.5">${getP(data.metrics.pago.lost)}</span>`;
+            document.getElementById('stat-pago-unqualified').innerHTML = `<span class="text-[20px] font-bold">${data.metrics.pago.unqualified}</span> <span class="text-[15px] font-medium opacity-60 ml-0.5">${getP(data.metrics.pago.unqualified)}</span>`;
             document.getElementById('stat-pago-rev').innerText = '€' + data.metrics.pago.revenue;
             
             // Orgánico (Cálculos de %)
@@ -217,9 +217,9 @@
             const getO = (val) => oTotal > 0 ? `(${Math.round((val/oTotal)*100)}%)` : '(0%)';
             
             document.getElementById('stat-organico-total').innerText = oTotal;
-            document.getElementById('stat-organico-won').innerHTML = `${data.metrics.organico.won} <span class="text-[10px] opacity-40 font-normal ml-0.5">${getO(data.metrics.organico.won)}</span>`;
-            document.getElementById('stat-organico-lost').innerHTML = `${data.metrics.organico.lost} <span class="text-[10px] opacity-40 font-normal ml-0.5">${getO(data.metrics.organico.lost)}</span>`;
-            document.getElementById('stat-organico-unqualified').innerHTML = `${data.metrics.organico.unqualified} <span class="text-[10px] opacity-40 font-normal ml-0.5">${getO(data.metrics.organico.unqualified)}</span>`;
+            document.getElementById('stat-organico-won').innerHTML = `<span class="text-[20px] font-bold">${data.metrics.organico.won}</span> <span class="text-[15px] font-medium opacity-60 ml-0.5">${getO(data.metrics.organico.won)}</span>`;
+            document.getElementById('stat-organico-lost').innerHTML = `<span class="text-[20px] font-bold">${data.metrics.organico.lost}</span> <span class="text-[15px] font-medium opacity-60 ml-0.5">${getO(data.metrics.organico.lost)}</span>`;
+            document.getElementById('stat-organico-unqualified').innerHTML = `<span class="text-[20px] font-bold">${data.metrics.organico.unqualified}</span> <span class="text-[15px] font-medium opacity-60 ml-0.5">${getO(data.metrics.organico.unqualified)}</span>`;
             document.getElementById('stat-organico-rev').innerText = '€' + data.metrics.organico.revenue;
 
             // Actualizar Gráfica Tendencia
