@@ -24,7 +24,7 @@
         <!-- Dashboard Header -->
         <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-zinc-900 mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-zinc-100 tracking-tight">Hello 👋 Marc Loic ❤️</h1>
+                <h1 class="text-3xl font-bold text-zinc-100 tracking-tight">Hello 👋 Marc Loic</h1>
                 <p class="text-[14px] text-zinc-400 mt-1 font-medium">Análisis de rendimiento semanal y conversión por canal.</p>
             </div>
             
@@ -202,18 +202,24 @@
             document.getElementById('stat-total').innerText = data.metrics.totalLeads;
             document.getElementById('stat-revenue').innerText = '€' + data.metrics.revenue;
             
-            // Pago
-            document.getElementById('stat-pago-total').innerText = data.metrics.pago.total;
-            document.getElementById('stat-pago-won').innerText = data.metrics.pago.won;
-            document.getElementById('stat-pago-lost').innerText = data.metrics.pago.lost;
-            document.getElementById('stat-pago-unqualified').innerText = data.metrics.pago.unqualified;
+            // Pago (Cálculos de %)
+            const pTotal = data.metrics.pago.total || 0;
+            const getP = (val) => pTotal > 0 ? `(${Math.round((val/pTotal)*100)}%)` : '(0%)';
+            
+            document.getElementById('stat-pago-total').innerText = pTotal;
+            document.getElementById('stat-pago-won').innerHTML = `${data.metrics.pago.won} <span class="text-[10px] opacity-40 font-normal ml-0.5">${getP(data.metrics.pago.won)}</span>`;
+            document.getElementById('stat-pago-lost').innerHTML = `${data.metrics.pago.lost} <span class="text-[10px] opacity-40 font-normal ml-0.5">${getP(data.metrics.pago.lost)}</span>`;
+            document.getElementById('stat-pago-unqualified').innerHTML = `${data.metrics.pago.unqualified} <span class="text-[10px] opacity-40 font-normal ml-0.5">${getP(data.metrics.pago.unqualified)}</span>`;
             document.getElementById('stat-pago-rev').innerText = '€' + data.metrics.pago.revenue;
             
-            // Orgánico
-            document.getElementById('stat-organico-total').innerText = data.metrics.organico.total;
-            document.getElementById('stat-organico-won').innerText = data.metrics.organico.won;
-            document.getElementById('stat-organico-lost').innerText = data.metrics.organico.lost;
-            document.getElementById('stat-organico-unqualified').innerText = data.metrics.organico.unqualified;
+            // Orgánico (Cálculos de %)
+            const oTotal = data.metrics.organico.total || 0;
+            const getO = (val) => oTotal > 0 ? `(${Math.round((val/oTotal)*100)}%)` : '(0%)';
+            
+            document.getElementById('stat-organico-total').innerText = oTotal;
+            document.getElementById('stat-organico-won').innerHTML = `${data.metrics.organico.won} <span class="text-[10px] opacity-40 font-normal ml-0.5">${getO(data.metrics.organico.won)}</span>`;
+            document.getElementById('stat-organico-lost').innerHTML = `${data.metrics.organico.lost} <span class="text-[10px] opacity-40 font-normal ml-0.5">${getO(data.metrics.organico.lost)}</span>`;
+            document.getElementById('stat-organico-unqualified').innerHTML = `${data.metrics.organico.unqualified} <span class="text-[10px] opacity-40 font-normal ml-0.5">${getO(data.metrics.organico.unqualified)}</span>`;
             document.getElementById('stat-organico-rev').innerText = '€' + data.metrics.organico.revenue;
 
             // Actualizar Gráfica Tendencia
