@@ -10,61 +10,63 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #09090b; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { height: 10px; width: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #09090b; border-radius: 4px; border-top: 1px solid #27272a; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; border: 2px solid #09090b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #52525b; }
         
-        /* Dark Theme Excel Style */
-        .excel-table { border-collapse: separate; border-spacing: 0; min-width: 480px; font-size: 12px; }
-        .excel-table th, .excel-table td { border-bottom: 1px solid #27272a; border-right: 1px solid #27272a; padding: 12px 14px; }
-        .excel-table th { border-top: 1px solid #27272a; }
-        .excel-table th:first-child, .excel-table td:first-child { border-left: 1px solid #27272a; }
+        /* Master Table Dark Style */
+        .excel-table { border-collapse: separate; border-spacing: 0; font-size: 12px; }
+        .excel-table th, .excel-table td { border-bottom: 1px solid #27272a; border-right: 1px dotted #27272a; padding: 12px 16px; }
+        .excel-table th { border-top: 1px solid #27272a; border-right: 1px solid #3f3f46; }
         
-        .header-top { background: #18181b; color: #fff; text-align: left; font-weight: 900; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .header-sub { background: #4f46e5; color: #fff; font-weight: bold; text-align: center; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .header-top { font-weight: 900; font-size: 13px; letter-spacing: 0.1em; }
+        .header-sub { background: #4f46e5; color: #fff; font-weight: 900; text-align: center; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #312e81 !important; }
         
-        .cell-prod { text-align: left; color: #a5b4fc; font-weight: 600; text-decoration: none; white-space: nowrap; transition: color 0.2s; }
-        .cell-prod:hover { color: #c7d2fe; }
-        .cell-val { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; text-align: center; color: #e4e4e7; }
+        .cell-prod { color: #a5b4fc; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.02em; }
+        .cell-val { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; text-align: center; font-size: 13px; }
         
-        .perc-up { background: rgba(16, 185, 129, 0.1); color: #34d399; font-weight: 900; text-align: center; }
-        .perc-down { background: rgba(244, 63, 94, 0.1); color: #fb7185; font-weight: 900; text-align: center; }
+        .perc-up { background: rgba(16, 185, 129, 0.15); color: #34d399; font-weight: 900; text-align: center; font-size: 13px; }
+        .perc-down { background: rgba(244, 63, 94, 0.1); color: #fb7185; font-weight: 900; text-align: center; font-size: 13px; }
         
-        .row-total td { background: #18181b; font-weight: 900; color: #fff; border-top: 2px solid #3f3f46; border-bottom: none; }
+        .row-total td { background: #18181b; font-weight: 900; color: #fff; border-top: 2px solid #4f46e5 !important; border-bottom: none; font-size: 14px; }
     </style>
 </head>
 <body class="bg-zinc-950 min-h-screen text-zinc-100 antialiased font-sans flex items-start">
     <?php include 'sidebar.php'; ?>
 
-    <main class="sm:ml-64 flex-1 min-h-screen p-8 lg:p-12 mb-20 overflow-hidden flex flex-col" id="main-content">
+    <main class="sm:ml-64 flex-1 min-h-screen pt-8 px-4 lg:px-8 pb-20 flex flex-col max-w-[100vw]" id="main-content">
         <!-- Dashboard Header -->
-        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-zinc-900 mb-8 shrink-0">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-zinc-900 mb-6 shrink-0">
             <div>
                 <div class="flex items-center gap-3 mb-2">
-                    <div class="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center border border-indigo-500/20">
+                    <div class="w-10 h-10 bg-indigo-500/20 rounded-xl flex items-center justify-center border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
                         <i data-lucide="bar-chart-2" class="w-5 h-5 text-indigo-400"></i>
                     </div>
-                    <h1 class="text-3xl font-black text-white tracking-tight italic uppercase">Analytics Command v2</h1>
+                    <h1 class="text-3xl font-black text-white tracking-tight italic uppercase">Analytics Command v3</h1>
                 </div>
-                <p class="text-[14px] text-zinc-400 font-medium">Panel Maestro C-Level (YoY / WoW / Acumulados)</p>
+                <p class="text-[14px] text-zinc-400 font-medium">Panel Maestro C-Level Consolidado (YoY / WoW / Acumulados)</p>
             </div>
             
-            <button onclick="window.location.reload()" class="bg-zinc-900 hover:bg-zinc-800 text-white p-2.5 rounded-lg transition-all shadow-xl border border-zinc-800 flex items-center gap-2 group">
+            <button onclick="window.location.reload()" class="bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 px-5 rounded-xl transition-all shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)] border border-indigo-400/50 flex items-center gap-3 group">
                 <i data-lucide="refresh-cw" class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500"></i> 
-                <span class="text-xs font-bold uppercase tracking-widest">Sincronizar GA4</span>
+                <span class="text-xs font-bold uppercase tracking-widest">Sincronizar API GA4</span>
             </button>
         </header>
 
         <!-- Loading State -->
-        <div id="loader" class="flex flex-col items-center justify-center p-20 text-zinc-500 bg-zinc-900/30 rounded-2xl border border-zinc-800/50">
-            <i data-lucide="loader-2" class="w-10 h-10 animate-spin mb-4 text-indigo-500"></i>
-            <p class="text-sm font-medium uppercase tracking-widest animate-pulse">Sintetizando datos históricos en GA4 API...</p>
+        <div id="loader" class="flex flex-col items-center justify-center p-24 text-zinc-500 bg-zinc-900/40 rounded-3xl border border-zinc-800/80 shadow-2xl">
+            <div class="relative w-16 h-16 mb-6">
+                <div class="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
+            </div>
+            <p class="text-sm font-bold uppercase tracking-[0.2em] text-indigo-400 animate-pulse">Sintetizando Big Data...</p>
         </div>
 
-        <!-- Master Tables Container -->
-        <div class="overflow-x-auto custom-scrollbar flex-1 pb-6" style="display: none;" id="master-container">
-            <div class="flex flex-nowrap gap-8 min-w-max pb-4" id="tables-wrapper">
-                <!-- Las tablas se inyectan dinámicamente aquí -->
+        <!-- Master Table Container -->
+        <div class="overflow-x-auto overflow-y-hidden custom-scrollbar flex-1 pb-6 w-full" style="display: none;" id="master-container">
+            <div id="tables-wrapper" class="min-w-max pb-4 h-full">
+                <!-- La tabla maestra se inyecta aquí -->
             </div>
         </div>
     </main>
@@ -74,7 +76,6 @@
     <script>
         lucide.createIcons();
 
-        // Calculo de años dinámico para los headers
         const date = new Date();
         const year = date.getFullYear();
         const lastYear = year - 1;
@@ -87,95 +88,128 @@
                 if (result.status === 'success') {
                     document.getElementById('loader').style.display = 'none';
                     document.getElementById('master-container').style.display = 'block';
-                    renderAll(result.data);
+                    renderMasterTable(result.data);
                 } else {
-                    document.getElementById('loader').innerHTML = `<div class="text-rose-500 font-bold p-4 bg-rose-500/10 rounded-lg border border-rose-500/20">API ERROR: ${result.message}</div>`;
+                    document.getElementById('loader').innerHTML = `<div class="text-rose-500 font-bold p-6 bg-rose-500/10 rounded-xl border border-rose-500/30 flex items-center gap-3"><i data-lucide="alert-triangle"></i> API ERROR: ${result.message}</div>`;
+                    lucide.createIcons();
                 }
             } catch (e) {
-                document.getElementById('loader').innerHTML = `<div class="text-rose-500 font-bold p-4 bg-rose-500/10 rounded-lg border border-rose-500/20">NETWORK ERROR: ${e.message}</div>`;
+                document.getElementById('loader').innerHTML = `<div class="text-rose-500 font-bold p-6 bg-rose-500/10 rounded-xl border border-rose-500/30 flex items-center gap-3"><i data-lucide="wifi-off"></i> NETWORK ERROR: Revise su conexión o los logs.</div>`;
+                lucide.createIcons();
             }
         }
 
-        function createTableHtml(title, p1Label, p2Label, dataKey, data) {
-            let bodyHtml = '';
-            let tCurr = 0, tPrev = 0;
+        function getPercClass(perc) {
+            return perc >= 0 ? 'perc-up' : 'perc-down';
+        }
 
-            // Orden alfabético por producto
+        function getPercStr(perc) {
+            return (perc >= 0 ? '+' : '') + perc + '%';
+        }
+
+        function createCells(d) {
+            const pClass = getPercClass(d.perc);
+            return `
+                <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${d.prev.toLocaleString()}</td>
+                <td class="cell-val font-bold text-white bg-zinc-800/20">${d.curr.toLocaleString()}</td>
+                <td class="${pClass} border-r border-zinc-800/60 font-black shadow-[inset_1px_0_10px_rgba(0,0,0,0.1)]">${getPercStr(d.perc)}</td>
+            `;
+        }
+
+        function renderMasterTable(data) {
+            const wrapper = document.getElementById('tables-wrapper');
+            let bodyHtml = '';
+            
+            // Totals Tracker
+            let t = {
+                w_yoy: { curr: 0, prev: 0 },
+                w_wow: { curr: 0, prev: 0 },
+                m_yoy: { curr: 0, prev: 0 },
+                y_yoy: { curr: 0, prev: 0 }
+            };
+
+            // Alfabetico por producto
             data.sort((a, b) => a.product.localeCompare(b.product));
 
             data.forEach(item => {
-                const d = item[dataKey];
-                const pClass = d.perc >= 0 ? 'perc-up' : 'perc-down';
-                tCurr += d.curr; tPrev += d.prev;
-                
+                t.w_yoy.curr += item.semana_yoy.curr; t.w_yoy.prev += item.semana_yoy.prev;
+                t.w_wow.curr += item.semana_wow.curr; t.w_wow.prev += item.semana_wow.prev;
+                t.m_yoy.curr += item.mes_yoy.curr;    t.m_yoy.prev += item.mes_yoy.prev;
+                t.y_yoy.curr += item.anual_yoy.curr;  t.y_yoy.prev += item.anual_yoy.prev;
+
                 bodyHtml += `
-                    <tr class="hover:bg-zinc-900/50 transition-colors">
-                        <td class="cell-prod"><div class="flex items-center gap-2"><div class="w-1 h-1 rounded-full bg-indigo-500"></div>${item.product}</div></td>
-                        <td class="cell-val text-zinc-500">${d.prev.toLocaleString()}</td>
-                        <td class="cell-val font-bold text-white">${d.curr.toLocaleString()}</td>
-                        <td class="${pClass}">${d.perc >= 0 ? '+' : ''}${d.perc}%</td>
+                    <tr class="hover:bg-zinc-800/40 transition-colors group">
+                        <td class="cell-prod sticky left-0 bg-zinc-950 group-hover:bg-zinc-900 z-10 shadow-[2px_0_15px_rgba(0,0,0,0.6)] border-r border-indigo-500/30">
+                            <div class="flex items-center gap-3">
+                                <div class="w-1.5 h-1.5 rounded-full bg-indigo-500/50 group-hover:scale-150 group-hover:bg-indigo-400 transition-all duration-300"></div>
+                                ${item.product}
+                            </div>
+                        </td>
+                        ${createCells(item.semana_yoy)}
+                        ${createCells(item.semana_wow)}
+                        ${createCells(item.mes_yoy)}
+                        ${createCells(item.anual_yoy)}
                     </tr>
                 `;
             });
 
-            // Calculate total percentage safely
-            const totalPerc = tPrev > 0 ? Math.round(((tCurr - tPrev) / tPrev) * 100 * 10) / 10 : 0;
-            const tPClass = totalPerc >= 0 ? 'perc-up' : 'perc-down';
+            const calcPerc = (c, p) => p > 0 ? Math.round(((c - p) / p) * 100 * 10) / 10 : 0;
+            const tCells = (key) => {
+                const perc = calcPerc(t[key].curr, t[key].prev);
+                return `
+                    <td class="cell-val border-l border-zinc-800/50">${t[key].prev.toLocaleString()}</td>
+                    <td class="cell-val text-white">${t[key].curr.toLocaleString()}</td>
+                    <td class="${getPercClass(perc)} border-r border-zinc-800/80 tracking-widest">${getPercStr(perc)}</td>
+                `;
+            };
 
-            // Return individual table component
-            return `
-                <div class="bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden shadow-2xl flex-shrink-0">
-                    <table class="excel-table w-full">
+            const tfootHtml = `
+                <tr>
+                    <td class="sticky left-0 bg-[#18181b] z-10 text-left px-5 tracking-widest text-[#a5b4fc] border-r border-indigo-500/50">
+                        <div class="flex items-center justify-between">
+                            RESUMEN GLOBAL
+                            <i data-lucide="sigma" class="w-4 h-4 text-indigo-400"></i>
+                        </div>
+                    </td>
+                    ${tCells('w_yoy')}
+                    ${tCells('w_wow')}
+                    ${tCells('m_yoy')}
+                    ${tCells('y_yoy')}
+                </tr>
+            `;
+
+            const tableHtml = `
+                <div class="bg-zinc-950 rounded-2xl border-2 border-zinc-800/80 shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden inline-block h-max">
+                    <table class="excel-table w-full whitespace-nowrap m-0">
                         <thead>
                             <tr>
-                                <th class="header-top border-none" colspan="4">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-1.5 h-4 bg-indigo-500 rounded-full"></div>
-                                            ${title}
-                                        </div>
-                                        <i data-lucide="bar-chart" class="w-4 h-4 text-zinc-600"></i>
-                                    </div>
-                                </th>
+                                <th class="border-none bg-zinc-950 sticky left-0 z-20 border-r border-indigo-500/30 shadow-[2px_0_15px_rgba(0,0,0,0.6)]"></th>
+                                <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📅 SEMANA YoY</th>
+                                <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">🔄 SEMANA WoW</th>
+                                <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📅 ACUMULADO MES (MTD)</th>
+                                <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📈 ACUMULADO ANUAL (YTD)</th>
                             </tr>
                             <tr>
-                                <th class="header-sub" style="text-align: left; padding-left: 20px;">Producto Base</th>
-                                <th class="header-sub w-28">${p1Label}</th>
-                                <th class="header-sub w-28">${p2Label}</th>
-                                <th class="header-sub w-24">% Var</th>
+                                <th class="header-sub text-left px-5 sticky left-0 z-20 shadow-[2px_0_15px_rgba(0,0,0,0.5)] tracking-widest border-r border-white/20">PRODUCTO / CAMPAÑA</th>
+                                <th class="header-sub w-24 border-l border-white/10">Seman Ant</th><th class="header-sub w-24">Sem Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
+                                <th class="header-sub w-24 border-l border-white/10">Seman Ant</th><th class="header-sub w-24">Sem Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
+                                <th class="header-sub w-24 border-l border-white/10">MTD ${lastYear}</th><th class="header-sub w-24">MTD ${year}</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
+                                <th class="header-sub w-24 border-l border-white/10">YTD ${lastYear}</th><th class="header-sub w-24">YTD ${year}</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-zinc-950">
+                        <tbody class="bg-zinc-950/50">
                             ${bodyHtml}
                         </tbody>
                         <tfoot class="row-total">
-                            <tr>
-                                <td style="text-align:left; padding-left: 20px;">RESUMEN ACUMULADO</td>
-                                <td class="cell-val">${tPrev.toLocaleString()}</td>
-                                <td class="cell-val text-white">${tCurr.toLocaleString()}</td>
-                                <td class="${tPClass}">${totalPerc >= 0 ? '+' : ''}${totalPerc}%</td>
-                            </tr>
+                            ${tfootHtml}
                         </tfoot>
                     </table>
                 </div>
             `;
-        }
 
-        function renderAll(data) {
-            const wrapper = document.getElementById('tables-wrapper');
-            
-            // Build 4 instances matching the requested format
-            const h1 = createTableHtml('Semana YoY', 'Seman Ant Año', 'Semana Actual', 'semana_yoy', data);
-            const h2 = createTableHtml('Semana WoW', 'Semana Ant', 'Semana Actual', 'semana_wow', data);
-            const h3 = createTableHtml('Acumulado Mes', 'MTD ' + lastYear, 'MTD ' + year, 'mes_yoy', data);
-            const h4 = createTableHtml('Acumulado Anual', 'YTD ' + lastYear, 'YTD ' + year, 'anual_yoy', data);
-            
-            wrapper.innerHTML = h1 + h2 + h3 + h4;
+            wrapper.innerHTML = tableHtml;
             lucide.createIcons();
         }
-
-        // Initialize Data Fetch
-        loadAnalytics();
     </script>
 </body>
 </html>
