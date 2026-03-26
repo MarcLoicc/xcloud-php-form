@@ -64,13 +64,10 @@ try {
         '/calculadora-precio-web-online/' => 'Calculadora Precio'
     ];
 
-    // Consulta Mejorada con Dimensión de Rango de Fecha para evitar ambigüedad en los datos
+    // Consulta Mejorada: Sin la dimensión dateRange (Google maneja múltiples rangos como MetricValues extras)
     $response = $client->runReport([
         'property' => 'properties/' . $property_id,
-        'dimensions' => [
-            new Dimension(['name' => 'pagePath']),
-            new Dimension(['name' => 'dateRange'])
-        ],
+        'dimensions' => [new Dimension(['name' => 'pagePath'])],
         'metrics' => [new Metric(['name' => 'sessions'])],
         'dateRanges' => [
             new DateRange(['start_date' => '30daysAgo', 'end_date' => 'today', 'name' => 'current']),
@@ -87,25 +84,21 @@ try {
     $data_map = [];
     foreach ($response->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
-        $range_name = $row->getDimensionValues()[1]->getValue();
-        $sessions = (int)$row->getMetricValues()[0]->getValue();
         
-        if (!isset($data_map[$path])) {
-            $data_map[$path] = ['current' => 0, 'prev' => 0];
-        }
+        // Google devuelve metricValues[0] para el primer DateRange y metricValues[1] para el segundo
+        $current_val = (int)$row->getMetricValues()[0]->getValue();
+        $prev_val = isset($row->getMetricValues()[1]) ? (int)$row->getMetricValues()[1]->getValue() : 0;
         
-        if ($range_name === 'current') {
-            $data_map[$path]['current'] = $sessions;
-        } else {
-            $data_map[$path]['prev'] = $sessions;
-        }
+        $data_map[$path] = [
+            'current' => $current_val,
+            'prev' => $prev_val
+        ];
     }
 
     $results = [];
     foreach ($pc as $path => $name) {
         $curr = $data_map[$path]['current'] ?? 0;
         $prev = $data_map[$path]['prev'] ?? 0;
-        
         $change = ($prev > 0) ? round((($curr - $prev) / $prev) * 100, 1) : 0;
         
         $results[] = [
