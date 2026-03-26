@@ -265,17 +265,29 @@ try {
         }
     }
 
-    $calc_perc = function($curr, $prev) {
-        if ($prev <= 0) return 0;
-        return round((($curr - $prev) / $prev) * 100, 1);
-    };
+    // Calcular totales para cuota (share)
+    $total_curr = 0;
+    $total_prev = 0;
+    foreach ($data_map as $d) {
+        $total_curr += $d['curr'];
+        $total_prev += $d['prev'];
+    }
 
     $results = [];
     foreach ($data_map as $path => $d) {
+        // Cuota 2026 (%)
+        $share_curr = ($total_curr > 0) ? ($d['curr'] / $total_curr * 100) : 0;
+        // Cuota 2025 (%)
+        $share_prev = ($total_prev > 0) ? ($d['prev'] / $total_prev * 100) : 0;
+        
+        // Diferencia en puntos porcentuales (p.p.)
+        $diff_pp = round($share_curr - $share_prev, 2);
+        $sign = ($diff_pp > 0) ? '+' : '';
+
         $results[$path] = [
             'curr' => $d['curr'],
             'prev' => $d['prev'],
-            'perc' => $calc_perc($d['curr'], $d['prev'])
+            'perc' => $sign . $diff_pp . ' p.p.'
         ];
     }
 
