@@ -10,6 +10,12 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+        
+        :root {
+            font-family: 'Montserrat', sans-serif;
+        }
+
         .custom-scrollbar::-webkit-scrollbar { height: 10px; width: 10px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #09090b; border-radius: 4px; border-top: 1px solid #27272a; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; border: 2px solid #09090b; }
@@ -31,7 +37,7 @@
         .row-total td { background: #18181b; font-weight: 900; color: #fff; border-top: 2px solid #4f46e5 !important; border-bottom: none; font-size: 14px; }
     </style>
 </head>
-<body class="bg-zinc-950 min-h-screen text-zinc-100 antialiased font-sans flex items-start">
+<body class="bg-zinc-950 min-h-screen text-zinc-100 antialiased flex items-start">
     <?php include 'sidebar.php'; ?>
 
     <main class="sm:ml-64 flex-1 min-h-screen pt-8 px-4 lg:px-8 pb-20 flex flex-col max-w-[100vw]" id="main-content">
