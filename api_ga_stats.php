@@ -299,3 +299,5 @@ try {
 } catch (Throwable $e) {
     send_json_error("Google Analytics error en [{$report_type}]: " . $e->getMessage());
 }
+   
+ 
