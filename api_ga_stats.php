@@ -85,20 +85,24 @@ try {
     $client = new BetaAnalyticsDataClient(['credentials' => $credentials_path]);
     
     $today = date('Y-m-d');
-    $range_curr = null; $range_prev = null;
-
+    $range_curr = null; 
+    $use_db_for_prev = false;
+    $db_type = '';
+    $db_num = 0;
+    
+    // Periodo a consultar siempre en GA4 (Año Actual 2026)
     if ($report_type === 'w_yoy') {
         $range_curr = new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today']);
-        $range_prev = new DateRange(['start_date' => '372daysAgo', 'end_date' => '365daysAgo']); 
+        $use_db_for_prev = true; $db_type = 'week'; $db_num = (int)date('W'); // Semana actual ISO
     } elseif ($report_type === 'w_wow') {
         $range_curr = new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today']);
-        $range_prev = new DateRange(['start_date' => '14daysAgo', 'end_date' => '7daysAgo']); 
+        $range_prev = new DateRange(['start_date' => '14daysAgo', 'end_date' => '7daysAgo']); // Esto es 2026, va por GA4
     } elseif ($report_type === 'm_yoy') {
         $range_curr = new DateRange(['start_date' => date('Y-m-01'), 'end_date' => 'today']);
-        $range_prev = new DateRange(['start_date' => date('Y-m-01', strtotime('-365 days')), 'end_date' => date('Y-m-d', strtotime('-365 days'))]); 
+        $use_db_for_prev = true; $db_type = 'month'; $db_num = (int)date('n'); // Mes actual
     } elseif ($report_type === 'y_yoy') {
         $range_curr = new DateRange(['start_date' => date('Y-01-01'), 'end_date' => 'today']);
-        $range_prev = new DateRange(['start_date' => date('Y-01-01', strtotime('-365 days')), 'end_date' => date('Y-m-d', strtotime('-365 days'))]); 
+        $use_db_for_prev = true; $db_type = 'ytd'; $db_num = (int)date('n'); // Acumulado hasta este mes
     } else {
         send_json_error('Tipo de reporte desconocido');
     }
@@ -110,24 +114,14 @@ try {
         ])
     ]);
 
-    // Opciones Anti-TimeOut
     $options = ['timeoutMillis' => 25000];
 
-    // Consulta 1: Periodo Actual
+    // Consulta 1: Periodo Actual (SIEMPRE A GA4 porque es código 2026/Actual)
     $response_curr = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath'])],
         'metrics' => [new Metric(['name' => 'sessions'])],
         'dateRanges' => [$range_curr],
-        'dimensionFilter' => $filter
-    ], $options);
-
-    // Consulta 2: Periodo Anterior Independiente (Soluciona el bug de los CEROS)
-    $response_prev = $client->runReport([
-        'property' => 'properties/' . $property_id,
-        'dimensions' => [new Dimension(['name' => 'pagePath'])],
-        'metrics' => [new Metric(['name' => 'sessions'])],
-        'dateRanges' => [$range_prev],
         'dimensionFilter' => $filter
     ], $options);
 
@@ -143,10 +137,41 @@ try {
         }
     }
 
-    foreach ($response_prev->getRows() as $row) {
-        $path = $row->getDimensionValues()[0]->getValue();
-        if (isset($data_map[$path])) {
-            $data_map[$path]['prev'] = (int)$row->getMetricValues()[0]->getValue();
+    // Consulta 2: Obtener Periodo Anterior (PREV)
+    if ($use_db_for_prev) {
+        // Tirar de MySQL ultrarrápido (2025)
+        if ($db_type === 'ytd') {
+            // YTD = Suma de todos los meses de 2025 hasta el mes actual
+            $stmt = $conn->prepare("SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 WHERE period_type = 'month' AND period_num <= ? GROUP BY page_path");
+            $stmt->bind_param("i", $db_num);
+        } else {
+            // Un solo mes o una sola semana
+            $stmt = $conn->prepare("SELECT page_path, sessions as total FROM ga4_history_2025 WHERE period_type = ? AND period_num = ?");
+            $stmt->bind_param("si", $db_type, $db_num);
+        }
+        
+        $stmt->execute();
+        $resDB = $stmt->get_result();
+        while ($rowDB = $resDB->fetch_assoc()) {
+            if (isset($data_map[$rowDB['page_path']])) {
+                $data_map[$rowDB['page_path']]['prev'] = (int)$rowDB['total'];
+            }
+        }
+    } else {
+        // Si no usamos BD (ej: WoW de hace 14 días), tirar de GA4
+        $response_prev = $client->runReport([
+            'property' => 'properties/' . $property_id,
+            'dimensions' => [new Dimension(['name' => 'pagePath'])],
+            'metrics' => [new Metric(['name' => 'sessions'])],
+            'dateRanges' => [$range_prev],
+            'dimensionFilter' => $filter
+        ], $options);
+        
+        foreach ($response_prev->getRows() as $row) {
+            $path = $row->getDimensionValues()[0]->getValue();
+            if (isset($data_map[$path])) {
+                $data_map[$path]['prev'] = (int)$row->getMetricValues()[0]->getValue();
+            }
         }
     }
 
