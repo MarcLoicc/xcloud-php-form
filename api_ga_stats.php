@@ -6,9 +6,9 @@ header('Content-Type: application/json');
 // Categorías definidas
 $categories = ['coche', 'hogar', 'salud', 'moto', 'viajes', 'mascotas'];
 
-// Función para obtener leads por categoría y periodo
+// Función para obtener leads por categoría y periodo (buscando en tags)
 function getLeadsByCategory($conn, $category, $days = 7) {
-    $where = "WHERE category = '$category' AND created_at >= DATE_SUB(NOW(), INTERVAL $days DAY)";
+    $where = "WHERE (tags LIKE '%$category%' OR name LIKE '%$category%') AND created_at >= DATE_SUB(NOW(), INTERVAL $days DAY)";
     $total = $conn->query("SELECT COUNT(*) as total FROM leads $where")->fetch_assoc()['total'];
     $qualified = $conn->query("SELECT COUNT(*) as total FROM leads $where AND status NOT IN ('no_cualificado', 'perdido')")->fetch_assoc()['total'];
     $won = $conn->query("SELECT COUNT(*) as total FROM leads $where AND status = 'ganado'")->fetch_assoc()['total'];
