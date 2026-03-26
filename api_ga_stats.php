@@ -42,8 +42,10 @@ $pc = [
 
 // Si solo piden la lista de productos y datos fijos 2025
 if ($report_type === 'init') {
+    $currDay = date('d');
+    $currMonth = date('m');
+    $currDateStr = date('m') . date('d'); // MMDD
     $currWeek = (int)date('W');
-    $currMonth = (int)date('n');
 
     // 1. Obtener orden por Total 2025
     $resOrder = $conn->query("SELECT page_path, sessions FROM ga4_history_2025 WHERE period_type = 'year' AND period_num = 2025 ORDER BY sessions DESC");
@@ -52,23 +54,26 @@ if ($report_type === 'init') {
         while ($r = $resOrder->fetch_assoc()) $order_map[$r['page_path']] = (int)$r['sessions'];
     }
 
-    // 2. Obtener Datos Fijos 2025 para Semanas, MTD y YTD
+    // 2. Obtener Datos Fijos 2025 para Semanas, MTD y YTD (Exacto por día)
     $fixed_data = [];
     foreach ($pc as $path => $name) {
         $fixed_data[$path] = ['w_yoy' => 0, 'm_yoy' => 0, 'y_yoy' => 0];
     }
     
-    // Semanas (para Semana YoY)
+    // Semana YoY
     $resW = $conn->query("SELECT page_path, sessions FROM ga4_history_2025 WHERE period_type = 'week' AND period_num = $currWeek");
     while($r = $resW->fetch_assoc()) if(isset($fixed_data[$r['page_path']])) $fixed_data[$r['page_path']]['w_yoy'] = (int)$r['sessions'];
 
-    // MTD (acumulando semanas del mes actual)
-    $month_start_week = (int)date('W', strtotime('2025-' . date('m') . '-01'));
-    $resM = $conn->query("SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 WHERE period_type = 'week' AND period_num >= $month_start_week AND period_num <= $currWeek GROUP BY page_path");
+    // MTD Exacto 2025
+    $startM = "2025" . $currMonth . "01";
+    $endM = "2025" . $currMonth . $currDay;
+    $resM = $conn->query("SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 WHERE period_type = 'day' AND period_num >= $startM AND period_num <= $endM GROUP BY page_path");
     while($r = $resM->fetch_assoc()) if(isset($fixed_data[$r['page_path']])) $fixed_data[$r['page_path']]['m_yoy'] = (int)$r['total'];
 
-    // YTD (acumulando semanas desde inicio de año)
-    $resY = $conn->query("SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 WHERE period_type = 'week' AND period_num <= $currWeek GROUP BY page_path");
+    // YTD Exacto 2025
+    $startY = "20250101";
+    $endY = "2025" . $currDateStr;
+    $resY = $conn->query("SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 WHERE period_type = 'day' AND period_num >= $startY AND period_num <= $endY GROUP BY page_path");
     while($r = $resY->fetch_assoc()) if(isset($fixed_data[$r['page_path']])) $fixed_data[$r['page_path']]['y_yoy'] = (int)$r['total'];
 
     // Construir respuesta final ordenada
@@ -139,25 +144,45 @@ try {
     $range_curr = null; 
     $use_db_for_prev = false;
     $db_type = '';
-    $db_num = 0;
+    $sql_prev = ''; // Variable para la consulta SQL del periodo anterior
     
     // Periodo a consultar siempre en GA4 (Año Actual 2026)
     if ($report_type === 'w_yoy') {
         $range_curr = new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today']);
-        $use_db_for_prev = true; $db_type = 'week'; $db_num = (int)date('W'); // Semana actual ISO
+        $use_db_for_prev = true; 
+        $db_type = 'week'; 
+        $db_num = (int)date('W'); // Semana actual ISO
+        $sql_prev = "SELECT page_path, sessions as total FROM ga4_history_2025 WHERE period_type = 'week' AND period_num = $db_num";
     } elseif ($report_type === 'w_wow') {
         $range_curr = new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today']);
         $range_prev = new DateRange(['start_date' => '14daysAgo', 'end_date' => '7daysAgo']); // Esto es 2026, va por GA4
     } elseif ($report_type === 'm_yoy') {
+        $currDayOfMonth = date('d');
+        $currMonth = date('m');
+        
         $range_curr = new DateRange(['start_date' => date('Y-m-01'), 'end_date' => 'today']);
-        // MTD: Mes hasta la fecha (acumulando semanas del mes actual)
-        $use_db_for_prev = true; $db_type = 'mtd'; 
-        $db_num = (int)date('W'); // Semana actual para tope
-        $month_start_week = (int)date('W', strtotime('2025-' . date('m') . '-01'));
+        
+        // MTD 2025 exacto: Sumar días del 01 al hoy del año pasado
+        $startDayDB = "2025" . $currMonth . "01";
+        $endDayDB = "2025" . $currMonth . $currDayOfMonth;
+
+        $sql_prev = "SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 
+                WHERE period_type = 'day' AND period_num >= $startDayDB AND period_num <= $endDayDB
+                GROUP BY page_path";
+        $use_db_for_prev = true;
     } elseif ($report_type === 'y_yoy') {
+        // YTD: Del 1 de enero hasta hoy
+        $currDayOfYearStr = date('m') . date('d'); // MMDD
+        
         $range_curr = new DateRange(['start_date' => date('Y-01-01'), 'end_date' => 'today']);
-        // YTD: Año hasta la fecha (acumulando semanas desde inicio de año)
-        $use_db_for_prev = true; $db_type = 'ytd'; $db_num = (int)date('W'); 
+
+        $startDayDB = "20250101";
+        $endDayDB = "2025" . $currDayOfYearStr;
+
+        $sql_prev = "SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 
+                WHERE period_type = 'day' AND period_num >= $startDayDB AND period_num <= $endDayDB
+                GROUP BY page_path";
+        $use_db_for_prev = true;
     } else {
         send_json_error('Tipo de reporte desconocido');
     }
@@ -212,27 +237,14 @@ try {
         }
     }
 
-    // Consulta 2: Obtener Periodo Anterior (PREV)
+    // Consulta 2: Obtener Periodo Anterior (PREV) desde DB (Historico 2025) o GA4 (2026)
     if ($use_db_for_prev) {
-        if ($db_type === 'ytd') {
-            // YoY acumulando semanas hasta hoy
-            $stmt = $conn->prepare("SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 WHERE period_type = 'week' AND period_num <= ? GROUP BY page_path");
-            $stmt->bind_param("i", $db_num);
-        } elseif ($db_type === 'mtd') {
-            // MTD acumulando semanas desde el inicio del mes actual
-            $stmt = $conn->prepare("SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 WHERE period_type = 'week' AND period_num >= ? AND period_num <= ? GROUP BY page_path");
-            $stmt->bind_param("ii", $month_start_week, $db_num);
-        } else {
-            // Un solo mes o una sola semana
-            $stmt = $conn->prepare("SELECT page_path, sessions as total FROM ga4_history_2025 WHERE period_type = ? AND period_num = ?");
-            $stmt->bind_param("si", $db_type, $db_num);
-        }
-        
-        $stmt->execute();
-        $resDB = $stmt->get_result();
-        while ($rowDB = $resDB->fetch_assoc()) {
-            if (isset($data_map[$rowDB['page_path']])) {
-                $data_map[$rowDB['page_path']]['prev'] = (int)$rowDB['total'];
+        $resDB = $conn->query($sql_prev);
+        if ($resDB) {
+            while ($rowDB = $resDB->fetch_assoc()) {
+                if (isset($data_map[$rowDB['page_path']])) {
+                    $data_map[$rowDB['page_path']]['prev'] = (int)$rowDB['total'];
+                }
             }
         }
     } else {

@@ -11,8 +11,8 @@ $createTableQuery = "
     CREATE TABLE IF NOT EXISTS ga4_history_2025 (
         id INT AUTO_INCREMENT PRIMARY KEY,
         page_path VARCHAR(255) NOT NULL,
-        period_type ENUM('week', 'month', 'year') NOT NULL,
-        period_num INT NOT NULL, /* 1-52, 1-12, 2025 */
+        period_type ENUM('day', 'week', 'month', 'year') NOT NULL,
+        period_num INT NOT NULL, /* YYYYMMDD para day, 1-52, 1-12, 2025 */
         sessions INT DEFAULT 0,
         UNIQUE KEY u_path_period (page_path, period_type, period_num)
     )
@@ -112,6 +112,10 @@ try {
     
     // Preparar INSERT SQL con etiqueta descriptiva
     $stmt = $conn->prepare("INSERT INTO ga4_history_2025 (page_path, period_type, period_num, period_label, sessions) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE sessions = ?, period_label = ?");
+    
+    // Variables para binding (se actualizan en los loops)
+    $path = ""; $type = ""; $num = 0; $label = ""; $views = 0;
+    $stmt->bind_param("ssisiis", $path, $type, $num, $label, $views, $views, $label);
 
     // 1. EXTRAER POR AÑO (Total Anual)
     echo "<h3>📊 Consultando Visitas Anuales 2025 (España, sin Guadalajara)...</h3>";
@@ -123,14 +127,12 @@ try {
         'dimensionFilter' => $filter
     ]);
 
+    $type = 'year';
+    $num = 2025;
+    $label = "Total 2025";
     foreach ($resYear->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
         $views = (int)$row->getMetricValues()[0]->getValue();
-        
-        $type = 'year';
-        $num = 2025;
-        $label = "Total 2025";
-        $stmt->bind_param("ssisiis", $path, $type, $num, $label, $views, $views, $label);
         $stmt->execute();
     }
     echo "✔️ Totales anuales agregados.<br>";
@@ -147,14 +149,14 @@ try {
 
     $monthNames = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
     $proccessedMonths = [];
+    $type = 'month';
     foreach ($resMonth->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
         $month = (int)$row->getDimensionValues()[1]->getValue();
         $views = (int)$row->getMetricValues()[0]->getValue();
         
-        $type = 'month';
+        $num = $month;
         $label = $monthNames[$month];
-        $stmt->bind_param("ssisiis", $path, $type, $month, $label, $views, $views, $label);
         $stmt->execute();
         
         if (!isset($proccessedMonths[$month])) {
@@ -174,14 +176,14 @@ try {
     ]);
 
     $proccessedWeeks = [];
+    $type = 'week';
     foreach ($resWeek->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
         $week = (int)$row->getDimensionValues()[1]->getValue();
         $views = (int)$row->getMetricValues()[0]->getValue();
         
-        $type = 'week';
+        $num = $week;
         $label = "Semana $week";
-        $stmt->bind_param("ssisiis", $path, $type, $week, $label, $views, $views, $label);
         $stmt->execute();
 
         if (!isset($proccessedWeeks[$week])) {
@@ -190,7 +192,31 @@ try {
         }
     }
 
-    echo "<h2 style='color:green'>🎉 ¡Re-importación COMPLETADA! Datos de Visitas 2025 (Solo España, No GDL) guardados en MySQL.</h2>";
+    // 4. EXTRAER POR DÍA (GRANULARIDAD MÁXIMA PARA MTD EXACTO)
+    echo "<h3>📆 Consultando Visitas Diarias 2025 (Paciencia, esto descarga el año entero)...</h3>";
+    $resDay = $client->runReport([
+        'property' => 'properties/' . $property_id,
+        'dimensions' => [new Dimension(['name' => 'pagePath']), new Dimension(['name' => 'date'])],
+        'metrics' => [new Metric(['name' => 'screenPageViews'])],
+        'dateRanges' => [$dateRange],
+        'dimensionFilter' => $filter
+    ]);
+
+    $proccessedDays = 0;
+    $type = 'day';
+    foreach ($resDay->getRows() as $row) {
+        $path = $row->getDimensionValues()[0]->getValue();
+        $dateStr = $row->getDimensionValues()[1]->getValue(); // YYYYMMDD
+        $views = (int)$row->getMetricValues()[0]->getValue();
+        
+        $num = (int)$dateStr;
+        $label = date('d-m-Y', strtotime($dateStr));
+        $stmt->execute();
+        $proccessedDays++;
+    }
+    echo "✔️ $proccessedDays registros diarios agregados.<br>";
+
+    echo "<h2 style='color:green'>🎉 ¡Re-importación COMPLETADA! Granularidad diaria (MTD/YTD exacto) guardada en MySQL.</h2>";
 
 } catch (Throwable $e) {
     die("<h2 style='color:red'>❌ Error Fatal conectando con Google API:</h2>" . $e->getMessage());
