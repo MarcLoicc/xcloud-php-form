@@ -64,15 +64,31 @@ try {
         '/calculadora-precio-web-online/' => 'Calculadora Precio'
     ];
 
-    // Consulta Mejorada: Sin la dimensión dateRange (Google maneja múltiples rangos como MetricValues extras)
+    // Definición de Rangos Maestro (7 Rangos)
+    $today = date('Y-m-d');
+    $first_day_month = date('Y-m-01');
+    $first_day_year = date('Y-01-01');
+    
+    // Año anterior
+    $last_year_today = date('Y-m-d', strtotime('-365 days'));
+    $last_year_month_start = date('Y-m-01', strtotime('-365 days'));
+    $last_year_year_start = date('Y-01-01', strtotime('-365 days'));
+
+    $ranges = [
+        new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today', 'name' => 'W_CURR']),
+        new DateRange(['start_date' => '372daysAgo', 'end_date' => '365daysAgo', 'name' => 'W_YOY_PREV']),
+        new DateRange(['start_date' => '14daysAgo', 'end_date' => '7daysAgo', 'name' => 'W_WOW_PREV']),
+        new DateRange(['start_date' => $first_day_month, 'end_date' => 'today', 'name' => 'M_CURR']),
+        new DateRange(['start_date' => $last_year_month_start, 'end_date' => $last_year_today, 'name' => 'M_YOY_PREV']),
+        new DateRange(['start_date' => $first_day_year, 'end_date' => 'today', 'name' => 'Y_CURR']),
+        new DateRange(['start_date' => $last_year_year_start, 'end_date' => $last_year_today, 'name' => 'Y_YOY_PREV']),
+    ];
+
     $response = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath'])],
         'metrics' => [new Metric(['name' => 'sessions'])],
-        'dateRanges' => [
-            new DateRange(['start_date' => '30daysAgo', 'end_date' => 'today', 'name' => 'current']),
-            new DateRange(['start_date' => '395daysAgo', 'end_date' => '365daysAgo', 'name' => 'last_year'])
-        ],
+        'dateRanges' => $ranges,
         'dimensionFilter' => new FilterExpression([
             'filter' => new Filter([
                 'field_name' => 'pagePath',
@@ -84,28 +100,50 @@ try {
     $data_map = [];
     foreach ($response->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
-        
-        // Google devuelve metricValues[0] para el primer DateRange y metricValues[1] para el segundo
-        $current_val = (int)$row->getMetricValues()[0]->getValue();
-        $prev_val = isset($row->getMetricValues()[1]) ? (int)$row->getMetricValues()[1]->getValue() : 0;
+        $mv = $row->getMetricValues();
         
         $data_map[$path] = [
-            'current' => $current_val,
-            'prev' => $prev_val
+            'w_curr' => (int)$mv[0]->getValue(),
+            'w_yoy_prev' => (int)$mv[1]->getValue(),
+            'w_wow_prev' => (int)$mv[2]->getValue(),
+            'm_curr' => (int)$mv[3]->getValue(),
+            'm_yoy_prev' => (int)$mv[4]->getValue(),
+            'y_curr' => (int)$mv[5]->getValue(),
+            'y_yoy_prev' => (int)$mv[6]->getValue()
         ];
     }
 
+    $calc_perc = function($curr, $prev) {
+        if ($prev <= 0) return 0;
+        return round((($curr - $prev) / $prev) * 100, 1);
+    };
+
     $results = [];
     foreach ($pc as $path => $name) {
-        $curr = $data_map[$path]['current'] ?? 0;
-        $prev = $data_map[$path]['prev'] ?? 0;
-        $change = ($prev > 0) ? round((($curr - $prev) / $prev) * 100, 1) : 0;
+        $d = $data_map[$path] ?? ['w_curr' => 0, 'w_yoy_prev' => 0, 'w_wow_prev' => 0, 'm_curr' => 0, 'm_yoy_prev' => 0, 'y_curr' => 0, 'y_yoy_prev' => 0];
         
         $results[] = [
             'product' => $name,
-            'visits' => $curr,
-            'change' => $change,
-            'prev_year' => $prev
+            'semana_yoy' => [
+                'curr' => $d['w_curr'],
+                'prev' => $d['w_yoy_prev'],
+                'perc' => $calc_perc($d['w_curr'], $d['w_yoy_prev'])
+            ],
+            'semana_wow' => [
+                'curr' => $d['w_curr'],
+                'prev' => $d['w_wow_prev'],
+                'perc' => $calc_perc($d['w_curr'], $d['w_wow_prev'])
+            ],
+            'mes_yoy' => [
+                'curr' => $d['m_curr'],
+                'prev' => $d['m_yoy_prev'],
+                'perc' => $calc_perc($d['m_curr'], $d['m_yoy_prev'])
+            ],
+            'anual_yoy' => [
+                'curr' => $d['y_curr'],
+                'prev' => $d['y_yoy_prev'],
+                'perc' => $calc_perc($d['y_curr'], $d['y_yoy_prev'])
+            ]
         ];
     }
 
