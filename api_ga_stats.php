@@ -1,28 +1,59 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Desactivar para que no rompa el JSON, pero lo capturamos
+
 require_once 'auth.php';
 require_once 'db.php';
+
 header('Content-Type: application/json');
 
-// 1. Obtener Configuración de GA4 desde la DB
-$ga4_id_query = $conn->query("SELECT setting_value FROM settings WHERE setting_key = 'ga4_property_id'");
-$property_id = ($ga4_id_query->num_rows > 0) ? $ga4_id_query->fetch_assoc()['setting_value'] : null;
-
-$credentials_path = __DIR__ . '/google-credentials.json';
-
-// Si no hay Property ID o no existe el vendor, devolvemos Mock
-if (!$property_id || $property_id === 'PROPIEDAD_AQUI' || !file_exists(__DIR__ . '/vendor/autoload.php')) {
-    echo json_encode(getMockData($property_id));
+function send_json_error($msg) {
+    echo json_encode(['status' => 'error', 'message' => $msg]);
     exit;
 }
 
-// 2. Lógica Real con GA4 (Optimizada en 1 sola llamada de BATCH)
-require 'vendor/autoload.php';
+// Capturar errores fatales que no entran en el try-catch
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error !== NULL && ($error['type'] === E_ERROR || $error['type'] === E_PARSE)) {
+        echo json_encode(['status' => 'error', 'message' => 'PHP Fatal Error: ' . $error['message'] . ' in ' . $error['file'] . ' on line ' . $error['line']]);
+    }
+});
+
+// 1. Obtener Configuración de GA4 desde la DB
+try {
+    $ga4_id_query = $conn->query("SELECT setting_value FROM settings WHERE setting_key = 'ga4_property_id'");
+    $property_id = ($ga4_id_query && $ga4_id_query->num_rows > 0) ? $ga4_id_query->fetch_assoc()['setting_value'] : null;
+} catch (Exception $e) {
+    send_json_error("DB Error: " . $e->getMessage());
+}
+
+$credentials_path = __DIR__ . '/google-credentials.json';
+$autoload_path = __DIR__ . '/vendor/autoload.php';
+
+// Si no hay Property ID o no existe el vendor, devolvemos Mock
+if (!$property_id || $property_id === 'PROPIEDAD_AQUI' || !file_exists($autoload_path)) {
+    echo json_encode([
+        'status' => 'mock',
+        'message' => 'Falta Property ID o vendor/autoload.php. Ejecuta composer require.',
+        'data' => []
+    ]);
+    exit;
+}
+
+// 2. Lógica Real con GA4 (Optimizada)
+require_once $autoload_path;
+
 use Google\Analytics\Data\V1beta\BetaAnalyticsDataClient;
 use Google\Analytics\Data\V1beta\DateRange;
 use Google\Analytics\Data\V1beta\Dimension;
 use Google\Analytics\Data\V1beta\Metric;
 
 try {
+    if (!file_exists($credentials_path)) {
+        throw new Exception("Archivo google-credentials.json no encontrado.");
+    }
+
     $client = new BetaAnalyticsDataClient(['credentials' => $credentials_path]);
     
     $products_config = [
@@ -52,14 +83,12 @@ try {
         '/calculadora-precio-web-online/' => 'Calculadora Precio'
     ];
 
-    // Consulta única de GA4 para todas las páginas del listado
     $response = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath'])],
         'metrics' => [
             new Metric(['name' => 'screenPageViews']),
             new Metric(['name' => 'conversions']),
-            new Metric(['name' => 'keyEvents'])
         ],
         'dateRanges' => [
             new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today'])
@@ -72,7 +101,6 @@ try {
         ]
     ]);
 
-    // Mapeamos los resultados obtenidos a nuestro formato final
     $ga_data = [];
     foreach ($response->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
@@ -100,10 +128,6 @@ try {
 
     echo json_encode(['status' => 'success', 'data' => $results]);
 
-} catch (Exception $e) {
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-}
-
-function getMockData($id) {
-    return ['status' => 'mock_redirect', 'message' => 'Librería cargada. Esperando datos reales...', 'data' => []];
+} catch (Throwable $e) {
+    send_json_error($e->getMessage());
 }
