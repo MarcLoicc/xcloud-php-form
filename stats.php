@@ -128,11 +128,14 @@
         document.getElementById('head-wow-curr').innerHTML = formatHeader(7, 0, year);
         document.getElementById('head-wow-prev').innerHTML = formatHeader(14, 7, year);
 
-        document.getElementById('head-mtd-prev').innerText = `MTD ${lastYear}`;
-        document.getElementById('head-mtd-curr').innerText = `MTD ${year}`;
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        const currentMonthName = monthNames[date.getMonth()];
+        
+        document.getElementById('head-mtd-prev').innerText = `MTD ${currentMonthName} ${lastYear}`;
+        document.getElementById('head-mtd-curr').innerText = `MTD ${currentMonthName} ${year}`;
         document.getElementById('head-ytd-prev').innerText = `YTD ${lastYear}`;
         document.getElementById('head-ytd-curr').innerText = `YTD ${year}`;
-
+        
         lucide.createIcons();
         let globalProducts = {};
 
