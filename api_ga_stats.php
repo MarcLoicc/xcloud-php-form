@@ -64,10 +64,13 @@ try {
         '/calculadora-precio-web-online/' => 'Calculadora Precio'
     ];
 
-    // Consulta de Comparativa: Actual (30d) vs Año Pasado (YoY)
+    // Consulta Mejorada con Dimensión de Rango de Fecha para evitar ambigüedad en los datos
     $response = $client->runReport([
         'property' => 'properties/' . $property_id,
-        'dimensions' => [new Dimension(['name' => 'pagePath'])],
+        'dimensions' => [
+            new Dimension(['name' => 'pagePath']),
+            new Dimension(['name' => 'dateRange'])
+        ],
         'metrics' => [new Metric(['name' => 'sessions'])],
         'dateRanges' => [
             new DateRange(['start_date' => '30daysAgo', 'end_date' => 'today', 'name' => 'current']),
@@ -84,20 +87,25 @@ try {
     $data_map = [];
     foreach ($response->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
-        // Nota: runReport con múltiples rangos devuelve MetricValues duplicados en orden [range1, range2]
-        $current_val = (int)$row->getMetricValues()[0]->getValue();
-        $prev_val = (int)($row->getMetricValues()[1]->getValue() ?? 0);
+        $range_name = $row->getDimensionValues()[1]->getValue();
+        $sessions = (int)$row->getMetricValues()[0]->getValue();
         
-        $data_map[$path] = [
-            'current' => $current_val,
-            'prev' => $prev_val
-        ];
+        if (!isset($data_map[$path])) {
+            $data_map[$path] = ['current' => 0, 'prev' => 0];
+        }
+        
+        if ($range_name === 'current') {
+            $data_map[$path]['current'] = $sessions;
+        } else {
+            $data_map[$path]['prev'] = $sessions;
+        }
     }
 
     $results = [];
     foreach ($pc as $path => $name) {
         $curr = $data_map[$path]['current'] ?? 0;
         $prev = $data_map[$path]['prev'] ?? 0;
+        
         $change = ($prev > 0) ? round((($curr - $prev) / $prev) * 100, 1) : 0;
         
         $results[] = [
