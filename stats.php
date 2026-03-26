@@ -156,11 +156,11 @@
                 pathKeys.forEach(p => {
                     const id = btoa(p).replace(/=/g,'');
                     const prod = globalProducts[p];
-                    const f = prod.fixed;
+                    const f = prod.fixed || { w_yoy:0, m_yoy:0, y_yoy:0 };
                     
-                    totalFixed.w_yoy += f.w_yoy;
-                    totalFixed.m_yoy += f.m_yoy;
-                    totalFixed.y_yoy += f.y_yoy;
+                    totalFixed.w_yoy += (f.w_yoy || 0);
+                    totalFixed.m_yoy += (f.m_yoy || 0);
+                    totalFixed.y_yoy += (f.y_yoy || 0);
 
                     bodyHtml += `
                         <tr class="hover:bg-zinc-800/40 transition-colors group">
@@ -171,7 +171,7 @@
                                 </div>
                             </td>
                             <!-- Semana YoY: Prev es Fijo 2025 -->
-                            <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${f.w_yoy.toLocaleString()}</td>
+                            <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${(f.w_yoy || 0).toLocaleString()}</td>
                             <td class="cell-val font-bold text-white bg-zinc-800/20" id="curr-w_yoy-${id}"><i data-lucide="loader-2" class="w-3 h-3 animate-spin mx-auto opacity-20"></i></td>
                             <td class="cell-val border-r border-zinc-800/60 font-black" id="perc-w_yoy-${id}">-</td>
 
@@ -179,12 +179,12 @@
                             <td colspan="3" class="cell-val border-r border-zinc-800/60 text-zinc-600" id="w_wow-${id}">cargando...</td>
 
                             <!-- Mes MoM: Prev es Fijo 2025 -->
-                            <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${f.m_yoy.toLocaleString()}</td>
+                            <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${(f.m_yoy || 0).toLocaleString()}</td>
                             <td class="cell-val font-bold text-white bg-zinc-800/20" id="curr-m_yoy-${id}"><i data-lucide="loader-2" class="w-3 h-3 animate-spin mx-auto opacity-20"></i></td>
                             <td class="cell-val border-r border-zinc-800/60 font-black" id="perc-m_yoy-${id}">-</td>
 
                             <!-- Anual YoY: Prev es Fijo 2025 -->
-                            <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${f.y_yoy.toLocaleString()}</td>
+                            <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${(f.y_yoy || 0).toLocaleString()}</td>
                             <td class="cell-val font-bold text-white bg-zinc-800/20" id="curr-y_yoy-${id}"><i data-lucide="loader-2" class="w-3 h-3 animate-spin mx-auto opacity-20"></i></td>
                             <td class="cell-val border-r border-zinc-800/80 font-black" id="perc-y_yoy-${id}">-</td>
                         </tr>

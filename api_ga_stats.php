@@ -54,18 +54,21 @@ if ($report_type === 'init') {
 
     // 2. Obtener Datos Fijos 2025 para Semanas, Meses y YTD
     $fixed_data = [];
+    foreach ($pc as $path => $name) {
+        $fixed_data[$path] = ['w_yoy' => 0, 'm_yoy' => 0, 'y_yoy' => 0];
+    }
     
     // Semanas (para Semana YoY)
     $resW = $conn->query("SELECT page_path, sessions FROM ga4_history_2025 WHERE period_type = 'week' AND period_num = $currWeek");
-    while($r = $resW->fetch_assoc()) $fixed_data[$r['page_path']]['w_yoy'] = (int)$r['sessions'];
+    while($r = $resW->fetch_assoc()) if(isset($fixed_data[$r['page_path']])) $fixed_data[$r['page_path']]['w_yoy'] = (int)$r['sessions'];
 
     // Meses (para MoM)
     $resM = $conn->query("SELECT page_path, sessions FROM ga4_history_2025 WHERE period_type = 'month' AND period_num = $currMonth");
-    while($r = $resM->fetch_assoc()) $fixed_data[$r['page_path']]['m_yoy'] = (int)$r['sessions'];
+    while($r = $resM->fetch_assoc()) if(isset($fixed_data[$r['page_path']])) $fixed_data[$r['page_path']]['m_yoy'] = (int)$r['sessions'];
 
     // YTD (para YoY)
     $resY = $conn->query("SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 WHERE period_type = 'week' AND period_num <= $currWeek GROUP BY page_path");
-    while($r = $resY->fetch_assoc()) $fixed_data[$r['page_path']]['y_yoy'] = (int)$r['total'];
+    while($r = $resY->fetch_assoc()) if(isset($fixed_data[$r['page_path']])) $fixed_data[$r['page_path']]['y_yoy'] = (int)$r['total'];
 
     // Construir respuesta final ordenada
     $sorted_pc = [];
