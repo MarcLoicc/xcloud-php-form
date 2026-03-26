@@ -102,7 +102,7 @@ try {
         $use_db_for_prev = true; $db_type = 'month'; $db_num = (int)date('n'); // Mes actual
     } elseif ($report_type === 'y_yoy') {
         $range_curr = new DateRange(['start_date' => date('Y-01-01'), 'end_date' => 'today']);
-        $use_db_for_prev = true; $db_type = 'ytd'; $db_num = (int)date('n'); // Acumulado hasta este mes
+        $use_db_for_prev = true; $db_type = 'year'; $db_num = 2025; // Año completo 2025 en vez de hasta este mes
     } else {
         send_json_error('Tipo de reporte desconocido');
     }
@@ -120,7 +120,7 @@ try {
     $response_curr = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath'])],
-        'metrics' => [new Metric(['name' => 'screenPageViews'])],
+        'metrics' => [new Metric(['name' => 'sessions'])],
         'dateRanges' => [$range_curr],
         'dimensionFilter' => $filter
     ], $options);
@@ -141,9 +141,10 @@ try {
     if ($use_db_for_prev) {
         // Tirar de MySQL ultrarrápido (2025)
         if ($db_type === 'ytd') {
-            // YTD = Suma de todos los meses de 2025 hasta el mes actual
+            // Este bloque ya no se usa, porque ahora y_yoy usa $db_type = 'year'
             $stmt = $conn->prepare("SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 WHERE period_type = 'month' AND period_num <= ? GROUP BY page_path");
             $stmt->bind_param("i", $db_num);
+
         } else {
             // Un solo mes o una sola semana
             $stmt = $conn->prepare("SELECT page_path, sessions as total FROM ga4_history_2025 WHERE period_type = ? AND period_num = ?");
