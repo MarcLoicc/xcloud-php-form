@@ -2,5 +2,7 @@
     "name": "marcloic/crm-php",
     "description": "CRM personal con MariaDB",
     "type": "project",
-    "require": {}
+    "require": {
+        "google/analytics-data": "^0.9.1"
+    }
 }
