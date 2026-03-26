@@ -20,8 +20,7 @@ $createTableQuery = "
 
 if ($conn->query($createTableQuery)) {
     echo "✅ Tabla 'ga4_history_2025' lista en la base de datos.<br>";
-}
-else {
+} else {
     die("❌ Error creando tabla: " . $conn->error);
 }
 
@@ -55,7 +54,7 @@ echo "🧹 Tabla actualizada para precisión diaria y despejada.<br>";
 
 try {
     $client = new BetaAnalyticsDataClient(['credentials' => $credentials_path]);
-
+    
     $pc = [
         '/' => 'Home / General',
         '/contacto/' => 'Contacto',
@@ -120,16 +119,12 @@ try {
     ]);
 
     $dateRange = new DateRange(['start_date' => '2025-01-01', 'end_date' => '2025-12-31']);
-
+    
     // Preparar INSERT SQL con etiqueta descriptiva
     $stmt = $conn->prepare("INSERT INTO ga4_history_2025 (page_path, period_type, period_num, period_label, sessions) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE sessions = ?, period_label = ?");
-
+    
     // Variables para binding (se actualizan en los loops)
-    $path = "";
-    $type = "";
-    $num = 0;
-    $label = "";
-    $views = 0;
+    $path = ""; $type = ""; $num = 0; $label = ""; $views = 0;
     $stmt->bind_param("ssisiis", $path, $type, $num, $label, $views, $views, $label);
 
     // 1. EXTRAER POR AÑO (Totales Individuales + TOTAL GLOBAL)
@@ -182,11 +177,11 @@ try {
         $path = $row->getDimensionValues()[0]->getValue();
         $month = (int)$row->getDimensionValues()[1]->getValue();
         $views = (int)$row->getMetricValues()[0]->getValue();
-
+        
         $num = $month;
         $label = $monthNames[$month] ?? "Mes $month";
         $stmt->execute();
-
+        
         if (!isset($proccessedMonths[$month])) {
             echo "✔️ Mes $month ($label) procesado.<br>";
             $proccessedMonths[$month] = true;
@@ -227,7 +222,7 @@ try {
         $path = $row->getDimensionValues()[0]->getValue();
         $week = (int)$row->getDimensionValues()[1]->getValue();
         $views = (int)$row->getMetricValues()[0]->getValue();
-
+        
         $num = $week;
         $label = "Semana $week";
         $stmt->execute();
@@ -254,7 +249,7 @@ try {
         $path = $row->getDimensionValues()[0]->getValue();
         $dateStr = $row->getDimensionValues()[1]->getValue(); // YYYYMMDD
         $views = (int)$row->getMetricValues()[0]->getValue();
-
+        
         $num = (int)$dateStr;
         $label = date('d-m-Y', strtotime($dateStr));
         $stmt->execute();
@@ -264,7 +259,6 @@ try {
 
     echo "<h2 style='color:green'>🎉 ¡Re-importación COMPLETADA! Granularidad diaria (MTD/YTD exacto) guardada en MySQL.</h2>";
 
-}
-catch (Throwable $e) {
+} catch (Throwable $e) {
     die("<h2 style='color:red'>❌ Error Fatal conectando con Google API:</h2>" . $e->getMessage());
 }
