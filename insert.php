@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $company = trim($_POST['company'] ?? '');
     $website = trim($_POST['website'] ?? '');
     $source = $_POST['source'] ?? 'organico';
+    $category = $_POST['category'] ?? null;
     $proposal_price = floatval($_POST['proposal_price'] ?? 0);
     $status = $_POST['status'] ?? 'nuevo';
     $message = trim($_POST['message'] ?? '');
@@ -85,9 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Insertar con Prepared Statements (12 campos)
-    $stmt = $conn->prepare("INSERT INTO leads (name, email, phone, company, website, source, status, tags, proposal_price, file_path, audio_path, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssssssdsss", $name, $email, $phone, $company, $website, $source, $status, $tags, $proposal_price, $file_path, $audio_path, $message);
+    // Insertar con Prepared Statements (13 campos incluyendo category)
+    $stmt = $conn->prepare("INSERT INTO leads (name, email, phone, company, website, source, category, status, tags, proposal_price, file_path, audio_path, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssssssdsss", $name, $email, $phone, $company, $website, $source, $category, $status, $tags, $proposal_price, $file_path, $audio_path, $message);
 
 
 

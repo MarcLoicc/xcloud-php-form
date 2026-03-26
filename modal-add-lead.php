@@ -77,6 +77,21 @@
                         </div>
                     </div>
                     <div class="col-span-1 space-y-2">
+                        <label for="category" class="sr-only">Producto</label>
+                        <div class="relative">
+                            <select name="category" id="category" class="w-full pl-3 pr-8 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] text-zinc-100 appearance-none shadow-inner">
+                                <option value="" disabled selected>Selecciona Producto</option>
+                                <option value="coche">Seguro Coche</option>
+                                <option value="hogar">Seguro Hogar</option>
+                                <option value="salud">Seguro Salud</option>
+                                <option value="moto">Seguro Moto</option>
+                                <option value="viajes">Seguro Viajes</option>
+                                <option value="mascotas">Seguro Mascotas</option>
+                            </select>
+                            <i data-lucide="shield-check" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                    <div class="col-span-1 space-y-2">
                         <label for="status" class="sr-only">Estado Inicial</label>
                         <div class="relative">
                             <select name="status" id="status" class="w-full pl-3 pr-8 py-2.5 bg-zinc-950 border border-zinc-800 rounded-md focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors text-[14px] text-zinc-100 appearance-none shadow-inner">

@@ -44,6 +44,7 @@ $columns_to_add = [
     'proposal_price' => "DECIMAL(10, 2) DEFAULT 0.00",
     'file_path' => "VARCHAR(555)",
     'audio_path' => "VARCHAR(555)",
+    'category' => "ENUM('coche', 'hogar', 'salud', 'moto', 'viajes', 'mascotas') DEFAULT NULL",
     'status' => "ENUM('nuevo','no_responde','llamar_tarde','enviar_propuesta','propuesta_enviada','ganado','perdido','no_cualificado','interesado_tarde') DEFAULT 'nuevo'"
 ];
 
