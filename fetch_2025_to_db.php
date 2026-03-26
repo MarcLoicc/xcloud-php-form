@@ -46,9 +46,10 @@ use Google\Analytics\Data\V1beta\Filter;
 use Google\Analytics\Data\V1beta\Filter\InListFilter;
 use Google\Analytics\Data\V1beta\FilterExpressionList;
 
-// 0. Limpiar datos anteriores para re-importación limpia
+// 0. Asegurar estructura de tabla con etiquetas descriptivas
+$conn->query("ALTER TABLE ga4_history_2025 ADD COLUMN IF NOT EXISTS period_label VARCHAR(50) AFTER period_num");
 $conn->query("TRUNCATE TABLE ga4_history_2025");
-echo "🧹 Tabla 'ga4_history_2025' vaciada para nueva importación.<br>";
+echo "🧹 Tabla despejada y columna de etiquetas lista.<br>";
 
 try {
     $client = new BetaAnalyticsDataClient(['credentials' => $credentials_path]);
@@ -109,8 +110,8 @@ try {
 
     $dateRange = new DateRange(['start_date' => '2025-01-01', 'end_date' => '2025-12-31']);
     
-    // Preparar INSERT SQL
-    $stmt = $conn->prepare("INSERT INTO ga4_history_2025 (page_path, period_type, period_num, sessions) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE sessions = ?");
+    // Preparar INSERT SQL con etiqueta descriptiva
+    $stmt = $conn->prepare("INSERT INTO ga4_history_2025 (page_path, period_type, period_num, period_label, sessions) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE sessions = ?, period_label = ?");
 
     // 1. EXTRAER POR AÑO (Total Anual)
     echo "<h3>📊 Consultando Visitas Anuales 2025 (España, sin Guadalajara)...</h3>";
@@ -128,7 +129,8 @@ try {
         
         $type = 'year';
         $num = 2025;
-        $stmt->bind_param("ssiii", $path, $type, $num, $views, $views);
+        $label = "Total 2025";
+        $stmt->bind_param("ssisii s", $path, $type, $num, $label, $views, $views, $label);
         $stmt->execute();
     }
     echo "✔️ Totales anuales agregados.<br>";
@@ -151,11 +153,12 @@ try {
         $views = (int)$row->getMetricValues()[0]->getValue();
         
         $type = 'month';
-        $stmt->bind_param("ssiii", $path, $type, $month, $views, $views);
+        $label = $monthNames[$month];
+        $stmt->bind_param("ssisii s", $path, $type, $month, $label, $views, $views, $label);
         $stmt->execute();
         
         if (!isset($proccessedMonths[$month])) {
-            echo "✔️ Mes $month (" . $monthNames[$month] . ") procesado.<br>";
+            echo "✔️ Mes $month ($label) procesado.<br>";
             $proccessedMonths[$month] = true;
         }
     }
@@ -177,11 +180,12 @@ try {
         $views = (int)$row->getMetricValues()[0]->getValue();
         
         $type = 'week';
-        $stmt->bind_param("ssiii", $path, $type, $week, $views, $views);
+        $label = "Semana $week";
+        $stmt->bind_param("ssisii s", $path, $type, $week, $label, $views, $views, $label);
         $stmt->execute();
 
         if (!isset($proccessedWeeks[$week])) {
-            echo "✔️ Semana $week procesada.<br>";
+            echo "✔️ $label procesada.<br>";
             $proccessedWeeks[$week] = true;
         }
     }
