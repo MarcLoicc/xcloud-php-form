@@ -130,19 +130,26 @@
 
         async function loadAnalytics() {
             try {
-                const response = await fetch('api_ga_stats');
+                const response = await fetch('api_ga_stats.php');
                 const result = await response.json();
                 
                 if (result.status === 'success') {
                     renderTable(result.data);
+                } else {
+                    console.error('GA Data status:', result.status, result.message);
                 }
             } catch (error) {
-                console.error('Error loading GA data:', error);
+                console.error('Error loading GA data (Network/Path error):', error);
+                alert('No se pudo conectar con el servidor de estadísticas (api_ga_stats.php)');
             }
         }
 
         function renderTable(data) {
             const container = document.getElementById('ga-table-body');
+            if (data.length === 0) {
+                container.innerHTML = '<tr><td colspan="7" class="py-20 text-center text-zinc-500 font-medium italic">No se encontraron visitas registradas para estas URLs en GA4.</td></tr>';
+                return;
+            }
             container.innerHTML = '';
             
             data.forEach(item => {
@@ -209,7 +216,7 @@
         }
 
         async function initCharts(range = '7') {
-            const res = await fetch(`api_stats?range=\${range}`);
+            const res = await fetch(`api_stats.php?range=${range}`);
             const data = await res.json();
             
             const p = data.metrics.pago;
