@@ -81,32 +81,41 @@ try {
         '/calculadora-precio-web-online/' => 'Calculadora Precio'
     ];
 
-    // FILTRO: Solo España y EXCLUIR Guadalajara (Compatibilidad 0.9.1)
+    // FILTROS BASE (Compartidos)
+    $filter_base = [
+        new FilterExpression([
+            'filter' => new Filter([
+                'field_name' => 'country',
+                'string_filter' => new Filter\StringFilter(['value' => 'Spain'])
+            ])
+        ]),
+        new FilterExpression([
+            'not_expression' => new FilterExpression([
+                'filter' => new Filter([
+                    'field_name' => 'city',
+                    'string_filter' => new Filter\StringFilter(['value' => 'Guadalajara'])
+                ])
+            ])
+        ])
+    ];
+
+    // FILTRO: Solo productos del panel
     $filter = new FilterExpression([
         'and_group' => new FilterExpressionList([
-            'expressions' => [
+            'expressions' => array_merge([
                 new FilterExpression([
                     'filter' => new Filter([
                         'field_name' => 'pagePath',
                         'in_list_filter' => new InListFilter(['values' => array_keys($pc)])
                     ])
-                ]),
-                new FilterExpression([
-                    'filter' => new Filter([
-                        'field_name' => 'country',
-                        'string_filter' => new Filter\StringFilter(['value' => 'Spain'])
-                    ])
-                ]),
-                new FilterExpression([
-                    'not_expression' => new FilterExpression([
-                        'filter' => new Filter([
-                            'field_name' => 'city',
-                            'string_filter' => new Filter\StringFilter(['value' => 'Guadalajara'])
-                        ])
-                    ])
                 ])
-            ]
+            ], $filter_base)
         ])
+    ]);
+
+    // FILTRO: Total de la web (Sin restricción de path)
+    $filter_total = new FilterExpression([
+        'and_group' => new FilterExpressionList(['expressions' => $filter_base])
     ]);
 
     $dateRange = new DateRange(['start_date' => '2025-01-01', 'end_date' => '2025-12-31']);
@@ -118,7 +127,7 @@ try {
     $path = ""; $type = ""; $num = 0; $label = ""; $views = 0;
     $stmt->bind_param("ssisiis", $path, $type, $num, $label, $views, $views, $label);
 
-    // 1. EXTRAER POR AÑO (Total Anual)
+    // 1. EXTRAER POR AÑO (Totales Individuales + TOTAL GLOBAL)
     echo "<h3>📊 Consultando Visitas Anuales 2025 (España, sin Guadalajara)...</h3>";
     $resYear = $client->runReport([
         'property' => 'properties/' . $property_id,
@@ -136,7 +145,20 @@ try {
         $views = (int)$row->getMetricValues()[0]->getValue();
         $stmt->execute();
     }
-    echo "✔️ Totales anuales agregados.<br>";
+
+    // EXTRAER TOTAL WEB ANUAL
+    $resTotalYear = $client->runReport([
+        'property' => 'properties/' . $property_id,
+        'metrics' => [new Metric(['name' => 'screenPageViews'])],
+        'dateRanges' => [$dateRange],
+        'dimensionFilter' => $filter_total
+    ]);
+    if ($resTotalYear->getRows()) {
+        $path = 'TOTAL';
+        $views = (int)$resTotalYear->getRows()[0]->getMetricValues()[0]->getValue();
+        $stmt->execute();
+    }
+    echo "✔️ Totales anuales agregados (Individuales + TOTAL).<br>";
 
     // 2. EXTRAER POR MES
     echo "<h3>📅 Consultando Visitas Mensuales 2025...</h3>";
@@ -157,7 +179,7 @@ try {
         $views = (int)$row->getMetricValues()[0]->getValue();
         
         $num = $month;
-        $label = $monthNames[$month];
+        $label = $monthNames[$month] ?? "Mes $month";
         $stmt->execute();
         
         if (!isset($proccessedMonths[$month])) {
@@ -165,6 +187,24 @@ try {
             $proccessedMonths[$month] = true;
         }
     }
+
+    // EXTRAER TOTAL WEB MENSUAL
+    $resTotalMonth = $client->runReport([
+        'property' => 'properties/' . $property_id,
+        'dimensions' => [new Dimension(['name' => 'month'])],
+        'metrics' => [new Metric(['name' => 'screenPageViews'])],
+        'dateRanges' => [$dateRange],
+        'dimensionFilter' => $filter_total // Usar el filtro sin pagePath
+    ]);
+    $path = 'TOTAL';
+    foreach ($resTotalMonth->getRows() as $row) {
+        $month = (int)$row->getDimensionValues()[0]->getValue();
+        $views = (int)$row->getMetricValues()[0]->getValue();
+        $num = $month;
+        $label = $monthNames[$month] ?? "Mes $month";
+        $stmt->execute();
+    }
+    echo "✔️ Totales mensuales (TOTAL) agregados.<br>";
 
     // 3. EXTRAER POR SEMANA
     echo "<h3>📆 Consultando Visitas Semanales 2025...</h3>";
