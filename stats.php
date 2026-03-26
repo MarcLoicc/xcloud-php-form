@@ -143,41 +143,83 @@
                     if(icon) icon.classList.add('animate-spin');
                 }
 
-                // 1. Obtener listado
                 const initRes = await fetch('api_ga_stats.php?report=init');
                 const initJSON = await initRes.json();
                 if (initJSON.status !== 'success') throw new Error(initJSON.message);
 
                 globalProducts = initJSON.data;
-                const pathKeys = Object.keys(globalProducts).sort((a,b) => globalProducts[a].localeCompare(globalProducts[b]));
+                const pathKeys = Object.keys(globalProducts);
 
-                // 2. Renderizar filas vacías con loaders
                 let bodyHtml = '';
+                let totalFixed = { w_yoy:0, m_yoy:0, y_yoy:0 };
+
                 pathKeys.forEach(p => {
                     const id = btoa(p).replace(/=/g,'');
+                    const prod = globalProducts[p];
+                    const f = prod.fixed;
+                    
+                    totalFixed.w_yoy += f.w_yoy;
+                    totalFixed.m_yoy += f.m_yoy;
+                    totalFixed.y_yoy += f.y_yoy;
+
                     bodyHtml += `
                         <tr class="hover:bg-zinc-800/40 transition-colors group">
                             <td class="cell-prod sticky left-0 bg-zinc-950 group-hover:bg-zinc-900 z-10 shadow-[2px_0_15px_rgba(0,0,0,0.6)] border-r border-indigo-500/30">
                                 <div class="flex items-center gap-3">
                                     <div class="w-1.5 h-1.5 rounded-full bg-indigo-500/50 group-hover:bg-indigo-400"></div>
-                                    ${globalProducts[p]}
+                                    ${prod.name}
                                 </div>
                             </td>
-                            <td colspan="3" class="cell-val border-r border-zinc-800/60 text-zinc-600" id="w_yoy-${id}">cargando...</td>
+                            <!-- Semana YoY: Prev es Fijo 2025 -->
+                            <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${f.w_yoy.toLocaleString()}</td>
+                            <td class="cell-val font-bold text-white bg-zinc-800/20" id="curr-w_yoy-${id}"><i data-lucide="loader-2" class="w-3 h-3 animate-spin mx-auto opacity-20"></i></td>
+                            <td class="cell-val border-r border-zinc-800/60 font-black" id="perc-w_yoy-${id}">-</td>
+
+                            <!-- Semana WoW: Ambos son API 2026 -->
                             <td colspan="3" class="cell-val border-r border-zinc-800/60 text-zinc-600" id="w_wow-${id}">cargando...</td>
-                            <td colspan="3" class="cell-val border-r border-zinc-800/60 text-zinc-600" id="m_yoy-${id}">cargando...</td>
-                            <td colspan="3" class="cell-val border-r border-zinc-800/80 text-zinc-600" id="y_yoy-${id}">cargando...</td>
+
+                            <!-- Mes MoM: Prev es Fijo 2025 -->
+                            <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${f.m_yoy.toLocaleString()}</td>
+                            <td class="cell-val font-bold text-white bg-zinc-800/20" id="curr-m_yoy-${id}"><i data-lucide="loader-2" class="w-3 h-3 animate-spin mx-auto opacity-20"></i></td>
+                            <td class="cell-val border-r border-zinc-800/60 font-black" id="perc-m_yoy-${id}">-</td>
+
+                            <!-- Anual YoY: Prev es Fijo 2025 -->
+                            <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${f.y_yoy.toLocaleString()}</td>
+                            <td class="cell-val font-bold text-white bg-zinc-800/20" id="curr-y_yoy-${id}"><i data-lucide="loader-2" class="w-3 h-3 animate-spin mx-auto opacity-20"></i></td>
+                            <td class="cell-val border-r border-zinc-800/80 font-black" id="perc-y_yoy-${id}">-</td>
                         </tr>
                     `;
                 });
 
                 document.getElementById('body-target').innerHTML = bodyHtml;
                 
-                // Mostrar tabla
+                // Footer con datos fijos ya sumados
+                document.getElementById('total-w_yoy').innerHTML = `
+                    <div class="flex items-center justify-between px-2">
+                        <span class="text-zinc-400">${totalFixed.w_yoy.toLocaleString()}</span>
+                        <span class="text-white font-black" id="footer-curr-w_yoy">...</span>
+                        <span class="tracking-widest bg-zinc-900/50 px-2 rounded" id="footer-perc-w_yoy">-</span>
+                    </div>
+                `;
+                document.getElementById('total-m_yoy').innerHTML = `
+                    <div class="flex items-center justify-between px-2">
+                        <span class="text-zinc-400">${totalFixed.m_yoy.toLocaleString()}</span>
+                        <span class="text-white font-black" id="footer-curr-m_yoy">...</span>
+                        <span class="tracking-widest bg-zinc-900/50 px-2 rounded" id="footer-perc-m_yoy">-</span>
+                    </div>
+                `;
+                document.getElementById('total-y_yoy').innerHTML = `
+                    <div class="flex items-center justify-between px-2">
+                        <span class="text-zinc-400">${totalFixed.y_yoy.toLocaleString()}</span>
+                        <span class="text-white font-black" id="footer-curr-y_yoy">...</span>
+                        <span class="tracking-widest bg-zinc-900/50 px-2 rounded" id="footer-perc-y_yoy">-</span>
+                    </div>
+                `;
+
                 document.getElementById('init-loader').style.display = 'none';
                 document.getElementById('master-container').style.display = 'block';
+                lucide.createIcons();
 
-                // 3. Ejecutar reportes individuales
                 const queries = ['w_yoy', 'w_wow', 'm_yoy', 'y_yoy'];
                 queries.forEach(q => fetchAndRender(q, isRefresh));
 
@@ -198,19 +240,28 @@
                     let tCurr=0, tPrev=0;
 
                     for (const path in data) {
-                        const cellId = `${reportType}-${btoa(path).replace(/=/g,'')}`;
                         const d = data[path];
-                        const td = document.getElementById(cellId);
+                        const id = btoa(path).replace(/=/g,'');
                         
-                        if (td) {
-                            const pClass = d.perc >= 0 ? 'perc-up' : 'perc-down';
-                            const pStr = (d.perc >= 0 ? '+' : '') + d.perc + '%';
-                            
-                            td.outerHTML = `
-                                <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${d.prev.toLocaleString()}</td>
-                                <td class="cell-val font-bold text-white bg-zinc-800/20 shadow-[inset_1px_0_10px_rgba(0,0,0,0.1)]">${d.curr.toLocaleString()}</td>
-                                <td class="${pClass} border-r border-zinc-800/60 font-black">${pStr}</td>
-                            `;
+                        if (reportType === 'w_wow') {
+                            const td = document.getElementById(`w_wow-${id}`);
+                            if (td) {
+                                const pClass = d.perc >= 0 ? 'perc-up' : 'perc-down';
+                                const pStr = (d.perc >= 0 ? '+' : '') + d.perc + '%';
+                                td.outerHTML = `
+                                    <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${d.prev.toLocaleString()}</td>
+                                    <td class="cell-val font-bold text-white bg-zinc-800/20 shadow-[inset_1px_0_10px_rgba(0,0,0,0.1)]">${d.curr.toLocaleString()}</td>
+                                    <td class="${pClass} border-r border-zinc-800/60 font-black">${pStr}</td>
+                                `;
+                            }
+                        } else {
+                            const currTd = document.getElementById(`curr-${reportType}-${id}`);
+                            const percTd = document.getElementById(`perc-${reportType}-${id}`);
+                            if (currTd) currTd.innerText = d.curr.toLocaleString();
+                            if (percTd) {
+                                percTd.innerText = (d.perc >= 0 ? '+' : '') + d.perc + '%';
+                                percTd.className = (d.perc >= 0 ? 'perc-up' : 'perc-down') + ' border-r border-zinc-800/60 font-black';
+                            }
                         }
                         tCurr += d.curr; tPrev += d.prev;
                     }
@@ -220,21 +271,30 @@
                     const tpClass = tPerc >= 0 ? 'perc-up' : 'perc-down';
                     const tpStr = (tPerc >= 0 ? '+' : '') + tPerc + '%';
                     
-                    const footHtml = `
-                        <td class="cell-val text-zinc-400 border-l border-zinc-800/50">${tPrev.toLocaleString()}</td>
-                        <td class="cell-val text-white font-black">${tCurr.toLocaleString()}</td>
-                        <td class="${tpClass} border-r border-zinc-800/80 tracking-widest bg-zinc-900/50">${tpStr}</td>
-                    `;
-                    document.getElementById(`total-${reportType}`).outerHTML = footHtml;
+                    if (reportType === 'w_wow') {
+                        document.getElementById(`total-w_wow`).outerHTML = `
+                            <td class="cell-val text-zinc-400 border-l border-zinc-800/50">${tPrev.toLocaleString()}</td>
+                            <td class="cell-val text-white font-black">${tCurr.toLocaleString()}</td>
+                            <td class="${tpClass} border-r border-zinc-800/80 tracking-widest bg-zinc-900/50">${tpStr}</td>
+                        `;
+                    } else {
+                        const fCurr = document.getElementById(`footer-curr-${reportType}`);
+                        const fPerc = document.getElementById(`footer-perc-${reportType}`);
+                        if (fCurr) fCurr.innerText = tCurr.toLocaleString();
+                        if (fPerc) {
+                            fPerc.innerText = tpStr;
+                            fPerc.className = tpClass + ' border-r border-zinc-800/80 tracking-widest bg-zinc-900/50';
+                        }
+                    }
 
                 } else {
-                    document.getElementById(`total-${reportType}`).innerHTML = `<span class="text-rose-500 text-xs">Error</span>`;
+                    console.error("Error en reporte:", reportType, dataJSON.message);
                 }
             } catch (e) {
-                document.getElementById(`total-${reportType}`).innerHTML = `<span class="text-rose-500 text-xs">Fallo de red</span>`;
+                console.error("Fallo de red en:", reportType, e);
             } finally {
                 const icon = document.getElementById('btn-icon');
-                if(icon && reportType === 'y_yoy') icon.classList.remove('animate-spin'); // Hack to stop spinner on last likely query
+                if(icon && reportType === 'y_yoy') icon.classList.remove('animate-spin');
             }
         }
 

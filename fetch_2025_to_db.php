@@ -52,7 +52,6 @@ try {
         '/' => 'Home / General',
         '/contacto/' => 'Contacto',
         '/diseno-web-mostoles/' => 'Móstoles',
-        '/casos-de-exito-diseno-web/' => 'Casos de Éxito',
         '/diseno-web-para-clinicas-en-madrid/diseno-web-para-clinicas-capilares/' => 'Clínicas Capilares',
         '/diseno-web-para-clinicas-en-madrid/diseno-web-para-dentistas-y-clinicas-dentales-en-madrid/' => 'Dentistas Madrid',
         '/diseno-web-para-abogados/' => 'Abogados',

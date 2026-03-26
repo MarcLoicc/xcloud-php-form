@@ -18,7 +18,6 @@ $pc = [
     '/' => 'Home / General',
     '/contacto/' => 'Contacto',
     '/diseno-web-mostoles/' => 'Móstoles',
-    '/casos-de-exito-diseno-web/' => 'Casos de Éxito',
     '/diseno-web-para-clinicas-en-madrid/diseno-web-para-clinicas-capilares/' => 'Clínicas Capilares',
     '/diseno-web-para-clinicas-en-madrid/diseno-web-para-dentistas-y-clinicas-dentales-en-madrid/' => 'Dentistas Madrid',
     '/diseno-web-para-abogados/' => 'Abogados',
@@ -41,9 +40,56 @@ $pc = [
     '/calculadora-precio-web-online/' => 'Calculadora Precio'
 ];
 
-// Si solo piden la lista de productos
+// Si solo piden la lista de productos y datos fijos 2025
 if ($report_type === 'init') {
-    echo json_encode(['status' => 'success', 'data' => $pc]);
+    $currWeek = (int)date('W');
+    $currMonth = (int)date('n');
+
+    // 1. Obtener orden por Total 2025
+    $resOrder = $conn->query("SELECT page_path, sessions FROM ga4_history_2025 WHERE period_type = 'year' AND period_num = 2025 ORDER BY sessions DESC");
+    $order_map = [];
+    if ($resOrder) {
+        while ($r = $resOrder->fetch_assoc()) $order_map[$r['page_path']] = (int)$r['sessions'];
+    }
+
+    // 2. Obtener Datos Fijos 2025 para Semanas, Meses y YTD
+    $fixed_data = [];
+    
+    // Semanas (para Semana YoY)
+    $resW = $conn->query("SELECT page_path, sessions FROM ga4_history_2025 WHERE period_type = 'week' AND period_num = $currWeek");
+    while($r = $resW->fetch_assoc()) $fixed_data[$r['page_path']]['w_yoy'] = (int)$r['sessions'];
+
+    // Meses (para MoM)
+    $resM = $conn->query("SELECT page_path, sessions FROM ga4_history_2025 WHERE period_type = 'month' AND period_num = $currMonth");
+    while($r = $resM->fetch_assoc()) $fixed_data[$r['page_path']]['m_yoy'] = (int)$r['sessions'];
+
+    // YTD (para YoY)
+    $resY = $conn->query("SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 WHERE period_type = 'week' AND period_num <= $currWeek GROUP BY page_path");
+    while($r = $resY->fetch_assoc()) $fixed_data[$r['page_path']]['y_yoy'] = (int)$r['total'];
+
+    // Construir respuesta final ordenada
+    $sorted_pc = [];
+    $seen = [];
+    arsort($order_map);
+    foreach ($order_map as $path => $total) {
+        if (isset($pc[$path])) {
+            $sorted_pc[$path] = [
+                'name' => $pc[$path],
+                'fixed' => $fixed_data[$path] ?? ['w_yoy'=>0, 'm_yoy'=>0, 'y_yoy'=>0]
+            ];
+            $seen[$path] = true;
+        }
+    }
+    foreach ($pc as $path => $name) {
+        if (!isset($seen[$path])) {
+            $sorted_pc[$path] = [
+                'name' => $name,
+                'fixed' => ['w_yoy'=>0, 'm_yoy'=>0, 'y_yoy'=>0]
+            ];
+        }
+    }
+
+    echo json_encode(['status' => 'success', 'data' => $sorted_pc]);
     exit;
 }
 
@@ -99,10 +145,13 @@ try {
         $range_prev = new DateRange(['start_date' => '14daysAgo', 'end_date' => '7daysAgo']); // Esto es 2026, va por GA4
     } elseif ($report_type === 'm_yoy') {
         $range_curr = new DateRange(['start_date' => date('Y-m-01'), 'end_date' => 'today']);
-        $use_db_for_prev = true; $db_type = 'month'; $db_num = (int)date('n'); // Mes actual
+        // Mes actual hasta la fecha: comparamos con el mes equivalente de 2025.
+        // Como solo tenemos acumulados mensuales en DB, usamos el mes completo pero queda claro.
+        $use_db_for_prev = true; $db_type = 'month'; $db_num = (int)date('n');
     } elseif ($report_type === 'y_yoy') {
         $range_curr = new DateRange(['start_date' => date('Y-01-01'), 'end_date' => 'today']);
-        $use_db_for_prev = true; $db_type = 'year'; $db_num = 2025; // Año completo 2025 en vez de hasta este mes
+        // YoY Anual "hasta la fecha": sumamos semanas de 2025 hasta la semana actual
+        $use_db_for_prev = true; $db_type = 'ytd'; $db_num = (int)date('W'); 
     } else {
         send_json_error('Tipo de reporte desconocido');
     }
@@ -141,10 +190,9 @@ try {
     if ($use_db_for_prev) {
         // Tirar de MySQL ultrarrápido (2025)
         if ($db_type === 'ytd') {
-            // Este bloque ya no se usa, porque ahora y_yoy usa $db_type = 'year'
-            $stmt = $conn->prepare("SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 WHERE period_type = 'month' AND period_num <= ? GROUP BY page_path");
+            // "Hasta la fecha" para YoY acumulando semanas hasta hoy
+            $stmt = $conn->prepare("SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 WHERE period_type = 'week' AND period_num <= ? GROUP BY page_path");
             $stmt->bind_param("i", $db_num);
-
         } else {
             // Un solo mes o una sola semana
             $stmt = $conn->prepare("SELECT page_path, sessions as total FROM ga4_history_2025 WHERE period_type = ? AND period_num = ?");
