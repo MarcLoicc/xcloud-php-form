@@ -46,10 +46,11 @@ use Google\Analytics\Data\V1beta\Filter;
 use Google\Analytics\Data\V1beta\Filter\InListFilter;
 use Google\Analytics\Data\V1beta\FilterExpressionList;
 
-// 0. Asegurar estructura de tabla con etiquetas descriptivas
+// 0. Asegurar estructura de tabla con etiquetas descriptivas y granularidad diaria
+$conn->query("ALTER TABLE ga4_history_2025 MODIFY COLUMN period_type ENUM('day', 'week', 'month', 'year') NOT NULL");
 $conn->query("ALTER TABLE ga4_history_2025 ADD COLUMN IF NOT EXISTS period_label VARCHAR(50) AFTER period_num");
 $conn->query("TRUNCATE TABLE ga4_history_2025");
-echo "🧹 Tabla despejada y columna de etiquetas lista.<br>";
+echo "🧹 Tabla actualizada para precisión diaria y despejada.<br>";
 
 try {
     $client = new BetaAnalyticsDataClient(['credentials' => $credentials_path]);
