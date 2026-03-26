@@ -71,10 +71,10 @@
                         </tr>
                         <tr>
                             <th class="header-sub" style="text-align: left; padding-left: 20px;">Producto Base</th>
-                            <th class="header-sub w-24 border-l border-white/10" id="head-yoy-prev">Seman Ant</th><th class="header-sub w-24" id="head-yoy-curr">Sem Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
-                            <th class="header-sub w-24 border-l border-white/10" id="head-wow-prev">Seman Ant</th><th class="header-sub w-24" id="head-wow-curr">Sem Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
-                            <th class="header-sub w-24 border-l border-white/10" id="head-mtd-prev">MoM Año Ant</th><th class="header-sub w-24" id="head-mtd-curr">MoM Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
-                            <th class="header-sub w-24 border-l border-white/10" id="head-ytd-prev">YoY Año Ant</th><th class="header-sub w-24" id="head-ytd-curr">YoY Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
+                            <th class="header-sub w-24 border-l border-white/10" id="head-yoy-prev">Seman Ant</th><th class="header-sub w-24" id="head-yoy-curr">Sem Act</th><th class="header-sub w-20 bg-indigo-600">Var. (p.p.)</th>
+                            <th class="header-sub w-24 border-l border-white/10" id="head-wow-prev">Seman Ant</th><th class="header-sub w-24" id="head-wow-curr">Sem Act</th><th class="header-sub w-20 bg-indigo-600">Var. (p.p.)</th>
+                            <th class="header-sub w-24 border-l border-white/10" id="head-mtd-prev">MoM Año Ant</th><th class="header-sub w-24" id="head-mtd-curr">MoM Act</th><th class="header-sub w-20 bg-indigo-600">Var. (p.p.)</th>
+                            <th class="header-sub w-24 border-l border-white/10" id="head-ytd-prev">YoY Año Ant</th><th class="header-sub w-24" id="head-ytd-curr">YoY Act</th><th class="header-sub w-20 bg-indigo-600">Var. (p.p.)</th>
                         </tr>
                     </thead>
                     <tbody class="bg-zinc-950/50" id="body-target">
@@ -249,12 +249,11 @@
                         if (reportType === 'w_wow') {
                             const td = document.getElementById(`w_wow-${id}`);
                             if (td) {
-                                const pClass = d.perc >= 0 ? 'perc-up' : 'perc-down';
-                                const pStr = (d.perc >= 0 ? '+' : '') + d.perc + '%';
+                                const pClass = d.raw_perc >= 0 ? 'perc-up' : 'perc-down';
                                 td.outerHTML = `
                                     <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${d.prev.toLocaleString()}</td>
                                     <td class="cell-val font-bold text-white bg-zinc-800/20 shadow-[inset_1px_0_10px_rgba(0,0,0,0.1)]">${d.curr.toLocaleString()}</td>
-                                    <td class="${pClass} border-r border-zinc-800/60 font-black">${pStr}</td>
+                                    <td class="${pClass} border-r border-zinc-800/60 font-black">${d.perc}</td>
                                 `;
                             }
                         } else {
@@ -262,31 +261,31 @@
                             const percTd = document.getElementById(`perc-${reportType}-${id}`);
                             if (currTd) currTd.innerText = d.curr.toLocaleString();
                             if (percTd) {
-                                percTd.innerText = (d.perc >= 0 ? '+' : '') + d.perc + '%';
-                                percTd.className = (d.perc >= 0 ? 'perc-up' : 'perc-down') + ' border-r border-zinc-800/60 font-black';
+                                percTd.innerText = d.perc;
+                                percTd.className = (d.raw_perc >= 0 ? 'perc-up' : 'perc-down') + ' border-r border-zinc-800/60 font-black';
                             }
                         }
                         tCurr += d.curr; tPrev += d.prev;
                     }
 
-                    // Total Row
-                    const tPerc = tPrev > 0 ? Math.round(((tCurr - tPrev)/tPrev)*100*10)/10 : 0;
-                    const tpClass = tPerc >= 0 ? 'perc-up' : 'perc-down';
-                    const tpStr = (tPerc >= 0 ? '+' : '') + tPerc + '%';
+                    // Total Row (Share Global p.p.)
+                    const sCurr = (tCurr / tCurr) * 100; // Siempre 100% el total
+                    const sPrev = (tPrev / tPrev) * 100; // Siempre 100% el total
+                    const tPerc = 0; // El total global siempre es 100% en share, la var es 0 p.p.
                     
                     if (reportType === 'w_wow') {
                         document.getElementById(`total-w_wow`).outerHTML = `
                             <td class="cell-val text-zinc-400 border-l border-zinc-800/50">${tPrev.toLocaleString()}</td>
                             <td class="cell-val text-white font-black">${tCurr.toLocaleString()}</td>
-                            <td class="${tpClass} border-r border-zinc-800/80 tracking-widest bg-zinc-900/50">${tpStr}</td>
+                            <td class="perc-up border-r border-zinc-800/80 tracking-widest bg-zinc-900/50">0 p.p.</td>
                         `;
                     } else {
                         const fCurr = document.getElementById(`footer-curr-${reportType}`);
                         const fPerc = document.getElementById(`footer-perc-${reportType}`);
                         if (fCurr) fCurr.innerText = tCurr.toLocaleString();
                         if (fPerc) {
-                            fPerc.innerText = tpStr;
-                            fPerc.className = tpClass + ' border-r border-zinc-800/80 tracking-widest bg-zinc-900/50';
+                            fPerc.innerText = "0 p.p.";
+                            fPerc.className = 'perc-up border-r border-zinc-800/80 tracking-widest bg-zinc-900/50';
                         }
                     }
 
