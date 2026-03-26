@@ -127,6 +127,8 @@ use Google\Analytics\Data\V1beta\Filter\InListFilter;
 use Google\Analytics\Data\V1beta\FilterExpressionList;
 
 try {
+    $client = new BetaAnalyticsDataClient(['credentials' => $credentials_path]);
+
     // Filtros base (España, Sin Guadalajara)
     $filter_base_expressions = [
         new FilterExpression([
