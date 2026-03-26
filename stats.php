@@ -66,15 +66,15 @@
                             <th class="border-none bg-zinc-950 sticky left-0 z-20 border-r border-indigo-500/30"></th>
                             <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📅 SEMANA YoY</th>
                             <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">🔄 SEMANA WoW</th>
-                            <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📅 MES ACTUAL (MTD)</th>
-                            <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📈 ANUAL (YTD)</th>
+                            <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📅 MES ACTUAL (MoM)</th>
+                            <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📈 ANUAL (YoY)</th>
                         </tr>
                         <tr>
                             <th class="header-sub" style="text-align: left; padding-left: 20px;">Producto Base</th>
                             <th class="header-sub w-24 border-l border-white/10" id="head-yoy-prev">Seman Ant</th><th class="header-sub w-24" id="head-yoy-curr">Sem Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
                             <th class="header-sub w-24 border-l border-white/10" id="head-wow-prev">Seman Ant</th><th class="header-sub w-24" id="head-wow-curr">Sem Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
-                            <th class="header-sub w-24 border-l border-white/10" id="head-mtd-prev">MTD Año Ant</th><th class="header-sub w-24" id="head-mtd-curr">MTD Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
-                            <th class="header-sub w-24 border-l border-white/10" id="head-ytd-prev">YTD Año Ant</th><th class="header-sub w-24" id="head-ytd-curr">YTD Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
+                            <th class="header-sub w-24 border-l border-white/10" id="head-mtd-prev">MoM Año Ant</th><th class="header-sub w-24" id="head-mtd-curr">MoM Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
+                            <th class="header-sub w-24 border-l border-white/10" id="head-ytd-prev">YoY Año Ant</th><th class="header-sub w-24" id="head-ytd-curr">YoY Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
                         </tr>
                     </thead>
                     <tbody class="bg-zinc-950/50" id="body-target">
@@ -128,10 +128,10 @@
         document.getElementById('head-wow-curr').innerHTML = formatHeader(7, 0, year);
         document.getElementById('head-wow-prev').innerHTML = formatHeader(14, 7, year);
 
-        document.getElementById('head-mtd-prev').innerText = `MTD ${lastYear}`;
-        document.getElementById('head-mtd-curr').innerText = `MTD ${year}`;
-        document.getElementById('head-ytd-prev').innerText = `YTD ${lastYear}`;
-        document.getElementById('head-ytd-curr').innerText = `YTD ${year}`;
+        document.getElementById('head-mtd-prev').innerText = `MoM ${lastYear}`;
+        document.getElementById('head-mtd-curr').innerText = `MoM ${year}`;
+        document.getElementById('head-ytd-prev').innerText = `YoY ${lastYear}`;
+        document.getElementById('head-ytd-curr').innerText = `YoY ${year}`;
 
         lucide.createIcons();
         let globalProducts = {};
