@@ -71,8 +71,8 @@
                         </tr>
                         <tr>
                             <th class="header-sub" style="text-align: left; padding-left: 20px;">Producto Base</th>
-                            <th class="header-sub w-24 border-l border-white/10">Seman Ant</th><th class="header-sub w-24">Sem Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
-                            <th class="header-sub w-24 border-l border-white/10">Seman Ant</th><th class="header-sub w-24">Sem Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
+                            <th class="header-sub w-24 border-l border-white/10" id="head-yoy-prev">Seman Ant</th><th class="header-sub w-24" id="head-yoy-curr">Sem Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
+                            <th class="header-sub w-24 border-l border-white/10" id="head-wow-prev">Seman Ant</th><th class="header-sub w-24" id="head-wow-curr">Sem Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
                             <th class="header-sub w-24 border-l border-white/10" id="head-mtd-prev">MTD Año Ant</th><th class="header-sub w-24" id="head-mtd-curr">MTD Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
                             <th class="header-sub w-24 border-l border-white/10" id="head-ytd-prev">YTD Año Ant</th><th class="header-sub w-24" id="head-ytd-curr">YTD Act</th><th class="header-sub w-20 bg-indigo-600">% Var</th>
                         </tr>
@@ -97,6 +97,36 @@
         const date = new Date();
         const year = date.getFullYear();
         const lastYear = year - 1;
+
+        // --- Generador Dinámico de Cabeceras de Semana ---
+        function getISOWeekInfo(d) {
+            const date = new Date(d.valueOf());
+            const dayn = (date.getDay() + 6) % 7;
+            date.setDate(date.getDate() - dayn + 3);
+            const firstThursday = date.valueOf();
+            date.setMonth(0, 1);
+            if (date.getDay() !== 4) date.setMonth(0, 1 + ((4 - date.getDay()) + 7) % 7);
+            return 1 + Math.ceil((firstThursday - date) / 604800000);
+        }
+
+        function formatHeader(startOffset, endOffset, forcedYear = null) {
+            const endD = new Date(); endD.setDate(endD.getDate() - endOffset);
+            const startD = new Date(); startD.setDate(startD.getDate() - startOffset);
+            
+            const wNum = getISOWeekInfo(endD);
+            const sDay = ("0" + startD.getDate()).slice(-2);
+            const eDay = ("0" + endD.getDate()).slice(-2);
+            const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+            const mo = months[endD.getMonth()];
+            const finalY = forcedYear || endD.getFullYear();
+            
+            return `Sem ${wNum}<br><span class="text-[10px] text-zinc-400 font-medium">(${sDay}-${eDay} ${mo}) ${finalY}</span>`;
+        }
+
+        document.getElementById('head-yoy-curr').innerHTML = formatHeader(7, 0, year);
+        document.getElementById('head-yoy-prev').innerHTML = formatHeader(7, 0, lastYear);
+        document.getElementById('head-wow-curr').innerHTML = formatHeader(7, 0, year);
+        document.getElementById('head-wow-prev').innerHTML = formatHeader(14, 7, year);
 
         document.getElementById('head-mtd-prev').innerText = `MTD ${lastYear}`;
         document.getElementById('head-mtd-curr').innerText = `MTD ${year}`;
