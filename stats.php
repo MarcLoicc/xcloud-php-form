@@ -48,19 +48,19 @@
                 <p class="text-[14px] text-zinc-400 font-medium">Panel Maestro C-Level Consolidado (YoY / WoW / Acumulados)</p>
             </div>
             
-            <button onclick="window.location.reload()" class="bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 px-5 rounded-xl transition-all shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)] border border-indigo-400/50 flex items-center gap-3 group">
-                <i data-lucide="refresh-cw" class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500"></i> 
+            <button onclick="loadAnalytics(true)" class="bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 px-5 rounded-xl transition-all shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)] border border-indigo-400/50 flex items-center gap-3 group border-b-2">
+                <i id="btn-icon" data-lucide="refresh-cw" class="w-4 h-4 transition-transform duration-500"></i> 
                 <span class="text-xs font-bold uppercase tracking-widest">Sincronizar API GA4</span>
             </button>
         </header>
 
         <!-- Loading State -->
-        <div id="loader" class="flex flex-col items-center justify-center p-24 text-zinc-500 bg-zinc-900/40 rounded-3xl border border-zinc-800/80 shadow-2xl">
+        <div id="loader" class="flex flex-col items-center justify-center p-24 text-zinc-500 bg-zinc-900/40 rounded-3xl border border-zinc-800/80 shadow-2xl mt-10">
             <div class="relative w-16 h-16 mb-6">
                 <div class="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
                 <div class="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin"></div>
             </div>
-            <p class="text-sm font-bold uppercase tracking-[0.2em] text-indigo-400 animate-pulse">Sintetizando Big Data...</p>
+            <p id="loader-text" class="text-sm font-bold uppercase tracking-[0.2em] text-indigo-400 animate-pulse">Consultando caché de Big Data...</p>
         </div>
 
         <!-- Master Table Container -->
@@ -80,21 +80,34 @@
         const year = date.getFullYear();
         const lastYear = year - 1;
 
-        async function loadAnalytics() {
+        async function loadAnalytics(isRefresh = false) {
             try {
-                const response = await fetch('api_ga_stats.php');
+                if (isRefresh) {
+                    document.getElementById('master-container').style.display = 'none';
+                    document.getElementById('loader').style.display = 'flex';
+                    const icon = document.getElementById('btn-icon');
+                    if(icon) icon.classList.add('animate-spin');
+                    document.getElementById('loader-text').innerText = "Solicitando Big Data a Google (Hasta 30segs)...";
+                }
+
+                const endpoint = isRefresh ? 'api_ga_stats.php?refresh=true' : 'api_ga_stats.php';
+                const response = await fetch(endpoint);
                 const result = await response.json();
                 
                 if (result.status === 'success') {
+                    if (isRefresh) {
+                        const icon = document.getElementById('btn-icon');
+                        if(icon) icon.classList.remove('animate-spin');
+                    }
                     document.getElementById('loader').style.display = 'none';
                     document.getElementById('master-container').style.display = 'block';
                     renderMasterTable(result.data);
                 } else {
-                    document.getElementById('loader').innerHTML = `<div class="text-rose-500 font-bold p-6 bg-rose-500/10 rounded-xl border border-rose-500/30 flex items-center gap-3"><i data-lucide="alert-triangle"></i> API ERROR: ${result.message}</div>`;
+                    document.getElementById('loader').innerHTML = `<div class="text-rose-500 font-bold p-6 bg-rose-500/10 rounded-xl border border-rose-500/30 flex items-center gap-3"><i data-lucide="alert-triangle"></i> API ERROR: \n${result.message}</div>`;
                     lucide.createIcons();
                 }
             } catch (e) {
-                document.getElementById('loader').innerHTML = `<div class="text-rose-500 font-bold p-6 bg-rose-500/10 rounded-xl border border-rose-500/30 flex items-center gap-3"><i data-lucide="wifi-off"></i> NETWORK ERROR: Revise su conexión o los logs.</div>`;
+                document.getElementById('loader').innerHTML = `<div class="text-rose-500 font-bold p-6 bg-rose-500/10 rounded-xl border border-rose-500/30 flex items-center gap-3"><i data-lucide="wifi-off"></i> NETWORK ERROR: Revise su conexión o los logs. \n${e.message}</div>`;
                 lucide.createIcons();
             }
         }

@@ -12,6 +12,32 @@ function send_json_error($msg) {
     exit;
 }
 
+// 0. SISTEMA DE CACHÉ ULTRA-RÁPIDO (Carga en 0.01 segundos)
+$cache_file = __DIR__ . '/ga_cache.json';
+$cache_time = 3600 * 12; // 12 horas de duración de la caché
+
+// Si el usuario fuerza la refresco (Botón Sincronizar)
+$force_refresh = isset($_GET['refresh']) && $_GET['refresh'] === 'true';
+
+if ($force_refresh && file_exists($cache_file)) {
+    unlink($cache_file);
+}
+
+// Si existe y es válida, la devolvemos inmediatamente SIN esperar a Google
+if (!$force_refresh && file_exists($cache_file) && (time() - filemtime($cache_file)) < $cache_time) {
+    echo file_get_contents($cache_file);
+    exit;
+}
+
+// Si no hay caché, capturamos posibles errores fatales por timeout para que no se congele la web en gris
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error !== NULL && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        ob_clean(); // Limpiar salidas a medias
+        echo json_encode(['status' => 'error', 'message' => 'El servidor tardó más de 30 segundos en contactar con Google Analytics (Timeout). Por favor reintentar en un minuto.']);
+    }
+});
+
 // 1. Obtener Configuración
 $ga4_id_query = $conn->query("SELECT setting_value FROM settings WHERE setting_key = 'ga4_property_id'");
 $property_id = ($ga4_id_query && $ga4_id_query->num_rows > 0) ? $ga4_id_query->fetch_assoc()['setting_value'] : null;
@@ -20,7 +46,7 @@ $credentials_path = __DIR__ . '/google-credentials.json';
 $autoload_path = __DIR__ . '/vendor/autoload.php';
 
 if (!$property_id || !file_exists($autoload_path)) {
-    send_json_error('Configuración incompleta');
+    send_json_error('Configuración incompleta: Faltan credenciales de Google.');
 }
 
 require_once $autoload_path;
@@ -69,19 +95,17 @@ try {
     $last_year_month_start = date('Y-m-01', strtotime('-365 days'));
     $last_year_year_start = date('Y-01-01', strtotime('-365 days'));
 
-    // BLOQUE 1 (Máximo 4 por limitación de Google API)
     $ranges1 = [
-        new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today']), // w_curr
-        new DateRange(['start_date' => '372daysAgo', 'end_date' => '365daysAgo']), // w_yoy_prev
-        new DateRange(['start_date' => '14daysAgo', 'end_date' => '7daysAgo']), // w_wow_prev
-        new DateRange(['start_date' => $first_day_month, 'end_date' => 'today']), // m_curr
+        new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today']), 
+        new DateRange(['start_date' => '372daysAgo', 'end_date' => '365daysAgo']), 
+        new DateRange(['start_date' => '14daysAgo', 'end_date' => '7daysAgo']), 
+        new DateRange(['start_date' => $first_day_month, 'end_date' => 'today']), 
     ];
 
-    // BLOQUE 2 
     $ranges2 = [
-        new DateRange(['start_date' => $last_year_month_start, 'end_date' => $last_year_today]), // m_yoy_prev
-        new DateRange(['start_date' => $first_day_year, 'end_date' => 'today']), // y_curr
-        new DateRange(['start_date' => $last_year_year_start, 'end_date' => $last_year_today]), // y_yoy_prev
+        new DateRange(['start_date' => $last_year_month_start, 'end_date' => $last_year_today]), 
+        new DateRange(['start_date' => $first_day_year, 'end_date' => 'today']), 
+        new DateRange(['start_date' => $last_year_year_start, 'end_date' => $last_year_today]), 
     ];
 
     $filter = new FilterExpression([
@@ -91,23 +115,24 @@ try {
         ])
     ]);
 
-    // Request 1
+    // Opciones para evitar el Freeze infinito
+    $options = ['timeoutMillis' => 20000]; 
+
     $response1 = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath'])],
         'metrics' => [new Metric(['name' => 'sessions'])],
         'dateRanges' => $ranges1,
         'dimensionFilter' => $filter
-    ]);
+    ], $options);
 
-    // Request 2
     $response2 = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath'])],
         'metrics' => [new Metric(['name' => 'sessions'])],
         'dateRanges' => $ranges2,
         'dimensionFilter' => $filter
-    ]);
+    ], $options);
 
     $data_map = [];
     foreach ($pc as $path => $name) {
@@ -146,7 +171,6 @@ try {
     $results = [];
     foreach ($pc as $path => $name) {
         $d = $data_map[$path];
-        
         $results[] = [
             'product' => $name,
             'semana_yoy' => [
@@ -172,8 +196,12 @@ try {
         ];
     }
 
-    echo json_encode(['status' => 'success', 'data' => $results]);
+    $final_json_payload = json_encode(['status' => 'success', 'data' => $results]);
+    
+    // GUARDAR LA TABLA COMPLETA EN CACHÉ LIGERA PARA QUE EL SIGUIENTE CLIC SEA INSTANTANEO
+    file_put_contents($cache_file, $final_json_payload);
+    echo $final_json_payload;
 
 } catch (Throwable $e) {
-    send_json_error("CRITICAL GA4 ERROR: " . $e->getMessage());
+    send_json_error("CRITICAL GA4 ERROR: " . escapeshellcmd($e->getMessage()));
 }
