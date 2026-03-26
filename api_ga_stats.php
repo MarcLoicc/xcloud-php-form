@@ -240,26 +240,28 @@ try {
         }
     }
 
-    $total_curr = 0;
-    $total_prev = 0;
-    foreach ($data_map as $d) {
-        $total_curr += $d['curr'];
-        $total_prev += $d['prev'];
-    }
-
     $results = [];
     foreach ($data_map as $path => $d) {
-        $share_curr = ($total_curr > 0) ? ($d['curr'] / $total_curr * 100) : 0;
-        $share_prev = ($total_prev > 0) ? ($d['prev'] / $total_prev * 100) : 0;
+        $curr = (float)$d['curr'];
+        $prev = (float)$d['prev'];
         
-        $diff_pp = round($share_curr - $share_prev, 2);
-        $sign = ($diff_pp > 0) ? '+' : '';
+        $diff_val = 0;
+        $perc_str = 'N/A';
+
+        if ($prev > 0) {
+            $diff_val = round((($curr - $prev) / $prev) * 100, 2);
+            $sign = ($diff_val > 0) ? '+' : '';
+            $perc_str = $sign . $diff_val . '%';
+        } elseif ($curr > 0) {
+            $diff_val = 999; // Representar infinito para colores
+            $perc_str = '+∞';
+        }
 
         $results[$path] = [
             'curr' => $d['curr'],
             'prev' => $d['prev'],
-            'perc' => $sign . $diff_pp . ' p.p.',
-            'raw_perc' => $diff_pp
+            'perc' => $perc_str,
+            'raw_perc' => $diff_val
         ];
     }
 
