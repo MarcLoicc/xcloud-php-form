@@ -4,3 +4,4 @@ vendor/
 *.log
 uploads/*
 !uploads/.gitignore
+google-credentials.json
