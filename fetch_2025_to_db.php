@@ -130,7 +130,7 @@ try {
         $type = 'year';
         $num = 2025;
         $label = "Total 2025";
-        $stmt->bind_param("ssisii s", $path, $type, $num, $label, $views, $views, $label);
+        $stmt->bind_param("ssisiis", $path, $type, $num, $label, $views, $views, $label);
         $stmt->execute();
     }
     echo "✔️ Totales anuales agregados.<br>";
@@ -154,7 +154,7 @@ try {
         
         $type = 'month';
         $label = $monthNames[$month];
-        $stmt->bind_param("ssisii s", $path, $type, $month, $label, $views, $views, $label);
+        $stmt->bind_param("ssisiis", $path, $type, $month, $label, $views, $views, $label);
         $stmt->execute();
         
         if (!isset($proccessedMonths[$month])) {
@@ -181,7 +181,7 @@ try {
         
         $type = 'week';
         $label = "Semana $week";
-        $stmt->bind_param("ssisii s", $path, $type, $week, $label, $views, $views, $label);
+        $stmt->bind_param("ssisiis", $path, $type, $week, $label, $views, $views, $label);
         $stmt->execute();
 
         if (!isset($proccessedWeeks[$week])) {
