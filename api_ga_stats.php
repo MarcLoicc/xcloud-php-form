@@ -12,7 +12,7 @@ function send_json_error($msg) {
     exit;
 }
 
-// 1. Obtener Configuración de GA4
+// 1. Obtener Configuración
 $ga4_id_query = $conn->query("SELECT setting_value FROM settings WHERE setting_key = 'ga4_property_id'");
 $property_id = ($ga4_id_query && $ga4_id_query->num_rows > 0) ? $ga4_id_query->fetch_assoc()['setting_value'] : null;
 
@@ -20,8 +20,7 @@ $credentials_path = __DIR__ . '/google-credentials.json';
 $autoload_path = __DIR__ . '/vendor/autoload.php';
 
 if (!$property_id || !file_exists($autoload_path)) {
-    echo json_encode(['status' => 'mock', 'message' => 'Configuración incompleta', 'data' => []]);
-    exit;
+    send_json_error('Configuración incompleta');
 }
 
 require_once $autoload_path;
@@ -64,53 +63,79 @@ try {
         '/calculadora-precio-web-online/' => 'Calculadora Precio'
     ];
 
-    // Definición de Rangos Maestro (7 Rangos)
-    $today = date('Y-m-d');
     $first_day_month = date('Y-m-01');
     $first_day_year = date('Y-01-01');
-    
-    // Año anterior
     $last_year_today = date('Y-m-d', strtotime('-365 days'));
     $last_year_month_start = date('Y-m-01', strtotime('-365 days'));
     $last_year_year_start = date('Y-01-01', strtotime('-365 days'));
 
-    $ranges = [
-        new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today', 'name' => 'W_CURR']),
-        new DateRange(['start_date' => '372daysAgo', 'end_date' => '365daysAgo', 'name' => 'W_YOY_PREV']),
-        new DateRange(['start_date' => '14daysAgo', 'end_date' => '7daysAgo', 'name' => 'W_WOW_PREV']),
-        new DateRange(['start_date' => $first_day_month, 'end_date' => 'today', 'name' => 'M_CURR']),
-        new DateRange(['start_date' => $last_year_month_start, 'end_date' => $last_year_today, 'name' => 'M_YOY_PREV']),
-        new DateRange(['start_date' => $first_day_year, 'end_date' => 'today', 'name' => 'Y_CURR']),
-        new DateRange(['start_date' => $last_year_year_start, 'end_date' => $last_year_today, 'name' => 'Y_YOY_PREV']),
+    // BLOQUE 1 (Máximo 4 por limitación de Google API)
+    $ranges1 = [
+        new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today']), // w_curr
+        new DateRange(['start_date' => '372daysAgo', 'end_date' => '365daysAgo']), // w_yoy_prev
+        new DateRange(['start_date' => '14daysAgo', 'end_date' => '7daysAgo']), // w_wow_prev
+        new DateRange(['start_date' => $first_day_month, 'end_date' => 'today']), // m_curr
     ];
 
-    $response = $client->runReport([
-        'property' => 'properties/' . $property_id,
-        'dimensions' => [new Dimension(['name' => 'pagePath'])],
-        'metrics' => [new Metric(['name' => 'sessions'])],
-        'dateRanges' => $ranges,
-        'dimensionFilter' => new FilterExpression([
-            'filter' => new Filter([
-                'field_name' => 'pagePath',
-                'in_list_filter' => new InListFilter(['values' => array_keys($pc)])
-            ])
+    // BLOQUE 2 
+    $ranges2 = [
+        new DateRange(['start_date' => $last_year_month_start, 'end_date' => $last_year_today]), // m_yoy_prev
+        new DateRange(['start_date' => $first_day_year, 'end_date' => 'today']), // y_curr
+        new DateRange(['start_date' => $last_year_year_start, 'end_date' => $last_year_today]), // y_yoy_prev
+    ];
+
+    $filter = new FilterExpression([
+        'filter' => new Filter([
+            'field_name' => 'pagePath',
+            'in_list_filter' => new InListFilter(['values' => array_keys($pc)])
         ])
     ]);
 
+    // Request 1
+    $response1 = $client->runReport([
+        'property' => 'properties/' . $property_id,
+        'dimensions' => [new Dimension(['name' => 'pagePath'])],
+        'metrics' => [new Metric(['name' => 'sessions'])],
+        'dateRanges' => $ranges1,
+        'dimensionFilter' => $filter
+    ]);
+
+    // Request 2
+    $response2 = $client->runReport([
+        'property' => 'properties/' . $property_id,
+        'dimensions' => [new Dimension(['name' => 'pagePath'])],
+        'metrics' => [new Metric(['name' => 'sessions'])],
+        'dateRanges' => $ranges2,
+        'dimensionFilter' => $filter
+    ]);
+
     $data_map = [];
-    foreach ($response->getRows() as $row) {
+    foreach ($pc as $path => $name) {
+        $data_map[$path] = [
+            'w_curr' => 0, 'w_yoy_prev' => 0, 'w_wow_prev' => 0, 'm_curr' => 0,
+            'm_yoy_prev' => 0, 'y_curr' => 0, 'y_yoy_prev' => 0
+        ];
+    }
+
+    foreach ($response1->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
         $mv = $row->getMetricValues();
-        
-        $data_map[$path] = [
-            'w_curr' => (int)$mv[0]->getValue(),
-            'w_yoy_prev' => (int)$mv[1]->getValue(),
-            'w_wow_prev' => (int)$mv[2]->getValue(),
-            'm_curr' => (int)$mv[3]->getValue(),
-            'm_yoy_prev' => (int)$mv[4]->getValue(),
-            'y_curr' => (int)$mv[5]->getValue(),
-            'y_yoy_prev' => (int)$mv[6]->getValue()
-        ];
+        if (isset($data_map[$path])) {
+            $data_map[$path]['w_curr'] = (int)$mv[0]->getValue();
+            $data_map[$path]['w_yoy_prev'] = isset($mv[1]) ? (int)$mv[1]->getValue() : 0;
+            $data_map[$path]['w_wow_prev'] = isset($mv[2]) ? (int)$mv[2]->getValue() : 0;
+            $data_map[$path]['m_curr'] = isset($mv[3]) ? (int)$mv[3]->getValue() : 0;
+        }
+    }
+
+    foreach ($response2->getRows() as $row) {
+        $path = $row->getDimensionValues()[0]->getValue();
+        $mv = $row->getMetricValues();
+        if (isset($data_map[$path])) {
+            $data_map[$path]['m_yoy_prev'] = (int)$mv[0]->getValue();
+            $data_map[$path]['y_curr'] = isset($mv[1]) ? (int)$mv[1]->getValue() : 0;
+            $data_map[$path]['y_yoy_prev'] = isset($mv[2]) ? (int)$mv[2]->getValue() : 0;
+        }
     }
 
     $calc_perc = function($curr, $prev) {
@@ -120,7 +145,7 @@ try {
 
     $results = [];
     foreach ($pc as $path => $name) {
-        $d = $data_map[$path] ?? ['w_curr' => 0, 'w_yoy_prev' => 0, 'w_wow_prev' => 0, 'm_curr' => 0, 'm_yoy_prev' => 0, 'y_curr' => 0, 'y_yoy_prev' => 0];
+        $d = $data_map[$path];
         
         $results[] = [
             'product' => $name,
@@ -150,5 +175,5 @@ try {
     echo json_encode(['status' => 'success', 'data' => $results]);
 
 } catch (Throwable $e) {
-    send_json_error($e->getMessage());
+    send_json_error("CRITICAL GA4 ERROR: " . $e->getMessage());
 }
