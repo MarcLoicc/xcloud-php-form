@@ -127,8 +127,42 @@ use Google\Analytics\Data\V1beta\Filter\InListFilter;
 use Google\Analytics\Data\V1beta\FilterExpressionList;
 
 try {
-    $client = new BetaAnalyticsDataClient(['credentials' => $credentials_path]);
-    
+    // Filtros base (España, Sin Guadalajara)
+    $filter_base_expressions = [
+        new FilterExpression([
+            'filter' => new Filter([
+                'field_name' => 'country',
+                'string_filter' => new Filter\StringFilter(['value' => 'Spain'])
+            ])
+        ]),
+        new FilterExpression([
+            'not_expression' => new FilterExpression([
+                'filter' => new Filter([
+                    'field_name' => 'city',
+                    'string_filter' => new Filter\StringFilter(['value' => 'Guadalajara'])
+                ])
+            ])
+        ])
+    ];
+
+    $filter_all = new FilterExpression([
+        'and_group' => new FilterExpressionList(['expressions' => $filter_base_expressions])
+    ]);
+
+    // Filtro específico para productos del panel
+    $filter_pc_expressions = array_merge([
+        new FilterExpression([
+            'filter' => new Filter([
+                'field_name' => 'pagePath',
+                'in_list_filter' => new InListFilter(['values' => array_keys($pc)])
+            ])
+        ])
+    ], $filter_base_expressions);
+
+    $filter_pc = new FilterExpression([
+        'and_group' => new FilterExpressionList(['expressions' => $filter_pc_expressions])
+    ]);
+
     $today = date('Y-m-d');
     $range_curr = null; 
     $use_db_for_prev = false;
@@ -172,7 +206,7 @@ try {
             'dimensions' => [new Dimension(['name' => 'month'])],
             'metrics' => [new Metric(['name' => 'screenPageViews'])],
             'dateRanges' => [new DateRange(['start_date' => '2026-01-01', 'end_date' => 'today'])],
-            'dimensionFilter' => $filter
+            'dimensionFilter' => $filter_all
         ]);
         
         $months_2026 = array_fill(1, 12, 0);
@@ -210,33 +244,6 @@ try {
         exit;
     }
 
-    $filter = new FilterExpression([
-        'and_group' => new FilterExpressionList([
-            'expressions' => [
-                new FilterExpression([
-                    'filter' => new Filter([
-                        'field_name' => 'pagePath',
-                        'in_list_filter' => new InListFilter(['values' => array_keys($pc)])
-                    ])
-                ]),
-                new FilterExpression([
-                    'filter' => new Filter([
-                        'field_name' => 'country',
-                        'string_filter' => new Filter\StringFilter(['value' => 'Spain'])
-                    ])
-                ]),
-                new FilterExpression([
-                    'not_expression' => new FilterExpression([
-                        'filter' => new Filter([
-                            'field_name' => 'city',
-                            'string_filter' => new Filter\StringFilter(['value' => 'Guadalajara'])
-                        ])
-                    ])
-                ])
-            ]
-        ])
-    ]);
-
     $options = ['timeoutMillis' => 25000];
 
     $response_curr = $client->runReport([
@@ -244,7 +251,7 @@ try {
         'dimensions' => [new Dimension(['name' => 'pagePath'])],
         'metrics' => [new Metric(['name' => 'screenPageViews'])],
         'dateRanges' => [$range_curr],
-        'dimensionFilter' => $filter
+        'dimensionFilter' => $filter_pc
     ], $options);
 
     $data_map = [];
@@ -274,7 +281,7 @@ try {
             'dimensions' => [new Dimension(['name' => 'pagePath'])],
             'metrics' => [new Metric(['name' => 'screenPageViews'])],
             'dateRanges' => [$range_prev],
-            'dimensionFilter' => $filter
+            'dimensionFilter' => $filter_pc
         ], $options);
         
         foreach ($response_prev->getRows() as $row) {
