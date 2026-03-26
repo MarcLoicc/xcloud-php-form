@@ -45,6 +45,10 @@ use Google\Analytics\Data\V1beta\FilterExpression;
 use Google\Analytics\Data\V1beta\Filter;
 use Google\Analytics\Data\V1beta\Filter\InListFilter;
 
+// 0. Limpiar datos anteriores para re-importación limpia
+$conn->query("TRUNCATE TABLE ga4_history_2025");
+echo "🧹 Tabla 'ga4_history_2025' vaciada para nueva importación.<br>";
+
 try {
     $client = new BetaAnalyticsDataClient(['credentials' => $credentials_path]);
     
@@ -74,88 +78,103 @@ try {
         '/calculadora-precio-web-online/' => 'Calculadora Precio'
     ];
 
+    // FILTRO: Solo España y EXCLUIR Guadalajara
     $filter = new FilterExpression([
-        'filter' => new Filter([
-            'field_name' => 'pagePath',
-            'in_list_filter' => new InListFilter(['values' => array_keys($pc)])
+        'and_group' => new FilterExpression\AndGroup([
+            'expressions' => [
+                new FilterExpression([
+                    'filter' => new Filter([
+                        'field_name' => 'pagePath',
+                        'in_list_filter' => new InListFilter(['values' => array_keys($pc)])
+                    ])
+                ]),
+                new FilterExpression([
+                    'filter' => new Filter([
+                        'field_name' => 'country',
+                        'string_filter' => new Filter\StringFilter(['value' => 'Spain'])
+                    ])
+                ]),
+                new FilterExpression([
+                    'not_expression' => new FilterExpression([
+                        'filter' => new Filter([
+                            'field_name' => 'city',
+                            'string_filter' => new Filter\StringFilter(['value' => 'Guadalajara'])
+                        ])
+                    ])
+                ])
+            ]
         ])
     ]);
 
     $dateRange = new DateRange(['start_date' => '2025-01-01', 'end_date' => '2025-12-31']);
     
-    // Preparar INSERT SQL con UPDATE en caso de duplicado
+    // Preparar INSERT SQL
     $stmt = $conn->prepare("INSERT INTO ga4_history_2025 (page_path, period_type, period_num, sessions) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE sessions = ?");
 
-    // ---------------------------------------------------------
     // 1. EXTRAER POR AÑO (Total Anual)
-    // ---------------------------------------------------------
-    echo "<h3>📊 Consultando Totales Anuales 2025...</h3>";
+    echo "<h3>📊 Consultando Visitas Anuales 2025 (España, sin Guadalajara)...</h3>";
     $resYear = $client->runReport([
         'property' => 'properties/' . $property_id,
-        'dimensions' => [new Dimension(['name' => 'pagePath'])], // Si no pones dimensión de tiempo, es el total del periodo
-        'metrics' => [new Metric(['name' => 'sessions'])],
+        'dimensions' => [new Dimension(['name' => 'pagePath'])],
+        'metrics' => [new Metric(['name' => 'screenPageViews'])],
         'dateRanges' => [$dateRange],
         'dimensionFilter' => $filter
     ]);
 
     foreach ($resYear->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
-        $sessions = (int)$row->getMetricValues()[0]->getValue();
+        $views = (int)$row->getMetricValues()[0]->getValue();
         
         $type = 'year';
         $num = 2025;
-        $stmt->bind_param("ssiii", $path, $type, $num, $sessions, $sessions);
+        $stmt->bind_param("ssiii", $path, $type, $num, $views, $views);
         $stmt->execute();
     }
-    echo "✔️ Totales agregados.<br>";
+    echo "✔️ Totales anuales agregados.<br>";
 
-    // ---------------------------------------------------------
-    // 2. EXTRAER POR MES (1 al 12)
-    // ---------------------------------------------------------
-    echo "<h3>📅 Consultando Totales Mensuales 2025...</h3>";
+    // 2. EXTRAER POR MES
+    echo "<h3>📅 Consultando Visitas Mensuales 2025...</h3>";
     $resMonth = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath']), new Dimension(['name' => 'month'])],
-        'metrics' => [new Metric(['name' => 'sessions'])],
+        'metrics' => [new Metric(['name' => 'screenPageViews'])],
         'dateRanges' => [$dateRange],
         'dimensionFilter' => $filter
     ]);
 
     foreach ($resMonth->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
-        $month = (int)$row->getDimensionValues()[1]->getValue(); // Devuelve '01', '02', convertido a num 1, 2
-        $sessions = (int)$row->getMetricValues()[0]->getValue();
+        $month = (int)$row->getDimensionValues()[1]->getValue();
+        $views = (int)$row->getMetricValues()[0]->getValue();
         
         $type = 'month';
-        $stmt->bind_param("ssiii", $path, $type, $month, $sessions, $sessions);
+        $stmt->bind_param("ssiii", $path, $type, $month, $views, $views);
         $stmt->execute();
     }
     echo "✔️ Meses agregados.<br>";
 
-    // ---------------------------------------------------------
-    // 3. EXTRAER POR SEMANA (1 al 52/53) (ISO Week)
-    // ---------------------------------------------------------
-    echo "<h3>📆 Consultando Totales Semanales 2025...</h3>";
+    // 3. EXTRAER POR SEMANA
+    echo "<h3>📆 Consultando Visitas Semanales 2025...</h3>";
     $resWeek = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath']), new Dimension(['name' => 'isoWeek'])],
-        'metrics' => [new Metric(['name' => 'sessions'])],
+        'metrics' => [new Metric(['name' => 'screenPageViews'])],
         'dateRanges' => [$dateRange],
         'dimensionFilter' => $filter
     ]);
 
     foreach ($resWeek->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
-        $week = (int)$row->getDimensionValues()[1]->getValue(); // Devuelve ISO week number
-        $sessions = (int)$row->getMetricValues()[0]->getValue();
+        $week = (int)$row->getDimensionValues()[1]->getValue();
+        $views = (int)$row->getMetricValues()[0]->getValue();
         
         $type = 'week';
-        $stmt->bind_param("ssiii", $path, $type, $week, $sessions, $sessions);
+        $stmt->bind_param("ssiii", $path, $type, $week, $views, $views);
         $stmt->execute();
     }
     echo "✔️ Semanas agregadas.<br>";
 
-    echo "<h2 style='color:green'>🎉 ¡Extracción COMPLETADA! Todos los datos de 2025 han quedado permanentemente almacenados en MySQL.</h2>";
+    echo "<h2 style='color:green'>🎉 ¡Re-importación COMPLETADA! Datos de Visitas 2025 (Solo España, No GDL) guardados en MySQL.</h2>";
 
 } catch (Throwable $e) {
     die("<h2 style='color:red'>❌ Error Fatal conectando con Google API:</h2>" . $e->getMessage());

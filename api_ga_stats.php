@@ -162,9 +162,29 @@ try {
     }
 
     $filter = new FilterExpression([
-        'filter' => new Filter([
-            'field_name' => 'pagePath',
-            'in_list_filter' => new InListFilter(['values' => array_keys($pc)])
+        'and_group' => new FilterExpression\AndGroup([
+            'expressions' => [
+                new FilterExpression([
+                    'filter' => new Filter([
+                        'field_name' => 'pagePath',
+                        'in_list_filter' => new InListFilter(['values' => array_keys($pc)])
+                    ])
+                ]),
+                new FilterExpression([
+                    'filter' => new Filter([
+                        'field_name' => 'country',
+                        'string_filter' => new Filter\StringFilter(['value' => 'Spain'])
+                    ])
+                ]),
+                new FilterExpression([
+                    'not_expression' => new FilterExpression([
+                        'filter' => new Filter([
+                            'field_name' => 'city',
+                            'string_filter' => new Filter\StringFilter(['value' => 'Guadalajara'])
+                        ])
+                    ])
+                ])
+            ]
         ])
     ]);
 
@@ -174,7 +194,7 @@ try {
     $response_curr = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath'])],
-        'metrics' => [new Metric(['name' => 'sessions'])],
+        'metrics' => [new Metric(['name' => 'screenPageViews'])],
         'dateRanges' => [$range_curr],
         'dimensionFilter' => $filter
     ], $options);
@@ -215,11 +235,11 @@ try {
             }
         }
     } else {
-        // Si no usamos BD (ej: WoW de hace 14 días), tirar de GA4
+        // Consulta 2: Periodo Anterior (GA4 para WoW 2026)
         $response_prev = $client->runReport([
             'property' => 'properties/' . $property_id,
             'dimensions' => [new Dimension(['name' => 'pagePath'])],
-            'metrics' => [new Metric(['name' => 'sessions'])],
+            'metrics' => [new Metric(['name' => 'screenPageViews'])],
             'dateRanges' => [$range_prev],
             'dimensionFilter' => $filter
         ], $options);
