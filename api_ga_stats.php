@@ -85,20 +85,20 @@ try {
     $client = new BetaAnalyticsDataClient(['credentials' => $credentials_path]);
     
     $today = date('Y-m-d');
-    $ranges = [];
+    $range_curr = null; $range_prev = null;
 
     if ($report_type === 'w_yoy') {
-        $ranges[] = new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today']); // act (0)
-        $ranges[] = new DateRange(['start_date' => '372daysAgo', 'end_date' => '365daysAgo']); // prev (1)
+        $range_curr = new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today']);
+        $range_prev = new DateRange(['start_date' => '372daysAgo', 'end_date' => '365daysAgo']); 
     } elseif ($report_type === 'w_wow') {
-        $ranges[] = new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today']); // act (0)
-        $ranges[] = new DateRange(['start_date' => '14daysAgo', 'end_date' => '7daysAgo']); // prev (1)
+        $range_curr = new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today']);
+        $range_prev = new DateRange(['start_date' => '14daysAgo', 'end_date' => '7daysAgo']); 
     } elseif ($report_type === 'm_yoy') {
-        $ranges[] = new DateRange(['start_date' => date('Y-m-01'), 'end_date' => 'today']); // act (0)
-        $ranges[] = new DateRange(['start_date' => date('Y-m-01', strtotime('-365 days')), 'end_date' => date('Y-m-d', strtotime('-365 days'))]); // prev (1)
+        $range_curr = new DateRange(['start_date' => date('Y-m-01'), 'end_date' => 'today']);
+        $range_prev = new DateRange(['start_date' => date('Y-m-01', strtotime('-365 days')), 'end_date' => date('Y-m-d', strtotime('-365 days'))]); 
     } elseif ($report_type === 'y_yoy') {
-        $ranges[] = new DateRange(['start_date' => date('Y-01-01'), 'end_date' => 'today']); // act (0)
-        $ranges[] = new DateRange(['start_date' => date('Y-01-01', strtotime('-365 days')), 'end_date' => date('Y-m-d', strtotime('-365 days'))]); // prev (1)
+        $range_curr = new DateRange(['start_date' => date('Y-01-01'), 'end_date' => 'today']);
+        $range_prev = new DateRange(['start_date' => date('Y-01-01', strtotime('-365 days')), 'end_date' => date('Y-m-d', strtotime('-365 days'))]); 
     } else {
         send_json_error('Tipo de reporte desconocido');
     }
@@ -110,25 +110,43 @@ try {
         ])
     ]);
 
-    $response = $client->runReport([
+    // Opciones Anti-TimeOut
+    $options = ['timeoutMillis' => 25000];
+
+    // Consulta 1: Periodo Actual
+    $response_curr = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath'])],
         'metrics' => [new Metric(['name' => 'sessions'])],
-        'dateRanges' => $ranges,
+        'dateRanges' => [$range_curr],
         'dimensionFilter' => $filter
-    ]);
+    ], $options);
+
+    // Consulta 2: Periodo Anterior Independiente (Soluciona el bug de los CEROS)
+    $response_prev = $client->runReport([
+        'property' => 'properties/' . $property_id,
+        'dimensions' => [new Dimension(['name' => 'pagePath'])],
+        'metrics' => [new Metric(['name' => 'sessions'])],
+        'dateRanges' => [$range_prev],
+        'dimensionFilter' => $filter
+    ], $options);
 
     $data_map = [];
     foreach ($pc as $path => $name) {
         $data_map[$path] = ['curr' => 0, 'prev' => 0];
     }
 
-    foreach ($response->getRows() as $row) {
+    foreach ($response_curr->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
-        $mv = $row->getMetricValues();
         if (isset($data_map[$path])) {
-            $data_map[$path]['curr'] = (int)$mv[0]->getValue();
-            $data_map[$path]['prev'] = isset($mv[1]) ? (int)$mv[1]->getValue() : 0;
+            $data_map[$path]['curr'] = (int)$row->getMetricValues()[0]->getValue();
+        }
+    }
+
+    foreach ($response_prev->getRows() as $row) {
+        $path = $row->getDimensionValues()[0]->getValue();
+        if (isset($data_map[$path])) {
+            $data_map[$path]['prev'] = (int)$row->getMetricValues()[0]->getValue();
         }
     }
 
