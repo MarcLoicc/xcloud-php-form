@@ -1,6 +1,6 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 0); // Desactivar para que no rompa el JSON
+ini_set('display_errors', 0);
 
 require_once 'auth.php';
 require_once 'db.php';
@@ -12,32 +12,18 @@ function send_json_error($msg) {
     exit;
 }
 
-// Capturar errores fatales
-register_shutdown_function(function() {
-    $error = error_get_last();
-    if ($error !== NULL && ($error['type'] === E_ERROR || $error['type'] === E_PARSE)) {
-        header('Content-Type: application/json');
-        echo json_encode(['status' => 'error', 'message' => 'PHP Fatal Error: ' . $error['message'] . ' in ' . $error['file'] . ' on line ' . $error['line']]);
-    }
-});
-
 // 1. Obtener Configuración de GA4
-try {
-    $ga4_id_query = $conn->query("SELECT setting_value FROM settings WHERE setting_key = 'ga4_property_id'");
-    $property_id = ($ga4_id_query && $ga4_id_query->num_rows > 0) ? $ga4_id_query->fetch_assoc()['setting_value'] : null;
-} catch (Exception $e) {
-    send_json_error("DB Error: " . $e->getMessage());
-}
+$ga4_id_query = $conn->query("SELECT setting_value FROM settings WHERE setting_key = 'ga4_property_id'");
+$property_id = ($ga4_id_query && $ga4_id_query->num_rows > 0) ? $ga4_id_query->fetch_assoc()['setting_value'] : null;
 
 $credentials_path = __DIR__ . '/google-credentials.json';
 $autoload_path = __DIR__ . '/vendor/autoload.php';
 
-if (!$property_id || $property_id === 'PROPIEDAD_AQUI' || !file_exists($autoload_path)) {
-    echo json_encode(['status' => 'mock', 'message' => 'Falta Property ID o vendor/autoload.php', 'data' => []]);
+if (!$property_id || !file_exists($autoload_path)) {
+    echo json_encode(['status' => 'mock', 'message' => 'Configuración incompleta', 'data' => []]);
     exit;
 }
 
-// 2. Lógica Real con GA4 (Corrección de Filtros)
 require_once $autoload_path;
 
 use Google\Analytics\Data\V1beta\BetaAnalyticsDataClient;
@@ -51,7 +37,7 @@ use Google\Analytics\Data\V1beta\Filter\InListFilter;
 try {
     $client = new BetaAnalyticsDataClient(['credentials' => $credentials_path]);
     
-    $products_config = [
+    $pc = [
         '/' => 'Home / General',
         '/contacto/' => 'Contacto',
         '/diseno-web-mostoles/' => 'Móstoles',
@@ -78,48 +64,47 @@ try {
         '/calculadora-precio-web-online/' => 'Calculadora Precio'
     ];
 
+    // Consulta de Comparativa: Actual (30d) vs Año Pasado (YoY)
     $response = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath'])],
-        'metrics' => [
-            new Metric(['name' => 'screenPageViews']),
-            new Metric(['name' => 'conversions']),
-        ],
+        'metrics' => [new Metric(['name' => 'sessions'])],
         'dateRanges' => [
-            new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today'])
+            new DateRange(['start_date' => '30daysAgo', 'end_date' => 'today', 'name' => 'current']),
+            new DateRange(['start_date' => '395daysAgo', 'end_date' => '365daysAgo', 'name' => 'last_year'])
         ],
         'dimensionFilter' => new FilterExpression([
             'filter' => new Filter([
                 'field_name' => 'pagePath',
-                'in_list_filter' => new InListFilter([
-                    'values' => array_keys($products_config)
-                ])
+                'in_list_filter' => new InListFilter(['values' => array_keys($pc)])
             ])
         ])
     ]);
 
-    $ga_data = [];
+    $data_map = [];
     foreach ($response->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
-        $ga_data[$path] = [
-            'views' => (int)$row->getMetricValues()[0]->getValue(),
-            'conv' => (int)$row->getMetricValues()[1]->getValue()
+        // Nota: runReport con múltiples rangos devuelve MetricValues duplicados en orden [range1, range2]
+        $current_val = (int)$row->getMetricValues()[0]->getValue();
+        $prev_val = (int)($row->getMetricValues()[1]->getValue() ?? 0);
+        
+        $data_map[$path] = [
+            'current' => $current_val,
+            'prev' => $prev_val
         ];
     }
 
     $results = [];
-    foreach ($products_config as $path => $name) {
-        $views = $ga_data[$path]['views'] ?? 0;
-        $conv = $ga_data[$path]['conv'] ?? 0;
-
+    foreach ($pc as $path => $name) {
+        $curr = $data_map[$path]['current'] ?? 0;
+        $prev = $data_map[$path]['prev'] ?? 0;
+        $change = ($prev > 0) ? round((($curr - $prev) / $prev) * 100, 1) : 0;
+        
         $results[] = [
             'product' => $name,
-            'tarificacion' => ['current' => $views, 'change' => rand(-5, 5)], // Mock change for visual flair
-            'ratio_tarificacion' => ['prev' => round($views * 0.3), 'current' => $views > 0 ? round(($conv * 10 / $views) * 100, 2) : 0, 'change' => 0],
-            'ratio_cualificado' => ['current' => rand(40, 60), 'change' => 0],
-            'inicio_contratacion' => ['current' => round($views * 0.1), 'prev' => 0, 'change' => 0],
-            'contrataciones' => ['current' => $conv, 'prev' => 0, 'change' => 0],
-            'ratio_exito_global' => $views > 0 ? round(($conv / $views) * 100, 2) : 0
+            'visits' => $curr,
+            'change' => $change,
+            'prev_year' => $prev
         ];
     }
 
