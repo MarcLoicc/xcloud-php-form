@@ -5,88 +5,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BI Dashboard YoY/WoW - CRM Marcloi</title>
+    <title>BI Dashboard Excel Style - CRM Marcloi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
     <style>
         .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #09090b; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f4f4f5; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 10px; }
         
-        .table-header-group { @apply bg-zinc-900/80 border-b border-zinc-800 text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] py-3 px-4 text-center border-x border-zinc-800/30; }
-        .table-header-sub { @apply bg-zinc-900 border-b border-zinc-800 text-[9px] font-bold text-zinc-500 uppercase tracking-widest py-3 px-2 text-center border-x border-zinc-800/10; }
+        .excel-table { @apply w-full border-collapse text-[11px] bg-white text-zinc-800 mb-8; }
+        .header-top { @apply bg-white border border-zinc-300 font-bold text-center py-1 px-2; }
+        .header-visitas { @apply bg-white border border-zinc-300 text-center font-bold py-1; }
         
-        .cell-val { @apply py-4 px-2 text-[12px] text-zinc-300 font-mono text-center border-x border-zinc-900/20 group-hover:bg-zinc-900/30 transition-colors; }
-        .cell-perc { @apply py-4 px-2 text-[11px] font-black text-center border-x border-zinc-900/20 group-hover:bg-zinc-900/40 transition-colors; }
+        .header-sub { @apply bg-[#4472c4] text-white border border-white font-bold py-1 px-2 text-center; }
+        .cell-data { @apply border border-zinc-200 py-1 px-2 text-center font-mono; }
+        .cell-product { @apply border border-zinc-200 py-1 px-2 text-left text-blue-600 font-medium; }
+        .cell-perc { @apply border border-zinc-200 py-1 px-2 text-center font-bold; }
         
-        .bg-up { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-        .bg-down { background: rgba(244, 63, 94, 0.15); color: #f43f5e; }
+        .bg-up { background: #c6efce; color: #006100; }
+        .bg-down { background: #ffc7ce; color: #9c0006; }
+        
+        .row-total { @apply bg-zinc-200 font-black text-zinc-950 uppercase; }
     </style>
 </head>
-<body class="bg-zinc-950 min-h-screen text-zinc-100 antialiased font-sans flex items-start">
-    <?php include 'sidebar.php'; ?>
+<body class="bg-white min-h-screen text-zinc-900 p-4">
 
-    <main class="sm:ml-64 flex-1 min-h-screen p-6 lg:p-8 mb-20" id="main-content">
-        <!-- Dashboard Header -->
-        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-zinc-900 mb-8">
-            <div>
-                <div class="flex items-center gap-3 mb-1">
-                    <div class="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center border border-indigo-500/20">
-                        <i data-lucide="layout-grid" class="w-5 h-5 text-indigo-100"></i>
-                    </div>
-                    <h1 class="text-2xl font-black text-white tracking-tight italic uppercase">Analytics command v2</h1>
-                </div>
-                <p class="text-[12px] text-zinc-500 font-medium">Panel Maestro de Inteligencia de Negocio (YoY / WoW / Acumulados)</p>
-            </div>
-            
-            <button onclick="window.location.reload()" class="bg-zinc-100 hover:bg-zinc-300 text-zinc-950 p-2 rounded-lg transition-all shadow-xl">
-                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-            </button>
-        </header>
+    <header class="mb-6 flex items-center justify-between border-b pb-4">
+        <h1 class="text-xl font-black uppercase italic tracking-tighter text-zinc-800">Analytics Master Report</h1>
+        <button onclick="window.location.reload()" class="bg-zinc-100 p-2 rounded border hover:bg-zinc-200">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
+    </header>
 
-        <!-- Master Table -->
-        <section>
-            <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl relative">
-                <div class="overflow-x-auto custom-scrollbar">
-                    <table class="w-full text-left border-collapse table-fixed min-w-[1200px]">
-                        <thead>
-                            <!-- High Level Header -->
-                            <tr>
-                                <th class="bg-zinc-950 w-[200px] border-b border-zinc-800"></th>
-                                <th colspan="3" class="table-header-group">Semana YoY</th>
-                                <th colspan="3" class="table-header-group">Semana WoW</th>
-                                <th colspan="3" class="table-header-group">Mes Actual YoY</th>
-                                <th colspan="3" class="table-header-group">Acumulado Anual YoY</th>
-                            </tr>
-                            <!-- Sub Headers -->
-                            <tr>
-                                <th class="table-header-sub text-left pl-8 sticky left-0 bg-zinc-900 z-10">Producto</th>
-                                <!-- Semana YoY -->
-                                <th class="table-header-sub italic">Actual</th>
-                                <th class="table-header-sub italic">Ant. Año</th>
-                                <th class="table-header-sub">%</th>
-                                <!-- Semana WoW -->
-                                <th class="table-header-sub italic">Actual</th>
-                                <th class="table-header-sub italic">Ant. Sem</th>
-                                <th class="table-header-sub">%</th>
-                                <!-- Mes YoY -->
-                                <th class="table-header-sub italic">MTD</th>
-                                <th class="table-header-sub italic">MTD Ant. Año</th>
-                                <th class="table-header-sub">%</th>
-                                <!-- Anual YoY -->
-                                <th class="table-header-sub italic">YTD</th>
-                                <th class="table-header-sub italic">YTD Ant. Año</th>
-                                <th class="table-header-sub">%</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ga-table-body">
-                            <tr><td colspan="13" class="py-24 text-center text-zinc-600 font-mono text-xs uppercase tracking-widest animate-pulse italic">Iniciando motor de BI de Google Analytics...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+    <main class="overflow-x-auto">
+        <div class="flex flex-nowrap gap-8 min-w-[1600px]" id="dashboard-container">
+            <!-- Table 1: Semana YoY -->
+            <div class="w-[400px]">
+                <table class="excel-table">
+                    <thead>
+                        <tr><th class="header-top border-b-0">Semana YoY</th><th colspan="3" class="header-visitas border-b-0 border-l-0">Visitas</th></tr>
+                        <tr>
+                            <th class="header-sub w-[160px]">Producto</th>
+                            <th class="header-sub" id="label-w-yoy-p1">Semana Ant</th>
+                            <th class="header-sub" id="label-w-yoy-p2">Semana Act</th>
+                            <th class="header-sub">%</th>
+                        </tr>
+                    </thead>
+                    <tbody id="body-w-yoy"></tbody>
+                    <tfoot id="foot-w-yoy" class="row-total"></tfoot>
+                </table>
             </div>
-        </section>
+
+            <!-- Table 2: Semana WoW -->
+            <div class="w-[400px]">
+                <table class="excel-table">
+                    <thead>
+                        <tr><th class="header-top border-b-0">Semana WoW</th><th colspan="3" class="header-visitas border-b-0 border-l-0">Visitas</th></tr>
+                        <tr>
+                            <th class="header-sub w-[160px]">Producto</th>
+                            <th class="header-sub" id="label-w-wow-p1">Semana Ant</th>
+                            <th class="header-sub" id="label-w-wow-p2">Semana Act</th>
+                            <th class="header-sub">%</th>
+                        </tr>
+                    </thead>
+                    <tbody id="body-w-wow"></tbody>
+                    <tfoot id="foot-w-wow" class="row-total"></tfoot>
+                </table>
+            </div>
+
+            <!-- Table 3: Acumulado Mes actual -->
+            <div class="w-[400px]">
+                <table class="excel-table">
+                    <thead>
+                        <tr><th class="header-top border-b-0">Acumulado Mes Actual</th><th colspan="3" class="header-visitas border-b-0 border-l-0">Visitas</th></tr>
+                        <tr>
+                            <th class="header-sub w-[160px]">Producto</th>
+                            <th class="header-sub" id="label-m-yoy-p1">MTD Año Ant</th>
+                            <th class="header-sub" id="label-m-yoy-p2">MTD Act</th>
+                            <th class="header-sub">%</th>
+                        </tr>
+                    </thead>
+                    <tbody id="body-m-yoy"></tbody>
+                    <tfoot id="foot-m-yoy" class="row-total"></tfoot>
+                </table>
+            </div>
+
+            <!-- Table 4: Acumulado Anual YoY -->
+            <div class="w-[400px]">
+                <table class="excel-table">
+                    <thead>
+                        <tr><th class="header-top border-b-0">Acumulado Anual YoY</th><th colspan="3" class="header-visitas border-b-0 border-l-0">Visitas</th></tr>
+                        <tr>
+                            <th class="header-sub w-[160px]">Producto</th>
+                            <th class="header-sub" id="label-y-yoy-p1">YTD Año Ant</th>
+                            <th class="header-sub" id="label-y-yoy-p2">YTD Act</th>
+                            <th class="header-sub">%</th>
+                        </tr>
+                    </thead>
+                    <tbody id="body-y-yoy"></tbody>
+                    <tfoot id="foot-y-yoy" class="row-total"></tfoot>
+                </table>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -96,52 +117,56 @@
             try {
                 const response = await fetch('api_ga_stats.php');
                 const result = await response.json();
-                if (result.status === 'success') renderTable(result.data);
+                if (result.status === 'success') renderTables(result.data);
             } catch (error) { console.error('Error:', error); }
         }
 
-        function getPercClass(val) {
-            return val >= 0 ? 'bg-up' : 'bg-down';
+        function createRow(product, curr, prev, perc) {
+            const percClass = perc >= 0 ? 'bg-up' : 'bg-down';
+            return `
+                <tr>
+                    <td class="cell-product underline">\${product}</td>
+                    <td class="cell-data">\${prev.toLocaleString()}</td>
+                    <td class="cell-data">\${curr.toLocaleString()}</td>
+                    <td class="cell-perc \${percClass}">\${perc >= 0 ? '+' : ''}\${perc}%</td>
+                </tr>
+            `;
         }
 
-        function renderTable(data) {
-            const container = document.getElementById('ga-table-body');
-            container.innerHTML = '';
+        function createTotalRow(currTotal, prevTotal) {
+            const percTotal = prevTotal > 0 ? round((currTotal - prevTotal) / prevTotal * 100, 1) : 0;
+            const percClass = percTotal >= 0 ? 'bg-up' : 'bg-down';
+            return `
+                <tr>
+                    <td class="cell-product uppercase font-black">TOTAL</td>
+                    <td class="cell-data font-black">\${prevTotal.toLocaleString()}</td>
+                    <td class="cell-data font-black">\${currTotal.toLocaleString()}</td>
+                    <td class="cell-perc font-black \${percClass}">\${percTotal >= 0 ? '+' : ''}\${percTotal}%</td>
+                </tr>
+            `;
+        }
+
+        const round = (num, dec) => Math.round(num * Math.pow(10, dec)) / Math.pow(10, dec);
+
+        function renderTables(data) {
+            const keys = ['semana_yoy', 'semana_wow', 'mes_yoy', 'anual_yoy'];
             
-            data.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-zinc-900/20 transition-all group cursor-default';
-                
-                tr.innerHTML = `
-                    <td class="py-4 px-6 text-[12px] font-bold text-zinc-200 sticky left-0 bg-zinc-950 group-hover:bg-zinc-900 z-10 border-b border-zinc-900 transition-colors">
-                        <div class="flex items-center gap-3">
-                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                            ${item.product}
-                        </div>
-                    </td>
-                    <!-- Semana YoY -->
-                    <td class="cell-val">${item.semana_yoy.curr}</td>
-                    <td class="cell-val text-zinc-500">${item.semana_yoy.prev}</td>
-                    <td class="cell-perc ${getPercClass(item.semana_yoy.perc)}">${item.semana_yoy.perc}%</td>
-                    
-                    <!-- Semana WoW -->
-                    <td class="cell-val">${item.semana_wow.curr}</td>
-                    <td class="cell-val text-zinc-500">${item.semana_wow.prev}</td>
-                    <td class="cell-perc ${getPercClass(item.semana_wow.perc)}">${item.semana_wow.perc}%</td>
+            keys.forEach(key => {
+                const body = document.getElementById(`body-${key.replace(/_/g, '-')}`);
+                const foot = document.getElementById(`foot-${key.replace(/_/g, '-')}`);
+                let bodyHtml = '';
+                let totalCurr = 0, totalPrev = 0;
 
-                    <!-- Mes YoY -->
-                    <td class="cell-val">${item.mes_yoy.curr}</td>
-                    <td class="cell-val text-zinc-500">${item.mes_yoy.prev}</td>
-                    <td class="cell-perc ${getPercClass(item.mes_yoy.perc)}">${item.mes_yoy.perc}%</td>
+                data.forEach(item => {
+                    const d = item[key];
+                    bodyHtml += createRow(item.product, d.curr, d.prev, d.perc);
+                    totalCurr += d.curr;
+                    totalPrev += d.prev;
+                });
 
-                    <!-- Anual YoY -->
-                    <td class="cell-val">${item.anual_yoy.curr}</td>
-                    <td class="cell-val text-zinc-500">${item.anual_yoy.prev}</td>
-                    <td class="cell-perc ${getPercClass(item.anual_yoy.perc)}">${item.anual_yoy.perc}%</td>
-                `;
-                container.appendChild(tr);
+                body.innerHTML = bodyHtml;
+                foot.innerHTML = createTotalRow(totalCurr, totalPrev);
             });
-            lucide.createIcons();
         }
 
         loadAnalytics();
