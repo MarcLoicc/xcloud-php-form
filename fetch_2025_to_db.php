@@ -143,6 +143,8 @@ try {
         'dimensionFilter' => $filter
     ]);
 
+    $monthNames = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    $proccessedMonths = [];
     foreach ($resMonth->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
         $month = (int)$row->getDimensionValues()[1]->getValue();
@@ -151,8 +153,12 @@ try {
         $type = 'month';
         $stmt->bind_param("ssiii", $path, $type, $month, $views, $views);
         $stmt->execute();
+        
+        if (!isset($proccessedMonths[$month])) {
+            echo "✔️ Mes $month (" . $monthNames[$month] . ") procesado.<br>";
+            $proccessedMonths[$month] = true;
+        }
     }
-    echo "✔️ Meses agregados.<br>";
 
     // 3. EXTRAER POR SEMANA
     echo "<h3>📆 Consultando Visitas Semanales 2025...</h3>";
@@ -164,6 +170,7 @@ try {
         'dimensionFilter' => $filter
     ]);
 
+    $proccessedWeeks = [];
     foreach ($resWeek->getRows() as $row) {
         $path = $row->getDimensionValues()[0]->getValue();
         $week = (int)$row->getDimensionValues()[1]->getValue();
@@ -172,8 +179,12 @@ try {
         $type = 'week';
         $stmt->bind_param("ssiii", $path, $type, $week, $views, $views);
         $stmt->execute();
+
+        if (!isset($proccessedWeeks[$week])) {
+            echo "✔️ Semana $week procesada.<br>";
+            $proccessedWeeks[$week] = true;
+        }
     }
-    echo "✔️ Semanas agregadas.<br>";
 
     echo "<h2 style='color:green'>🎉 ¡Re-importación COMPLETADA! Datos de Visitas 2025 (Solo España, No GDL) guardados en MySQL.</h2>";
 
