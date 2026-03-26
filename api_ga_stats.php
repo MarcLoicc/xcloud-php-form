@@ -161,8 +161,53 @@ try {
                 WHERE period_type = 'day' AND period_num >= $startDayDB AND period_num <= $endDayDB
                 GROUP BY page_path";
         $use_db_for_prev = true;
-    } else {
-        send_json_error('Tipo de reporte desconocido');
+    } elseif ($report_type === 'monthly_trend') {
+        // Reporte de tendencia mensual: 12 meses (2025 vs 2026)
+        $monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        $results = [];
+        
+        // 1. Obtener 2026 de GA4 (Datos reales acumulados por mes)
+        $response_2026 = $client->runReport([
+            'property' => 'properties/' . $property_id,
+            'dimensions' => [new Dimension(['name' => 'month'])],
+            'metrics' => [new Metric(['name' => 'screenPageViews'])],
+            'dateRanges' => [new DateRange(['start_date' => '2026-01-01', 'end_date' => 'today'])],
+            'dimensionFilter' => $filter
+        ]);
+        
+        $months_2026 = array_fill(1, 12, 0);
+        foreach ($response_2026->getRows() as $row) {
+            $m = (int)$row->getDimensionValues()[0]->getValue();
+            $months_2026[$m] = (int)$row->getMetricValues()[0]->getValue();
+        }
+
+        // 2. Obtener 2025 de DB
+        $res2025 = $conn->query("SELECT period_num, sessions FROM ga4_history_2025 WHERE period_type = 'month' AND page_path = 'TOTAL' ORDER BY period_num ASC");
+        $months_2025 = array_fill(1, 12, 0);
+        if ($res2025) {
+            while ($r = $res2025->fetch_assoc()) $months_2025[(int)$r['period_num']] = (int)$r['sessions'];
+        }
+
+        // 3. Montar comparativa
+        for($i=1; $i<=12; $i++) {
+            $curr = $months_2026[$i];
+            $prev = $months_2025[$i];
+            
+            $diff = ($prev > 0) ? round((($curr - $prev) / $prev) * 100, 2) : 0;
+            $sign = ($diff > 0) ? '+' : '';
+            
+            $results[] = [
+                'month_name' => $monthNames[$i-1],
+                'curr' => $curr,
+                'prev' => $prev,
+                'perc' => ($prev > 0) ? ($sign . $diff . '%') : ($curr > 0 ? '+∞' : '0%'),
+                'raw_perc' => $diff
+            ];
+        }
+        
+        $final_json = json_encode(['status' => 'success', 'data' => $results]);
+        echo $final_json;
+        exit;
     }
 
     $filter = new FilterExpression([

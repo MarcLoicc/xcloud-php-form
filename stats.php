@@ -97,6 +97,31 @@
                 </table>
             </div>
         </div>
+
+        <!-- Nueva Tabla: Tendencia Mensual (12 Meses) -->
+        <div class="mt-12 mb-20 w-full" style="display: none;" id="trend-container">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-8 h-8 bg-indigo-500/20 rounded-lg flex items-center justify-center border border-indigo-500/30">
+                    <i data-lucide="calendar" class="w-4 h-4 text-indigo-400"></i>
+                </div>
+                <h2 class="text-xl font-bold text-white uppercase tracking-tight italic">Tendencia Mensual (Full Year)</h2>
+            </div>
+            
+            <div class="bg-zinc-950 rounded-2xl border-2 border-zinc-800/80 shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden max-w-4xl">
+                <table class="excel-table w-full whitespace-nowrap m-0">
+                    <thead>
+                        <tr>
+                            <th class="header-sub text-left pl-6">Mes</th>
+                            <th class="header-sub w-32 border-l border-white/10">Total 2025</th>
+                            <th class="header-sub w-32">Total 2026</th>
+                            <th class="header-sub w-24 bg-indigo-600">Var. %</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-zinc-950/50" id="trend-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -231,6 +256,7 @@
 
                 const queries = ['w_yoy', 'w_wow', 'm_yoy', 'y_yoy'];
                 queries.forEach(q => fetchAndRender(q, isRefresh));
+                fetchMonthlyTrend(isRefresh);
 
             } catch(e) {
                 document.getElementById('init-loader').innerHTML = `<div class="text-rose-500 font-bold p-6 bg-rose-500/10 rounded-xl border border-rose-500/30 flex items-center gap-3"><i data-lucide="wifi-off"></i> ERROR INIT: ${e.message}</div>`;
@@ -310,6 +336,32 @@
             } finally {
                 const icon = document.getElementById('btn-icon');
                 if(icon && reportType === 'y_yoy') icon.classList.remove('animate-spin');
+            }
+        }
+
+        async function fetchMonthlyTrend(isRefresh) {
+            try {
+                const res = await fetch(`api_ga_stats.php?report=monthly_trend${isRefresh ? '&refresh=true' : ''}`);
+                const json = await res.json();
+                if (json.status === 'success') {
+                    let html = '';
+                    json.data.forEach(m => {
+                        const pClass = m.raw_perc >= 0 ? 'perc-up' : 'perc-down';
+                        html += `
+                            <tr class="hover:bg-zinc-800/20 transition-colors">
+                                <td class="cell-prod pl-6 h-12">${m.month_name}</td>
+                                <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${m.prev.toLocaleString()}</td>
+                                <td class="cell-val font-bold text-white bg-zinc-800/10">${m.curr.toLocaleString()}</td>
+                                <td class="${pClass} font-black text-center">${m.perc}</td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById('trend-body').innerHTML = html;
+                    document.getElementById('trend-container').style.display = 'block';
+                    lucide.createIcons();
+                }
+            } catch (e) {
+                console.error("Error Trend:", e);
             }
         }
 
