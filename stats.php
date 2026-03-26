@@ -66,8 +66,8 @@
                             <th class="border-none bg-zinc-950 sticky left-0 z-20 border-r border-indigo-500/30"></th>
                             <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📅 SEMANA YoY</th>
                             <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">🔄 SEMANA WoW</th>
-                            <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📅 MES ACTUAL (MoM)</th>
-                            <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📈 ANUAL (YoY)</th>
+                            <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📅 MES ACUM. (MTD)</th>
+                            <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📈 ANUAL ACUM. (YTD)</th>
                         </tr>
                         <tr>
                             <th class="header-sub" style="text-align: left; padding-left: 20px;">Producto Base</th>
@@ -128,10 +128,10 @@
         document.getElementById('head-wow-curr').innerHTML = formatHeader(7, 0, year);
         document.getElementById('head-wow-prev').innerHTML = formatHeader(14, 7, year);
 
-        document.getElementById('head-mtd-prev').innerText = `MoM ${lastYear}`;
-        document.getElementById('head-mtd-curr').innerText = `MoM ${year}`;
-        document.getElementById('head-ytd-prev').innerText = `YoY ${lastYear}`;
-        document.getElementById('head-ytd-curr').innerText = `YoY ${year}`;
+        document.getElementById('head-mtd-prev').innerText = `MTD ${lastYear}`;
+        document.getElementById('head-mtd-curr').innerText = `MTD ${year}`;
+        document.getElementById('head-ytd-prev').innerText = `YTD ${lastYear}`;
+        document.getElementById('head-ytd-curr').innerText = `YTD ${year}`;
 
         lucide.createIcons();
         let globalProducts = {};
