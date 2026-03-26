@@ -5,59 +5,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte Excel GA4 - CRM Marcloi</title>
+    <title>BI Dashboard - CRM Marcloi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
     <style>
-        body { font-family: Calibri, Arial, sans-serif; background-color: #fff; margin: 20px; color: #000; }
-        .report-title { font-size: 20px; font-weight: bold; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; font-style: italic; }
+        .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #09090b; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
         
-        .dashboard-wrapper { display: flex; flex-wrap: nowrap; gap: 40px; overflow-x: auto; padding-bottom: 20px; }
+        /* Dark Theme Excel Style */
+        .excel-table { border-collapse: separate; border-spacing: 0; min-width: 480px; font-size: 12px; }
+        .excel-table th, .excel-table td { border-bottom: 1px solid #27272a; border-right: 1px solid #27272a; padding: 12px 14px; }
+        .excel-table th { border-top: 1px solid #27272a; }
+        .excel-table th:first-child, .excel-table td:first-child { border-left: 1px solid #27272a; }
         
-        table { border-collapse: collapse; width: 450px; margin-bottom: 20px; font-size: 13px; table-layout: fixed; }
-        th, td { border: 1px solid #999; padding: 4px 8px; text-align: center; }
+        .header-top { background: #18181b; color: #fff; text-align: left; font-weight: 900; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .header-sub { background: #4f46e5; color: #fff; font-weight: bold; text-align: center; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
         
-        /* Headers Style */
-        .head-main { background-color: #fff; font-weight: bold; height: 30px; }
-        .head-sub { background-color: #4472c4; color: white; border-color: white; font-weight: bold; height: 25px; }
+        .cell-prod { text-align: left; color: #a5b4fc; font-weight: 600; text-decoration: none; white-space: nowrap; transition: color 0.2s; }
+        .cell-prod:hover { color: #c7d2fe; }
+        .cell-val { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; text-align: center; color: #e4e4e7; }
         
-        /* Cells Style */
-        .cell-prod { text-align: left; color: #0000ee; text-decoration: underline; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-        .cell-val { font-family: "Courier New", Courier, monospace; }
+        .perc-up { background: rgba(16, 185, 129, 0.1); color: #34d399; font-weight: 900; text-align: center; }
+        .perc-down { background: rgba(244, 63, 94, 0.1); color: #fb7185; font-weight: 900; text-align: center; }
         
-        /* Percentages */
-        .perc-up { background-color: #c6efce; color: #006100; font-weight: bold; }
-        .perc-down { background-color: #ffc7ce; color: #9c0006; font-weight: bold; }
-        
-        /* Totals */
-        .row-total { background-color: #d9d9d9; font-weight: bold; }
-        
-        .loading-overlay { padding: 40px; text-align: center; font-style: italic; color: #666; }
+        .row-total td { background: #18181b; font-weight: 900; color: #fff; border-top: 2px solid #3f3f46; border-bottom: none; }
     </style>
 </head>
-<body>
+<body class="bg-zinc-950 min-h-screen text-zinc-100 antialiased font-sans flex items-start">
+    <?php include 'sidebar.php'; ?>
 
-    <div class="report-title uppercase">Analytics Command Center - Master Excel View</div>
+    <main class="sm:ml-64 flex-1 min-h-screen p-8 lg:p-12 mb-20 overflow-hidden flex flex-col" id="main-content">
+        <!-- Dashboard Header -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-zinc-900 mb-8 shrink-0">
+            <div>
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center border border-indigo-500/20">
+                        <i data-lucide="bar-chart-2" class="w-5 h-5 text-indigo-400"></i>
+                    </div>
+                    <h1 class="text-3xl font-black text-white tracking-tight italic uppercase">Analytics Command v2</h1>
+                </div>
+                <p class="text-[14px] text-zinc-400 font-medium">Panel Maestro C-Level (YoY / WoW / Acumulados)</p>
+            </div>
+            
+            <button onclick="window.location.reload()" class="bg-zinc-900 hover:bg-zinc-800 text-white p-2.5 rounded-lg transition-all shadow-xl border border-zinc-800 flex items-center gap-2 group">
+                <i data-lucide="refresh-cw" class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500"></i> 
+                <span class="text-xs font-bold uppercase tracking-widest">Sincronizar GA4</span>
+            </button>
+        </header>
 
-    <div class="dashboard-wrapper" id="master-container">
-        <div class="loading-overlay" id="loader">Cargando datos de GA4...</div>
-    </div>
+        <!-- Loading State -->
+        <div id="loader" class="flex flex-col items-center justify-center p-20 text-zinc-500 bg-zinc-900/30 rounded-2xl border border-zinc-800/50">
+            <i data-lucide="loader-2" class="w-10 h-10 animate-spin mb-4 text-indigo-500"></i>
+            <p class="text-sm font-medium uppercase tracking-widest animate-pulse">Sintetizando datos históricos en GA4 API...</p>
+        </div>
+
+        <!-- Master Tables Container -->
+        <div class="overflow-x-auto custom-scrollbar flex-1 pb-6" style="display: none;" id="master-container">
+            <div class="flex flex-nowrap gap-8 min-w-max pb-4" id="tables-wrapper">
+                <!-- Las tablas se inyectan dinámicamente aquí -->
+            </div>
+        </div>
+    </main>
+
+    <?php include_once 'modal-add-lead.php'; ?>
 
     <script>
-        // Etiquetas dinámicas según la fecha actual
+        lucide.createIcons();
+
+        // Calculo de años dinámico para los headers
         const date = new Date();
         const year = date.getFullYear();
         const lastYear = year - 1;
-        
+
         async function loadAnalytics() {
             try {
                 const response = await fetch('api_ga_stats.php');
                 const result = await response.json();
+                
                 if (result.status === 'success') {
                     document.getElementById('loader').style.display = 'none';
+                    document.getElementById('master-container').style.display = 'block';
                     renderAll(result.data);
+                } else {
+                    document.getElementById('loader').innerHTML = `<div class="text-rose-500 font-bold p-4 bg-rose-500/10 rounded-lg border border-rose-500/20">API ERROR: ${result.message}</div>`;
                 }
             } catch (e) {
-                document.getElementById('loader').innerText = "Error: No se pudieron cargar los datos.";
+                document.getElementById('loader').innerHTML = `<div class="text-rose-500 font-bold p-4 bg-rose-500/10 rounded-lg border border-rose-500/20">NETWORK ERROR: ${e.message}</div>`;
             }
         }
 
@@ -65,46 +100,60 @@
             let bodyHtml = '';
             let tCurr = 0, tPrev = 0;
 
+            // Orden alfabético por producto
+            data.sort((a, b) => a.product.localeCompare(b.product));
+
             data.forEach(item => {
                 const d = item[dataKey];
                 const pClass = d.perc >= 0 ? 'perc-up' : 'perc-down';
                 tCurr += d.curr; tPrev += d.prev;
                 
                 bodyHtml += `
-                    <tr>
-                        <td class="cell-prod">\${item.product}</td>
-                        <td class="cell-val">\${d.prev.toLocaleString()}</td>
-                        <td class="cell-val">\${d.curr.toLocaleString()}</td>
-                        <td class="cell-val \${pClass}">\${d.perc >= 0 ? '+' : ''}\${d.perc}%</td>
+                    <tr class="hover:bg-zinc-900/50 transition-colors">
+                        <td class="cell-prod"><div class="flex items-center gap-2"><div class="w-1 h-1 rounded-full bg-indigo-500"></div>${item.product}</div></td>
+                        <td class="cell-val text-zinc-500">${d.prev.toLocaleString()}</td>
+                        <td class="cell-val font-bold text-white">${d.curr.toLocaleString()}</td>
+                        <td class="${pClass}">${d.perc >= 0 ? '+' : ''}${d.perc}%</td>
                     </tr>
                 `;
             });
 
+            // Calculate total percentage safely
             const totalPerc = tPrev > 0 ? Math.round(((tCurr - tPrev) / tPrev) * 100 * 10) / 10 : 0;
             const tPClass = totalPerc >= 0 ? 'perc-up' : 'perc-down';
 
+            // Return individual table component
             return `
-                <div>
-                    <table>
+                <div class="bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden shadow-2xl flex-shrink-0">
+                    <table class="excel-table w-full">
                         <thead>
-                            <tr class="head-main">
-                                <th style="border-bottom:none; border-right:none; text-align:left;">\${title}</th>
-                                <th colspan="3" style="border-bottom:none; border-left:none; background:#fff;">Visitas</th>
+                            <tr>
+                                <th class="header-top border-none" colspan="4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-1.5 h-4 bg-indigo-500 rounded-full"></div>
+                                            ${title}
+                                        </div>
+                                        <i data-lucide="bar-chart" class="w-4 h-4 text-zinc-600"></i>
+                                    </div>
+                                </th>
                             </tr>
-                            <tr class="head-sub">
-                                <th style="width:180px">Producto</th>
-                                <th style="width:80px">\${p1Label}</th>
-                                <th style="width:80px">\${p2Label}</th>
-                                <th style="width:70px">%</th>
+                            <tr>
+                                <th class="header-sub" style="text-align: left; padding-left: 20px;">Producto Base</th>
+                                <th class="header-sub w-28">${p1Label}</th>
+                                <th class="header-sub w-28">${p2Label}</th>
+                                <th class="header-sub w-24">% Var</th>
                             </tr>
                         </thead>
-                        <tbody>\${bodyHtml}</tbody>
+                        <tbody class="bg-zinc-950">
+                            ${bodyHtml}
+                        </tbody>
                         <tfoot class="row-total">
                             <tr>
-                                <td style="text-align:left">TOTAL</td>
-                                <td class="cell-val">\${tPrev.toLocaleString()}</td>
-                                <td class="cell-val">\${tCurr.toLocaleString()}</td>
-                                <td class="cell-val \${tPClass}">\${totalPerc >= 0 ? '+' : ''}\${totalPerc}%</td>
+                                <td style="text-align:left; padding-left: 20px;">RESUMEN ACUMULADO</td>
+                                <td class="cell-val">${tPrev.toLocaleString()}</td>
+                                <td class="cell-val text-white">${tCurr.toLocaleString()}</td>
+                                <td class="${tPClass}">${totalPerc >= 0 ? '+' : ''}${totalPerc}%</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -113,17 +162,19 @@
         }
 
         function renderAll(data) {
-            const container = document.getElementById('master-container');
+            const wrapper = document.getElementById('tables-wrapper');
             
-            // Replicamos los 4 bloques
+            // Build 4 instances matching the requested format
             const h1 = createTableHtml('Semana YoY', 'Seman Ant Año', 'Semana Actual', 'semana_yoy', data);
-            const h2 = createTableHtml('Semana WoW', 'Semana Anterior', 'Semana Actual', 'semana_wow', data);
-            const h3 = createTableHtml('Acumulado Mes Actual', 'MTD ' + lastYear, 'MTD ' + year, 'mes_yoy', data);
-            const h4 = createTableHtml('Acumulado Anual YoY', 'YTD ' + lastYear, 'YTD ' + year, 'anual_yoy', data);
+            const h2 = createTableHtml('Semana WoW', 'Semana Ant', 'Semana Actual', 'semana_wow', data);
+            const h3 = createTableHtml('Acumulado Mes', 'MTD ' + lastYear, 'MTD ' + year, 'mes_yoy', data);
+            const h4 = createTableHtml('Acumulado Anual', 'YTD ' + lastYear, 'YTD ' + year, 'anual_yoy', data);
             
-            container.innerHTML = h1 + h2 + h3 + h4;
+            wrapper.innerHTML = h1 + h2 + h3 + h4;
+            lucide.createIcons();
         }
 
+        // Initialize Data Fetch
         loadAnalytics();
     </script>
 </body>
