@@ -162,7 +162,7 @@ try {
     }
 
     $filter = new FilterExpression([
-        'and_group' => new FilterExpression\AndGroup([
+        'and_group' => [
             'expressions' => [
                 new FilterExpression([
                     'filter' => new Filter([
@@ -185,7 +185,7 @@ try {
                     ])
                 ])
             ]
-        ])
+        ]
     ]);
 
     $options = ['timeoutMillis' => 25000];

@@ -80,7 +80,7 @@ try {
 
     // FILTRO: Solo España y EXCLUIR Guadalajara
     $filter = new FilterExpression([
-        'and_group' => new FilterExpression\AndGroup([
+        'and_group' => [
             'expressions' => [
                 new FilterExpression([
                     'filter' => new Filter([
@@ -103,7 +103,7 @@ try {
                     ])
                 ])
             ]
-        ])
+        ]
     ]);
 
     $dateRange = new DateRange(['start_date' => '2025-01-01', 'end_date' => '2025-12-31']);
