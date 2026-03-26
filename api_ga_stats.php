@@ -68,13 +68,13 @@ if ($report_type === 'init') {
     $startM = "2025" . $currMonth . "01";
     $endM = "2025" . $currMonth . $currDay;
     $resM = $conn->query("SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 WHERE period_type = 'day' AND period_num >= $startM AND period_num <= $endM GROUP BY page_path");
-    while($r = $resM->fetch_assoc()) if(isset($fixed_data[$r['page_path']])) $fixed_data[$r['page_path']]['m_yoy'] = (int)$r['total'];
+    if($resM) while($r = $resM->fetch_assoc()) if(isset($fixed_data[$r['page_path']])) $fixed_data[$r['page_path']]['m_yoy'] = (int)$r['total'];
 
     // YTD Exacto 2025
     $startY = "20250101";
     $endY = "2025" . $currDateStr;
     $resY = $conn->query("SELECT page_path, SUM(sessions) as total FROM ga4_history_2025 WHERE period_type = 'day' AND period_num >= $startY AND period_num <= $endY GROUP BY page_path");
-    while($r = $resY->fetch_assoc()) if(isset($fixed_data[$r['page_path']])) $fixed_data[$r['page_path']]['y_yoy'] = (int)$r['total'];
+    if($resY) while($r = $resY->fetch_assoc()) if(isset($fixed_data[$r['page_path']])) $fixed_data[$r['page_path']]['y_yoy'] = (int)$r['total'];
 
     // Construir respuesta final ordenada
     $sorted_pc = [];
@@ -287,7 +287,8 @@ try {
         $results[$path] = [
             'curr' => $d['curr'],
             'prev' => $d['prev'],
-            'perc' => $sign . $diff_pp . ' p.p.'
+            'perc' => $sign . $diff_pp . ' p.p.',
+            'raw_perc' => $diff_pp
         ];
     }
 
