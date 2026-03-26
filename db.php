@@ -65,6 +65,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS settings (
 )");
 
 // Inicializar GA4 Property ID si no existe
-$conn->query("INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('ga4_property_id', 'PROPIEDAD_AQUI')");
+$conn->query("INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('ga4_property_id', '450593597')");
+$conn->query("UPDATE settings SET setting_value = '450593597' WHERE setting_key = 'ga4_property_id'");
 
 ?>
