@@ -94,7 +94,7 @@ try {
     $resYear = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath'])], // Si no pones dimensión de tiempo, es el total del periodo
-        'metrics' => [new Metric(['name' => 'sessions'])],
+        'metrics' => [new Metric(['name' => 'screenPageViews'])],
         'dateRanges' => [$dateRange],
         'dimensionFilter' => $filter
     ]);
@@ -117,7 +117,7 @@ try {
     $resMonth = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath']), new Dimension(['name' => 'month'])],
-        'metrics' => [new Metric(['name' => 'sessions'])],
+        'metrics' => [new Metric(['name' => 'screenPageViews'])],
         'dateRanges' => [$dateRange],
         'dimensionFilter' => $filter
     ]);
@@ -140,7 +140,7 @@ try {
     $resWeek = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath']), new Dimension(['name' => 'isoWeek'])],
-        'metrics' => [new Metric(['name' => 'sessions'])],
+        'metrics' => [new Metric(['name' => 'screenPageViews'])],
         'dateRanges' => [$dateRange],
         'dimensionFilter' => $filter
     ]);

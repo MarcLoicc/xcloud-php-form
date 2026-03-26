@@ -120,7 +120,7 @@ try {
     $response_curr = $client->runReport([
         'property' => 'properties/' . $property_id,
         'dimensions' => [new Dimension(['name' => 'pagePath'])],
-        'metrics' => [new Metric(['name' => 'sessions'])],
+        'metrics' => [new Metric(['name' => 'screenPageViews'])],
         'dateRanges' => [$range_curr],
         'dimensionFilter' => $filter
     ], $options);
