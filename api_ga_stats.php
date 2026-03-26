@@ -130,6 +130,7 @@ use Google\Analytics\Data\V1beta\Metric;
 use Google\Analytics\Data\V1beta\FilterExpression;
 use Google\Analytics\Data\V1beta\Filter;
 use Google\Analytics\Data\V1beta\Filter\InListFilter;
+use Google\Analytics\Data\V1beta\FilterExpressionList;
 
 try {
     $client = new BetaAnalyticsDataClient(['credentials' => $credentials_path]);
@@ -162,7 +163,7 @@ try {
     }
 
     $filter = new FilterExpression([
-        'and_group' => [
+        'and_group' => new FilterExpressionList([
             'expressions' => [
                 new FilterExpression([
                     'filter' => new Filter([
@@ -185,7 +186,7 @@ try {
                     ])
                 ])
             ]
-        ]
+        ])
     ]);
 
     $options = ['timeoutMillis' => 25000];

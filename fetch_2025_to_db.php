@@ -44,6 +44,7 @@ use Google\Analytics\Data\V1beta\Metric;
 use Google\Analytics\Data\V1beta\FilterExpression;
 use Google\Analytics\Data\V1beta\Filter;
 use Google\Analytics\Data\V1beta\Filter\InListFilter;
+use Google\Analytics\Data\V1beta\FilterExpressionList;
 
 // 0. Limpiar datos anteriores para re-importación limpia
 $conn->query("TRUNCATE TABLE ga4_history_2025");
@@ -78,9 +79,9 @@ try {
         '/calculadora-precio-web-online/' => 'Calculadora Precio'
     ];
 
-    // FILTRO: Solo España y EXCLUIR Guadalajara
+    // FILTRO: Solo España y EXCLUIR Guadalajara (Compatibilidad 0.9.1)
     $filter = new FilterExpression([
-        'and_group' => [
+        'and_group' => new FilterExpressionList([
             'expressions' => [
                 new FilterExpression([
                     'filter' => new Filter([
@@ -103,7 +104,7 @@ try {
                     ])
                 ])
             ]
-        ]
+        ])
     ]);
 
     $dateRange = new DateRange(['start_date' => '2025-01-01', 'end_date' => '2025-12-31']);
