@@ -129,12 +129,12 @@
         document.getElementById('head-wow-prev').innerHTML = formatHeader(14, 7, year);
 
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-        const currentMonthName = monthNames[date.getMonth()];
+        const currentMonthName = monthNames[date.getMonth()].toUpperCase();
         
-        document.getElementById('head-mtd-prev').innerText = `MTD ${currentMonthName} ${lastYear}`;
-        document.getElementById('head-mtd-curr').innerText = `MTD ${currentMonthName} ${year}`;
-        document.getElementById('head-ytd-prev').innerText = `YTD ${lastYear}`;
-        document.getElementById('head-ytd-curr').innerText = `YTD ${year}`;
+        document.getElementById('head-mtd-prev').innerHTML = `MTD ${currentMonthName}<br><span class="text-[10px] text-zinc-400 font-medium">(Acum.) ${lastYear}</span>`;
+        document.getElementById('head-mtd-curr').innerHTML = `MTD ${currentMonthName}<br><span class="text-[10px] text-zinc-400 font-medium">(Acum.) ${year}</span>`;
+        document.getElementById('head-ytd-prev').innerHTML = `YTD ANUAL<br><span class="text-[10px] text-zinc-400 font-medium">(Acum.) ${lastYear}</span>`;
+        document.getElementById('head-ytd-curr').innerHTML = `YTD ANUAL<br><span class="text-[10px] text-zinc-400 font-medium">(Acum.) ${year}</span>`;
         
         lucide.createIcons();
         let globalProducts = {};
