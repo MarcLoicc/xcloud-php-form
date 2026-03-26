@@ -57,4 +57,14 @@ foreach ($columns_to_add as $col => $type) {
 // Asegurarse de que el email ya no sea obligatorio
 $conn->query("ALTER TABLE leads MODIFY COLUMN email VARCHAR(255) NULL");
 
+// TABLA DE CONFIGURACIÓN / SETTINGS
+$conn->query("CREATE TABLE IF NOT EXISTS settings (
+    setting_key VARCHAR(50) PRIMARY KEY,
+    setting_value TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)");
+
+// Inicializar GA4 Property ID si no existe
+$conn->query("INSERT IGNORE INTO settings (setting_key, setting_value) VALUES ('ga4_property_id', 'PROPIEDAD_AQUI')");
+
 ?>

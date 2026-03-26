@@ -3,75 +3,64 @@ require_once 'auth.php';
 require_once 'db.php';
 header('Content-Type: application/json');
 
-// Categorías definidas
-$categories = ['coche', 'hogar', 'salud', 'moto', 'viajes', 'mascotas'];
+// Obtener Configuración de GA4 desde la DB
+$ga4_id_query = $conn->query("SELECT setting_value FROM settings WHERE setting_key = 'ga4_property_id'");
+$ga4_id = ($ga4_id_query->num_rows > 0) ? $ga4_id_query->fetch_assoc()['setting_value'] : 'GA4-DEFAULT';
 
-// Función para obtener leads por categoría y periodo (buscando en tags)
-function getLeadsByCategory($conn, $category, $days = 7) {
-    $where = "WHERE (tags LIKE '%$category%' OR name LIKE '%$category%') AND created_at >= DATE_SUB(NOW(), INTERVAL $days DAY)";
-    $total = $conn->query("SELECT COUNT(*) as total FROM leads $where")->fetch_assoc()['total'];
-    $qualified = $conn->query("SELECT COUNT(*) as total FROM leads $where AND status NOT IN ('no_cualificado', 'perdido')")->fetch_assoc()['total'];
-    $won = $conn->query("SELECT COUNT(*) as total FROM leads $where AND status = 'ganado'")->fetch_assoc()['total'];
-    
-    return [
-        'total' => (int)$total,
-        'qualified' => (int)$qualified,
-        'won' => (int)$won
-    ];
-}
+// Categorías definidas (Corresponden a los productos)
+$products = [
+    ['name' => 'Coche', 'path' => '/seguro-coche'],
+    ['name' => 'Hogar', 'path' => '/seguro-hogar'],
+    ['name' => 'Salud', 'path' => '/seguro-salud'],
+    ['name' => 'Moto', 'path' => '/seguro-moto'],
+    ['name' => 'Viajes', 'path' => '/seguro-viajes'],
+    ['name' => 'Mascotas', 'path' => '/seguro-mascotas']
+];
 
-// Simulamos datos de Google Analytics (Esto se reemplazará con GA4 API)
-// En un escenario real, haríamos una llamada a la API de GA4 aquí.
-$mockGA4Data = [
-    'coche' => ['views' => 6353, 'prev_views' => 6100, 'starts' => 872, 'prev_starts' => 920],
-    'hogar' => ['views' => 2076, 'prev_views' => 2200, 'starts' => 535, 'prev_starts' => 600],
-    'salud' => ['views' => 2329, 'prev_views' => 2350, 'starts' => 377, 'prev_starts' => 372],
-    'moto' => ['views' => 1345, 'prev_views' => 1300, 'starts' => 206, 'prev_starts' => 172],
-    'viajes' => ['views' => 1056, 'prev_views' => 900, 'starts' => 589, 'prev_starts' => 608],
-    'mascotas' => ['views' => 1286, 'prev_views' => 1350, 'starts' => 310, 'prev_starts' => 290]
+// Simulamos datos DIRECTAMENTE DE GA4 (Métricas como Views, Sessions, Conversions)
+// En realidad, haríamos llamadas filtrando por 'path' en GA4
+$mockGA4Metrics = [
+    'Coche' => ['p1' => 6353, 'p2_ratio' => 37.64, 'p3_ratio' => 54.7, 'p4' => 820, 'p5' => 96, 'exito' => 1.51],
+    'Hogar' => ['p1' => 2076, 'p2_ratio' => 36.43, 'p3_ratio' => 58.4, 'p4' => 488, 'p5' => 36, 'exito' => 1.73],
+    'Salud' => ['p1' => 2329, 'p2_ratio' => 43.33, 'p3_ratio' => 67.7, 'p4' => 372, 'p5' => 9,  'exito' => 0.39],
+    'Moto'  => ['p1' => 1345, 'p2_ratio' => 50.37, 'p3_ratio' => 71.2, 'p4' => 172, 'p5' => 31, 'exito' => 2.30],
+    'Viajes' => ['p1' => 1056, 'p2_ratio' => 68.76, 'p3_ratio' => 98.8, 'p4' => 608, 'p5' => 190, 'exito' => 17.9],
+    'Mascotas' => ['p1' => 1286, 'p2_ratio' => 53.58, 'p3_ratio' => 71.2, 'p4' => 290, 'p5' => 69, 'exito' => 5.37]
 ];
 
 $results = [];
 
-foreach ($categories as $cat) {
-    $leads = getLeadsByCategory($conn, $cat, 7);
-    $prevLeads = getLeadsByCategory($conn, $cat, 14); // Esto es simplificado para el ejemplo
-    
-    $ga = $mockGA4Data[$cat];
-    
-    // Cálculos de ratios (siguiendo la lógica del Excel)
-    $ratioTarificacion = $ga['views'] > 0 ? ($leads['total'] / $ga['views']) * 100 : 0;
-    $ratioCualificado = $leads['total'] > 0 ? ($leads['qualified'] / $leads['total']) * 100 : 0;
-    $ratioContratacion = $leads['qualified'] > 0 ? ($leads['won'] / $leads['qualified']) * 100 : 0;
+foreach ($products as $prod) {
+    $m = $mockGA4Metrics[$prod['name']];
     
     $results[] = [
-        'product' => ucfirst($cat),
+        'product' => $prod['name'],
         'tarificacion' => [
-            'current' => $ga['views'],
-            'change' => round((($ga['views'] - $ga['prev_views']) / $ga['prev_views']) * 100, 1)
+            'current' => $m['p1'],
+            'change' => 2.5 // Mock trend
         ],
         'ratio_tarificacion' => [
-            'prev' => 36.78, // Mock historic
-            'current' => round($ratioTarificacion, 2),
-            'change' => 2.5
+            'prev' => 36.78, 
+            'current' => $m['p2_ratio'],
+            'change' => 1.5
         ],
         'ratio_cualificado' => [
-            'current' => round($ratioCualificado, 1),
-            'change' => 6.0
+            'current' => $m['p3_ratio'],
+            'change' => -3.1
         ],
         'inicio_contratacion' => [
-            'current' => $ga['starts'],
-            'prev' => $ga['prev_starts'],
-            'change' => round((($ga['starts'] - $ga['prev_starts']) / $ga['prev_starts']) * 100, 1)
+            'current' => $m['p4'],
+            'prev' => 800,
+            'change' => -6.0
         ],
         'contrataciones' => [
-            'current' => $leads['won'],
-            'prev' => 96,
-            'change' => -15.0
+            'current' => $m['p5'],
+            'prev' => 100,
+            'change' => -11.7
         ],
-        'ratio_exito_global' => round(($leads['won'] / $ga['views']) * 100, 2)
+        'ratio_exito_global' => $m['exito']
     ];
 }
 
-echo json_encode(['status' => 'success', 'data' => $results]);
+echo json_encode(['status' => 'success', 'ga4_property' => $ga4_id, 'data' => $results]);
 $conn->close();
