@@ -24,16 +24,24 @@ if ($method === 'POST') {
     $name  = trim($body['name'] ?? '');
     $hist  = isset($body['has_2025_history']) ? (int)$body['has_2025_history'] : 0;
 
-    if (!$path || !$name) json_err('Faltan campos obligatorios (page_path, name).');
+    if (!$path || !$name) json_err('Faltan campos obligatorios (nombre y URL).');
 
     // Normalizar path: debe empezar y terminar con /
     if (substr($path, 0, 1) !== '/') $path = '/' . $path;
     if (substr($path, -1) !== '/')   $path = $path . '/';
 
+    // Verificar si ya existe antes de insertar (para dar error limpio)
+    $check = $conn->prepare("SELECT id FROM ga4_products WHERE page_path = ?");
+    $check->bind_param('s', $path);
+    $check->execute();
+    if ($check->get_result()->num_rows > 0) {
+        json_err('Esta URL ya está registrada en el panel.');
+    }
+
     $stmt = $conn->prepare("INSERT INTO ga4_products (page_path, name, has_2025_history) VALUES (?, ?, ?)");
     $stmt->bind_param('ssi', $path, $name, $hist);
     if (!$stmt->execute()) {
-        if ($conn->errno === 1062) json_err('Ya existe un producto con esa URL.');
+        if ($conn->errno === 1062) json_err('Esta URL ya está registrada en el panel.');
         json_err('Error al guardar: ' . $conn->error);
     }
     $id = $conn->insert_id;
