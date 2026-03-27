@@ -124,6 +124,111 @@ try {
 
     echo "<h2 style='color:green'>🎉 ¡Sincronización Automática 2026 completada!</h2>";
 
+    // ─── AUTO-IMPORTACIÓN HISTÓRICO 2025 PARA PRODUCTOS NUEVOS ───────────────
+    // Detecta productos en ga4_products que NO tienen ninguna fila en ga4_history_2025
+    $new_products_res = $conn->query("
+        SELECT p.page_path, p.name FROM ga4_products p
+        WHERE p.active = 1
+          AND NOT EXISTS (
+              SELECT 1 FROM ga4_history_2025 h WHERE h.page_path = p.page_path
+          )
+    ");
+
+    if ($new_products_res && $new_products_res->num_rows > 0) {
+        echo "<hr><h3>🔎 Productos nuevos sin histórico 2025 detectados: {$new_products_res->num_rows}</h3>";
+
+        $monthNames = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        $dr_2025 = new DateRange(['start_date' => '2025-01-01', 'end_date' => '2025-12-31']);
+
+        $stmt25 = $conn->prepare("INSERT INTO ga4_history_2025 (page_path, period_type, period_num, period_label, sessions, web_views, mobile_views, avg_retention) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE sessions = ?, web_views = ?, mobile_views = ?, avg_retention = ?, period_label = ?");
+        $pth25=""; $ty25=""; $nm25=0; $lb25=""; $vs25=0; $wb25=0; $mb25=0; $av25=0.0;
+        $stmt25->bind_param("ssisiiidiiiis", $pth25, $ty25, $nm25, $lb25, $vs25, $wb25, $mb25, $av25, $vs25, $wb25, $mb25, $av25, $lb25);
+
+        while ($prod = $new_products_res->fetch_assoc()) {
+            $path = $prod['page_path'];
+            $pname = $prod['name'];
+            echo "📂 Importando 2025 para <b>$pname</b> ($path)...<br>";
+
+            // Filtro solo para este producto + filtros base
+            $f_single = new FilterExpression(['and_group' => new FilterExpressionList(['expressions' => array_merge([
+                new FilterExpression(['filter' => new Filter(['field_name' => 'pagePath', 'string_filter' => new Filter\StringFilter(['value' => $path])])])
+            ], $f_base)])]);
+
+            $inserted = 0;
+
+            // Helper para insertar filas 2025 por period_type
+            $insert2025 = function($rows, $p_type) use (&$pth25, &$ty25, &$nm25, &$lb25, &$vs25, &$wb25, &$mb25, &$av25, $stmt25, $path, $monthNames, &$inserted) {
+                $ty25 = $p_type;
+                $data = [];
+                foreach ($rows as $row) {
+                    $dmns = $row->getDimensionValues();
+                    $mtrcs = $row->getMetricValues();
+                    // first dim is period number (date/week/month), second is deviceCategory
+                    $p_nm_raw = $dmns[0]->getValue();
+                    $dev = isset($dmns[1]) ? $dmns[1]->getValue() : '';
+                    $p_nm = ($p_type === 'day') ? (int)$p_nm_raw : (int)$p_nm_raw;
+                    $v = (int)$mtrcs[0]->getValue();
+                    $t = (float)$mtrcs[1]->getValue();
+                    if (!isset($data[$p_nm])) $data[$p_nm] = ['total'=>0,'web'=>0,'mob'=>0,'time'=>0,'count'=>0];
+                    $data[$p_nm]['total'] += $v;
+                    $data[$p_nm]['time'] += $t;
+                    $data[$p_nm]['count']++;
+                    if ($dev === 'desktop') $data[$p_nm]['web'] += $v;
+                    elseif ($dev === 'mobile' || $dev === 'tablet') $data[$p_nm]['mob'] += $v;
+                }
+                foreach ($data as $n => $vals) {
+                    $pth25 = $path; $nm25 = $n;
+                    if ($p_type === 'month') $lb25 = $monthNames[$n] ?? "Mes $n";
+                    elseif ($p_type === 'year') $lb25 = "Total 2025";
+                    else $lb25 = ($p_type === 'week') ? "Semana $n" : (string)$n;
+                    $vs25 = $vals['total']; $wb25 = $vals['web']; $mb25 = $vals['mob'];
+                    $av25 = ($vals['count'] > 0) ? ($vals['time'] / $vals['count']) : 0;
+                    $stmt25->execute();
+                    $inserted++;
+                }
+            };
+
+            try {
+                // Diarios 2025
+                $rows_d = $client->runReport(['property'=>'properties/'.$property_id,
+                    'dimensions'=>[new Dimension(['name'=>'date']),new Dimension(['name'=>'deviceCategory'])],
+                    'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],
+                    'dateRanges'=>[$dr_2025],'dimensionFilter'=>$f_single])->getRows();
+                $insert2025($rows_d, 'day');
+
+                // Semanales 2025
+                $rows_w = $client->runReport(['property'=>'properties/'.$property_id,
+                    'dimensions'=>[new Dimension(['name'=>'isoWeek']),new Dimension(['name'=>'deviceCategory'])],
+                    'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],
+                    'dateRanges'=>[$dr_2025],'dimensionFilter'=>$f_single])->getRows();
+                $insert2025($rows_w, 'week');
+
+                // Mensuales 2025
+                $rows_m = $client->runReport(['property'=>'properties/'.$property_id,
+                    'dimensions'=>[new Dimension(['name'=>'month']),new Dimension(['name'=>'deviceCategory'])],
+                    'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],
+                    'dateRanges'=>[$dr_2025],'dimensionFilter'=>$f_single])->getRows();
+                $insert2025($rows_m, 'month');
+
+                if ($inserted > 0) {
+                    // Marcar como con histórico 2025
+                    $conn->query("UPDATE ga4_products SET has_2025_history = 1 WHERE page_path = '" . $conn->real_escape_string($path) . "'");
+                    echo "   ✅ $inserted filas importadas para $pname<br>";
+                } else {
+                    echo "   ℹ️ Sin datos en 2025 para $pname (URL nueva de 2026)<br>";
+                    // Marcar explícitamente como sin histórico 2025
+                    $conn->query("UPDATE ga4_products SET has_2025_history = 0 WHERE page_path = '" . $conn->real_escape_string($path) . "'");
+                }
+            } catch (Throwable $ex) {
+                echo "   ⚠️ Error importando 2025 para $pname: " . $ex->getMessage() . "<br>";
+            }
+        }
+        echo "<h3 style='color:green'>✅ Auto-importación 2025 completada.</h3>";
+    } else {
+        echo "<p style='color:#888'>✔️ Todos los productos ya tienen histórico 2025 (o no aplica).</p>";
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
 } catch (Throwable $e) {
     echo "❌ Error en sincronización: " . $e->getMessage();
 }
