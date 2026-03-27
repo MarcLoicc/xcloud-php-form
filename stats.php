@@ -1,210 +1,249 @@
-<?php require_once 'auth.php'; ?>
-<?php require_once 'db.php'; ?>
+<?php
+require_once 'auth.php';
+require_once 'db.php';
+$ga4_id_query = $conn->query("SELECT setting_value FROM settings WHERE setting_key = 'ga4_property_id'");
+$property_id = ($ga4_id_query && $ga4_id_query->num_rows > 0) ? $ga4_id_query->fetch_assoc()['setting_value'] : null;
+?>
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BI Dashboard - CRM Marcloi</title>
+    <title>Analytics Dashboard | Marc Loic CRM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
-        :root { font-family: 'Montserrat', sans-serif; }
-        .custom-scrollbar::-webkit-scrollbar { height: 10px; width: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #09090b; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; border: 2px solid #09090b; }
-        
-        .excel-table { border-collapse: separate; border-spacing: 0; font-size: 12px; }
-        .excel-table th, .excel-table td { border-bottom: 1px solid #27272a; border-right: 1px dotted #27272a; padding: 12px 16px; }
-        .header-top { font-weight: 900; font-size: 13px; letter-spacing: 0.1em; }
-        .header-sub { background: #4f46e5; color: #fff; font-weight: 900; text-align: center; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #312e81 !important; }
-        .cell-prod { color: #a5b4fc; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.02em; }
-        .cell-val { font-family: ui-monospace, monospace; text-align: center; font-size: 13px; }
-        .perc-up { background: rgba(16,185,129,0.15); color: #34d399; font-weight: 900; }
-        .perc-down { background: rgba(244,63,94,0.1); color: #fb7185; font-weight: 900; }
-        .row-total td { background: #18181b; font-weight: 900; color: #fff; border-top: 2px solid #4f46e5 !important; font-size: 14px; }
-
-        /* M-TREND */
-        .tt { border-collapse: separate; border-spacing: 0; font-size: 12px; width:100%; }
-        .tt th, .tt td { border-bottom: 1px solid #27272a; padding: 10px 12px; white-space: nowrap; }
-        .tt tbody tr:hover td { background: rgba(63,63,70,0.2); }
-        .tt-mes { background: #09090b; color: #a5b4fc; font-weight: 900; min-width: 150px; text-transform: uppercase; border-right: 2px solid #312e81 !important; padding: 10px 20px; }
-        .tt-grp { background: #1e1b4b; color: #c7d2fe; font-weight:900; font-size:10px; text-align:center; border-right:1px solid #312e81; }
-        .tt-sub { background: #4f46e5; color:#fff; font-weight:900; font-size:10px; border-bottom:2px solid #312e81 !important; border-right:1px solid rgba(255,255,255,0.1); text-align:center; }
-        .tt-v { background:#3730a3; color:#fff; font-weight:900; font-size:10px; border-bottom:2px solid #312e81 !important; border-right:2px solid #312e81; text-align:center; }
-        .tt-prev { color:#71717a; text-align:center; font-family:monospace; }
-        .tt-curr { color:#f4f4f5; text-align:center; font-family:monospace; font-weight:700; background:rgba(63,63,70,0.05); }
-        .tt-up { font-weight:900; color:#34d399; background:rgba(16,185,129,0.1); border-right:2px solid #312e81; text-align:center; }
-        .tt-down { font-weight:900; color:#fb7185; background:rgba(244,63,94,0.08); border-right:2px solid #312e81; text-align:center; }
+        body { font-family: 'Outfit', sans-serif; background-color: #09090b; color: #f4f4f5; }
+        .glass-card { background: rgba(24, 24, 27, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(63, 63, 70, 0.4); border-radius: 1.25rem; }
+        .table-container { overflow-x: auto; scrollbar-width: thin; scrollbar-color: #3f3f46 transparent; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        th { font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; color: #a1a1aa; padding: 1rem 1.25rem; border-bottom: 1px solid rgba(63, 63, 70, 0.4); text-align: center; }
+        td { padding: 1rem 1.25rem; border-bottom: 1px solid rgba(63, 63, 70, 0.2); font-size: 0.875rem; text-align: center; transition: all 0.2s; }
+        tr:last-child td { border-bottom: none; }
+        .sticky-col { position: sticky; left: 0; background: #121214; z-index: 20; border-right: 1px solid rgba(63, 63, 70, 0.4); text-align: left !important; min-width: 240px; }
+        tr:hover .sticky-col { background: #18181b; }
+        .perc-up { color: #10b981; font-weight: 500; font-size: 0.8rem; }
+        .perc-down { color: #ef4444; font-weight: 500; font-size: 0.8rem; }
+        .tt-up { background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 6px; padding: 2px 6px; font-weight: 600; }
+        .tt-down { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 6px; padding: 2px 6px; font-weight: 600; }
+        .loader-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .btn-refresh { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); transition: transform 0.2s; }
+        .btn-refresh:hover { transform: translateY(-2px); opacity: 0.9; }
+        tr:hover td { background: rgba(39, 39, 42, 0.4); }
+        .section-header { border-left: 4px solid #6366f1; padding-left: 1rem; }
+        .metric-label { font-size: 0.7rem; color: #71717a; text-transform: uppercase; margin-bottom: 2px; }
     </style>
 </head>
-<body class="bg-zinc-950 min-h-screen text-zinc-100 antialiased flex items-start">
-    <?php include 'sidebar.php'; ?>
-    <main class="sm:ml-64 flex-1 min-h-screen pt-8 px-4 lg:px-8 pb-20 flex flex-col max-w-[100vw]">
-        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-zinc-900 mb-6 shrink-0">
+<body class="p-6 lg:p-10">
+    <div class="max-w-[1700px] mx-auto space-y-10">
+        
+        <!-- Header Section -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
             <div>
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="w-10 h-10 bg-indigo-500/20 rounded-xl flex items-center justify-center border border-indigo-500/30">
-                        <i data-lucide="bar-chart-2" class="w-5 h-5 text-indigo-400"></i>
-                    </div>
-                    <h1 class="text-3xl font-black text-white italic uppercase">Analytics Dashboard</h1>
-                </div>
+                <h1 class="text-4xl font-bold flex items-center gap-3">
+                    Hello Marc Loic <span class="text-3xl">👋</span>
+                </h1>
+                <p class="text-zinc-400 mt-2 font-light">Análisis estratégico de rendimiento y comparativa histórica de productos.</p>
             </div>
-            <button onclick="loadAnalytics(true)" class="bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 px-5 rounded-xl border border-indigo-400/50 flex items-center gap-3 group">
-                <i id="btn-icon" data-lucide="refresh-cw" class="w-4 h-4"></i>
-                <span class="text-xs font-bold uppercase tracking-widest">Sincronizar API</span>
-            </button>
+            <div class="flex items-center gap-4">
+                <button onclick="syncAll()" class="btn-refresh flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-lg shadow-indigo-500/20">
+                    <i data-lucide="refresh-cw" id="btn-icon" class="w-5 h-5"></i>
+                    Sincronizar Datos
+                </button>
+            </div>
         </header>
 
-        <div id="init-loader" class="flex flex-col items-center justify-center p-24 text-zinc-500 mt-10">
-            <i data-lucide="loader-2" class="w-12 h-12 animate-spin mb-4 text-indigo-500"></i>
-            <p>Cargando datos históricos y API...</p>
-        </div>
-
-        <div class="overflow-x-auto custom-scrollbar flex-1 pb-6 w-full" style="display:none;" id="master-container">
-            <div class="bg-zinc-950 rounded-2xl border-2 border-zinc-800/80 shadow-2xl overflow-hidden inline-block min-w-max">
-                <table class="excel-table w-full whitespace-nowrap m-0">
+        <!-- Stats Section -->
+        <section class="space-y-6">
+            <div class="flex items-center gap-3 section-header">
+                <i data-lucide="layers" class="w-6 h-6 text-indigo-400"></i>
+                <h2 class="text-xl font-semibold tracking-tight text-white/90">Cuadro Integral de Rendimiento</h2>
+            </div>
+            
+            <div class="glass-card table-container">
+                <table id="main-stats-table">
                     <thead>
                         <tr>
-                            <th class="border-none bg-zinc-950 sticky left-0 z-20 border-r border-indigo-500/30"></th>
-                            <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📅 SEMANA YoY</th>
-                            <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">🔄 SEMANA WoW</th>
-                            <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📅 MES ACUM. (MTD)</th>
-                            <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📈 ANUAL ACUM. (YTD)</th>
+                            <th class="sticky-col">Producto / Servicio</th>
+                            <th colspan="3" class="bg-indigo-500/5 text-indigo-300">📅 Semana YoY</th>
+                            <th colspan="3" class="bg-purple-500/5 text-purple-300">📊 Semana WoW</th>
+                            <th colspan="3" class="bg-cyan-500/5 text-cyan-300">🌙 Mes MTD</th>
+                            <th colspan="3" class="bg-amber-500/5 text-amber-300">🏆 Año YTD</th>
                         </tr>
-                        <tr>
-                            <th class="header-sub text-left pl-5">Producto Base</th>
-                            <th class="header-sub w-24 border-l border-white/10" id="head-yoy-prev">-</th><th class="header-sub w-24" id="head-yoy-curr">-</th><th class="header-sub w-20 bg-indigo-600">Var %</th>
-                            <th class="header-sub w-24 border-l border-white/10" id="head-wow-prev">-</th><th class="header-sub w-24" id="head-wow-curr">-</th><th class="header-sub w-20 bg-indigo-600">Var %</th>
-                            <th class="header-sub w-24 border-l border-white/10" id="head-mtd-prev">-</th><th class="header-sub w-24" id="head-mtd-curr">-</th><th class="header-sub w-20 bg-indigo-600">Var %</th>
-                            <th class="header-sub w-24 border-l border-white/10" id="head-ytd-prev">-</th><th class="header-sub w-24" id="head-ytd-curr">-</th><th class="header-sub w-20 bg-indigo-600">Var %</th>
+                        <tr class="text-[0.65rem] text-zinc-500 bg-white/5 uppercase tracking-tighter border-b border-zinc-800">
+                            <th class="sticky-col"></th>
+                            <th>2025</th><th>2026</th><th>%</th>
+                            <th>Prev</th><th>Act</th><th>%</th>
+                            <th>2025</th><th>2026</th><th>%</th>
+                            <th>2025</th><th>2026</th><th>%</th>
                         </tr>
                     </thead>
-                    <tbody id="body-target"></tbody>
-                    <tfoot class="row-total">
-                        <tr>
-                            <td class="sticky left-0 bg-[#18181b] z-10 text-left px-5 border-r border-indigo-500/50">RESUMEN GLOBAL</td>
-                            <td colspan="3" class="cell-val" id="total-w_yoy">...</td>
-                            <td colspan="3" class="cell-val" id="total-w_wow">...</td>
-                            <td colspan="3" class="cell-val" id="total-m_yoy">...</td>
-                            <td colspan="3" class="cell-val" id="total-y_yoy">...</td>
-                        </tr>
+                    <tbody id="stats-body" class="divide-y divide-zinc-800">
+                        <!-- JS renders -->
+                    </tbody>
+                    <tfoot id="table-footer" class="bg-zinc-900/60 font-bold border-t border-indigo-500/30">
+                        <!-- JS placeholders -->
                     </tfoot>
                 </table>
             </div>
-        </div>
+        </section>
 
-        <div class="mt-12 mb-20 w-full" style="display:none;" id="trend-container">
-            <h2 class="text-xl font-bold text-white uppercase mb-6 flex items-center gap-3">
-                <i data-lucide="calendar" class="w-5 h-5 text-indigo-400"></i> Tendencia Mensual (2025 vs 2026)
-            </h2>
-            <div class="overflow-x-auto custom-scrollbar shadow-2xl rounded-2xl border-2 border-zinc-800">
-                <table class="tt">
+        <!-- Trend Section -->
+        <section class="space-y-6 pt-4">
+            <div class="flex items-center gap-3 section-header border-cyan-400">
+                <i data-lucide="line-chart" class="w-6 h-6 text-cyan-400"></i>
+                <h2 class="text-xl font-semibold tracking-tight text-white/90 text-cyan-50">Análisis Estacional (Tendencia 2025 vs 2026)</h2>
+            </div>
+            
+            <div class="glass-card table-container">
+                <table id="trend-table">
                     <thead>
                         <tr>
-                            <th class="tt-mes" rowspan="2">MES</th>
-                            <th class="tt-grp" colspan="3">📈 TOTAL VISITAS</th>
-                            <th class="tt-grp" colspan="3">💻 WEB (DESKTOP)</th>
-                            <th class="tt-grp" colspan="3">📱 MÓVIL / TAB</th>
-                            <th class="tt-grp" colspan="3">⏳ RETENCIÓN</th>
+                            <th class="sticky-col !min-w-[150px]">Mes Histórico</th>
+                            <th colspan="3" class="bg-white/5 border-x border-zinc-700/50">📈 Total Visitas</th>
+                            <th colspan="3" class="bg-white/5 border-x border-zinc-700/50 text-indigo-300">💻 Tráfico Web</th>
+                            <th colspan="3" class="bg-white/5 border-x border-zinc-700/50 text-purple-300">📱 Tráfico Móvil</th>
+                            <th colspan="3" class="bg-white/5 border-x border-zinc-700/50 text-amber-300">⏱️ Retención</th>
                         </tr>
-                        <tr>
-                            <th class="tt-sub">2025</th><th class="tt-sub">2026</th><th class="tt-v">VAR %</th>
-                            <th class="tt-sub">2025</th><th class="tt-sub">2026</th><th class="tt-v">VAR %</th>
-                            <th class="tt-sub">2025</th><th class="tt-sub">2026</th><th class="tt-v">VAR %</th>
-                            <th class="tt-sub">2025</th><th class="tt-sub">2026</th><th class="tt-v">VAR %</th>
+                        <tr class="text-[0.65rem] text-zinc-500 bg-white/5 uppercase border-b border-zinc-800">
+                            <th class="sticky-col !min-w-[150px]"></th>
+                            <th>'25</th><th>'26</th><th>Var%</th>
+                            <th>'25</th><th>'26</th><th>Var%</th>
+                            <th>'25</th><th>'26</th><th>Var%</th>
+                            <th>'25</th><th>'26</th><th>Var%</th>
                         </tr>
                     </thead>
-                    <tbody id="trend-body"></tbody>
+                    <tbody id="trend-body" class="divide-y divide-zinc-800">
+                        <!-- JS renders -->
+                    </tbody>
                 </table>
             </div>
-        </div>
-    </main>
+        </section>
+
+    </div>
 
     <script>
-        const date = new Date(); const year = 2026; const lastYear = 2025;
-        function getIso(d) {
-            const t = new Date(d.valueOf()); const n = (t.getDay()+6)%7; t.setDate(t.getDate()-n+3);
-            const th = t.valueOf(); t.setMonth(0,1); if(t.getDay()!==4) t.setMonth(0,1+((4-t.getDay())+7)%7);
-            return 1+Math.ceil((th-t)/604800000);
-        }
-        function formatH(sOff, eOff, fY=null) {
-            const e = new Date(); e.setDate(e.getDate()-eOff); const s = new Date(); s.setDate(s.getDate()-sOff);
-            const w = getIso(e); const m = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"][e.getMonth()];
-            return `Sem ${w}<br><span class='text-[10px] text-zinc-500'>(${s.getDate()}-${e.getDate()} ${m}) ${fY||e.getFullYear()}</span>`;
-        }
-        document.getElementById('head-yoy-curr').innerHTML=formatH(7,0,2026); document.getElementById('head-yoy-prev').innerHTML=formatH(7,0,2025);
-        document.getElementById('head-wow-curr').innerHTML=formatH(7,0,2026); document.getElementById('head-wow-prev').innerHTML=formatH(14,7,2026);
-        const mNames=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-        const cM=mNames[date.getMonth()].toUpperCase();
-        document.getElementById('head-mtd-prev').innerHTML=`MTD ${cM}<br><span class='text-[10px] text-zinc-500'>2025</span>`;
-        document.getElementById('head-mtd-curr').innerHTML=`MTD ${cM}<br><span class='text-[10px] text-zinc-500'>2026</span>`;
-        document.getElementById('head-ytd-prev').innerHTML=`YTD ANUAL<br><span class='text-[10px] text-zinc-500'>2025</span>`;
-        document.getElementById('head-ytd-curr').innerHTML=`YTD ANUAL<br><span class='text-[10px] text-zinc-500'>2026</span>`;
+        lucide.createIcons();
+        const api = 'api_ga_stats.php';
 
-        function vCls(r) { return r>0?'tt-up':(r<0?'tt-down':'tt-prev'); }
-
-        async function loadAnalytics(isRef=false) {
-            try {
-                if(isRef) document.getElementById('btn-icon').classList.add('animate-spin');
-                const iJSON = await (await fetch('api_ga_stats.php?report=init')).json();
-                if(iJSON.status!=='success') throw new Error(iJSON.message);
-                let bHtml=''; let tot={ w_yoy:0, m_yoy:0, y_yoy:0 };
-                Object.keys(iJSON.data).forEach(p => {
-                    const id=btoa(p).replace(/=/g,''); const prod=iJSON.data[p]; const f=prod.fixed||{w_yoy:0,m_yoy:0,y_yoy:0};
-                    tot.w_yoy+=(f.w_yoy||0); tot.m_yoy+=(f.m_yoy||0); tot.y_yoy+=(f.y_yoy||0);
-                    bHtml+=`<tr class='hover:bg-zinc-900 group'><td class='cell-prod sticky left-0 bg-zinc-950 group-hover:bg-zinc-900 z-10 border-r border-indigo-500/30'>${prod.name}</td>
-                        <td class='cell-val text-zinc-500'>${(f.w_yoy||0).toLocaleString()}</td><td class='cell-val font-bold text-white bg-zinc-800/20' id='curr-w_yoy-${id}'>...</td><td class='cell-val' id='perc-w_yoy-${id}'>-</td>
-                        <td colspan='3' class='cell-val text-zinc-600' id='w_wow-${id}'>...</td>
-                        <td class='cell-val text-zinc-500'>${(f.m_yoy||0).toLocaleString()}</td><td class='cell-val font-bold text-white bg-zinc-800/20' id='curr-m_yoy-${id}'>...</td><td class='cell-val' id='perc-m_yoy-${id}'>-</td>
-                        <td class='cell-val text-zinc-500'>${(f.y_yoy||0).toLocaleString()}</td><td class='cell-val font-bold text-white bg-zinc-800/20' id='curr-y_yoy-${id}'>...</td><td class='cell-val' id='perc-y_yoy-${id}'>-</td></tr>`;
-                });
-                document.getElementById('body-target').innerHTML=bHtml;
-                document.getElementById('init-loader').style.display='none'; document.getElementById('master-container').style.display='block';
-                lucide.createIcons();
-                ['w_yoy','w_wow','m_yoy','y_yoy'].forEach(q => fetchAndR(q, isRef)); fetchTrend(isRef);
-            } catch(e) { console.error(e); }
+        async function syncAll() {
+            const btn = document.getElementById('btn-icon');
+            btn.classList.add('animate-spin');
+            
+            await renderTrend(true);
+            const initRes = await fetch(api + '?report=init&refresh=true');
+            const initData = await initRes.json();
+            if(initData.status === 'success') {
+                renderTopTable(initData.data);
+                const reports = ['w_yoy', 'w_wow', 'm_yoy', 'y_yoy'];
+                await Promise.all(reports.map(r => fetchAndRender(r, true)));
+            }
+            btn.classList.remove('animate-spin');
         }
 
-        async function fetchAndR(rep, ref) {
-            const dataJSON = await (await fetch(`api_ga_stats.php?report=${rep}${ref?'&refresh=true':''}`)).json();
-            if(dataJSON.status==='success') {
-                const data=dataJSON.data; let tC=0, tP=0;
-                for(const path in data) {
-                    const d=data[path]; const id=btoa(path).replace(/=/g,'');
-                    if(rep==='w_wow') {
-                        const td=document.getElementById(`w_wow-${id}`);
-                        if(td) td.outerHTML=`<td class='cell-val text-zinc-500'>${d.prev.toLocaleString()}</td><td class='cell-val font-bold text-white bg-zinc-800/20'>${d.curr.toLocaleString()}</td><td class='${d.raw_perc>=0?'perc-up':'perc-down'}'>${d.perc}</td>`;
+        async function init() {
+            const res = await fetch(api + '?report=init');
+            const json = await res.json();
+            if(json.status === 'success') {
+                renderTopTable(json.data);
+                const reports = ['w_yoy', 'w_wow', 'm_yoy', 'y_yoy'];
+                reports.forEach(r => fetchAndRender(r));
+                renderTrend();
+            }
+        }
+
+        function renderTopTable(data) {
+            const body = document.getElementById('stats-body');
+            body.innerHTML = '';
+            for(const path in data) {
+                const prod = data[path];
+                const id = path.replace(/[^a-z0-9]/gi, '_');
+                body.innerHTML += `
+                    <tr class="group">
+                        <td class="sticky-col font-medium text-white/80">${prod.name}</td>
+                        <td class="text-zinc-500">${(prod.prev_w_yoy || 0).toLocaleString()}</td>
+                        <td class="font-bold text-white bg-indigo-500/10" id="curr-w_yoy-${id}">-</td>
+                        <td class="text-xs" id="perc-w_yoy-${id}">-</td>
+                        <td id="w_wow-${id}-p" class="text-zinc-500">-</td>
+                        <td id="w_wow-${id}-c" class="font-bold text-white bg-purple-500/10">-</td>
+                        <td id="w_wow-${id}-v" class="text-xs">-</td>
+                        <td class="text-zinc-500">${(prod.prev_m_yoy || 0).toLocaleString()}</td>
+                        <td class="font-bold text-white bg-cyan-500/10" id="curr-m_yoy-${id}">-</td>
+                        <td class="text-xs" id="perc-m_yoy-${id}">-</td>
+                        <td class="text-zinc-500">${(prod.prev_y_yoy || 0).toLocaleString()}</td>
+                        <td class="font-bold text-white bg-amber-500/10" id="curr-y_yoy-${id}">-</td>
+                        <td class="text-xs" id="perc-y_yoy-${id}">-</td>
+                    </tr>
+                `;
+            }
+            document.getElementById('table-footer').innerHTML = `
+                <tr>
+                    <td class="sticky-col text-indigo-400 uppercase text-[0.7rem] pt-5">Resumen Global</td>
+                    <td colspan="3" id="total-w_yoy" class="bg-indigo-500/5 pt-5">...</td>
+                    <td colspan="3" id="total-w_wow" class="bg-purple-500/5 pt-5">...</td>
+                    <td colspan="3" id="total-m_yoy" class="bg-cyan-500/5 pt-5">...</td>
+                    <td colspan="3" id="total-y_yoy" class="bg-amber-500/5 pt-5">...</td>
+                </tr>
+            `;
+        }
+
+        async function fetchAndRender(rep, force = false) {
+            const res = await fetch(api + '?report=' + rep + (force ? '&refresh=true' : ''));
+            const json = await res.json();
+            if(json.status === 'success') {
+                let sC=0, sP=0;
+                for(const path in json.data) {
+                    const d = json.data[path];
+                    const id = path.replace(/[^a-z0-9]/gi, '_');
+                    sC += d.curr; sP += d.prev;
+                    if(rep === 'w_wow') {
+                        document.getElementById(`w_wow-${id}-p`).innerText = d.prev.toLocaleString();
+                        document.getElementById(`w_wow-${id}-c`).innerText = d.curr.toLocaleString();
+                        const pe = document.getElementById(`w_wow-${id}-v`);
+                        pe.innerText = d.perc; pe.className = d.raw_perc >= 0 ? 'tt-up' : 'tt-down';
                     } else {
-                        const cTd=document.getElementById(`curr-${rep}-${id}`), pTd=document.getElementById(`perc-${rep}-${id}`);
-                        if(cTd) cTd.innerText=d.curr.toLocaleString(); if(pTd) { pTd.innerText=d.perc; pTd.className=`cell-val ${d.raw_perc>=0?'perc-up':'perc-down'}`; }
+                        const cellC = document.getElementById(`curr-${rep}-${id}`);
+                        const cellP = document.getElementById(`perc-${rep}-${id}`);
+                        if(cellC) cellC.innerText = d.curr.toLocaleString();
+                        if(cellP) { cellP.innerText = d.perc; cellP.className = d.raw_perc >= 0 ? 'tt-up' : 'tt-down'; }
                     }
-                    tC+=d.curr; tP+=d.prev;
                 }
-                const tp=(tP>0)?(Math.round((tC-tP)/tP*10000)/100):0;
-                const sign=(tp>0?'+':'');
-                document.getElementById(`total-${rep}`).outerHTML=`<td class='cell-val text-zinc-500'>${tP.toLocaleString()}</td><td class='cell-val font-bold text-white bg-zinc-800/20'>${tC.toLocaleString()}</td><td class='cell-val ${tp>=0?'perc-up':'perc-down'}'>${sign}${tp}%</td>`;
+                const tp = (sP > 0) ? Math.round((sC - sP) / sP * 10000) / 100 : 0;
+                const sign = tp > 0 ? '+' : '';
+                document.getElementById(`total-${rep}`).outerHTML = `
+                    <td class="text-zinc-500 font-light text-[0.65rem] pt-5">${sP.toLocaleString()}</td>
+                    <td class="text-white pt-5">${sC.toLocaleString()}</td>
+                    <td class="pt-5"><span class="${tp>=0?'tt-up':'tt-down'} text-[0.7rem]">${sign}${tp}%</span></td>
+                `;
             }
-            if(rep==='y_yoy' && document.getElementById('btn-icon')) document.getElementById('btn-icon').classList.remove('animate-spin');
         }
 
-        async function fetchTrend(ref) {
-            const res = await (await fetch(`api_ga_stats.php?report=monthly_trend${ref?'&refresh=true':''}`)).json();
-            if(res.status==='success') {
-                let html='';
-                res.data.forEach(m => {
-                    html+=`<tr><td class='tt-td-mes tt-mes'>${m.month_name}</td>
-                        <td class='tt-prev'>${m.prev.toLocaleString()}</td><td class='tt-curr'>${m.curr.toLocaleString()}</td><td class='${vCls(m.raw_perc)}'>${m.perc}</td>
-                        <td class='tt-prev'>${(m.prev_web||0).toLocaleString()}</td><td class='tt-curr'>${(m.curr_web||0).toLocaleString()}</td><td class='${vCls(m.raw_perc_web)}'>${m.perc_web}</td>
-                        <td class='tt-prev'>${(m.prev_mob||0).toLocaleString()}</td><td class='tt-curr'>${(m.curr_mob||0).toLocaleString()}</td><td class='${vCls(m.raw_perc_mob)}'>${m.perc_mob}</td>
-                        <td class='tt-prev'>${Math.round(m.prev_ret||0)}s</td><td class='tt-curr'>${Math.round(m.curr_ret||0)}s</td><td class='${vCls(m.raw_perc_ret)}'>${m.perc_ret}</td></tr>`;
+        async function renderTrend(force = false) {
+            const res = await fetch(api + '?report=monthly_trend' + (force ? '&refresh=true' : ''));
+            const json = await res.json();
+            if(json.status === 'success') {
+                const body = document.getElementById('trend-body');
+                body.innerHTML = '';
+                json.data.forEach(d => {
+                    body.innerHTML += `
+                        <tr class="group">
+                            <td class="sticky-col font-medium text-white/70">${d.month_name}</td>
+                            <td class="text-zinc-500">${d.prev.toLocaleString()}</td><td class="font-semibold">${d.curr.toLocaleString()}</td>
+                            <td class="pt-2"><span class="${d.raw_perc>=0?'tt-up':'tt-down'} text-xs font-bold">${d.perc}</span></td>
+                            <td class="text-zinc-500">${d.prev_web.toLocaleString()}</td><td class="font-semibold text-indigo-100">${d.curr_web.toLocaleString()}</td>
+                            <td class="pt-2"><span class="${d.raw_perc_web>=0?'tt-up':'tt-down'} text-xs">${d.perc_web}</span></td>
+                            <td class="text-zinc-500">${d.prev_mob.toLocaleString()}</td><td class="font-semibold text-purple-100">${d.curr_mob.toLocaleString()}</td>
+                            <td class="pt-2"><span class="${d.raw_perc_mob>=0?'tt-up':'tt-down'} text-xs">${d.perc_mob}</span></td>
+                            <td class="text-zinc-500">${d.prev_ret}s</td><td class="font-semibold text-amber-100">${d.curr_ret}s</td>
+                            <td class="pt-2"><span class="${d.raw_perc_ret>=0?'tt-up':'tt-down'} text-xs">${d.perc_ret}</span></td>
+                        </tr>
+                    `;
                 });
-                document.getElementById('trend-body').innerHTML=html; document.getElementById('trend-container').style.display='block'; lucide.createIcons();
             }
         }
-        loadAnalytics();
+        init();
     </script>
 </body>
 </html>
