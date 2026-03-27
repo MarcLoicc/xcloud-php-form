@@ -429,6 +429,16 @@ require_once 'db.php';
                 <div id="manage-list" class="overflow-y-auto flex-1 px-8 py-4 space-y-2">
                     <p class="text-zinc-500 text-[13px]">Cargando...</p>
                 </div>
+                <div class="px-8 py-4 border-t border-zinc-800 flex items-center justify-between gap-4">
+                    <p class="text-[11px] text-zinc-600 leading-relaxed">
+                        <span class="text-zinc-400 font-medium">Forzar Cron</span>: úsalo solo si acabas de añadir un producto nuevo y quieres importar su histórico 2025 ahora, sin esperar a las 5:00 AM. Se abre en nueva pestaña.
+                    </p>
+                    <a href="cron_ga4_sync.php" target="_blank"
+                        class="shrink-0 flex items-center gap-2 px-4 py-2 bg-zinc-700 border border-zinc-600 rounded-lg text-[13px] font-semibold text-zinc-200 hover:bg-zinc-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 12a10 10 0 0 1 17.8-6.3L21.5 8"/><path d="M2.5 22v-6h6"/><path d="M21.5 12a10 10 0 0 1-17.8 6.3L2.5 16"/></svg>
+                        Forzar Cron
+                    </a>
+                </div>
             </div>
         </div>
     </div>
