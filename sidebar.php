@@ -50,8 +50,8 @@ $navItems = [
 
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-full overflow-hidden border border-zinc-700 bg-zinc-800" aria-hidden="true">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="" class="w-full h-full object-cover">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center border border-zinc-700 bg-zinc-800 text-zinc-400" aria-hidden="true">
+          <i data-lucide="user" class="w-4 h-4"></i>
         </div>
         <div class="flex flex-col">
           <span class="text-[14px] font-semibold text-zinc-200 leading-tight">Administrador</span>
