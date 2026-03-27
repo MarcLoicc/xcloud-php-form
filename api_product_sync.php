@@ -3,6 +3,11 @@ header('Content-Type: application/json');
 require_once 'auth.php';
 require_once 'db.php';
 
+// Asegurar colación correcta
+$conn->query("ALTER TABLE ga4_products CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+$conn->query("ALTER TABLE ga4_history_2025 CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+$conn->query("ALTER TABLE ga4_history_2026 CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+
 $input = json_decode(file_get_contents('php://input'), true);
 $page_path = trim($input['page_path'] ?? '');
 
@@ -30,6 +35,7 @@ use Google\Analytics\Data\V1beta\Metric;
 use Google\Analytics\Data\V1beta\FilterExpression;
 use Google\Analytics\Data\V1beta\Filter;
 use Google\Analytics\Data\V1beta\FilterExpressionList;
+use Google\Analytics\Data\V1beta\Filter\StringFilter\MatchType;
 
 try {
     $client = new BetaAnalyticsDataClient(['credentials' => $credentials]);
@@ -40,9 +46,12 @@ try {
         new FilterExpression(['not_expression' => new FilterExpression(['filter' => new Filter(['field_name' => 'city', 'string_filter' => new Filter\StringFilter(['value' => 'Guadalajara'])])])])
     ];
 
-    // Filtro URL exacta
+    // Filtro URL flexible (BEGINS_WITH para capturar variaciones con/sin slash final o params)
     $f_url = new FilterExpression(['and_group' => new FilterExpressionList(['expressions' => array_merge([
-        new FilterExpression(['filter' => new Filter(['field_name' => 'pagePath', 'string_filter' => new Filter\StringFilter(['value' => $page_path])])])
+        new FilterExpression(['filter' => new Filter(['field_name' => 'pagePath', 'string_filter' => new Filter\StringFilter([
+            'value' => rtrim($page_path, '/'), 
+            'match_type' => MatchType::BEGINS_WITH
+        ])])])
     ], $f_base)])]);
 
     $monthNames = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
@@ -54,9 +63,8 @@ try {
             $dmns = $row->getDimensionValues();
             $mtrcs = $row->getMetricValues();
             
-            // Para 'year', no hay dimensión de tiempo, el primer dim es device
             if ($p_type === 'year') {
-                $p_nm = ($p_type === 'year') ? 0 : 0; // Se sobreescribirá fuera
+                $p_nm = 0; 
                 $dev = $dmns[0]->getValue();
             } else {
                 $p_nm = (int)$dmns[0]->getValue();
@@ -91,12 +99,13 @@ try {
     $metrics = [new Metric(['name'=>'screenPageViews']), new Metric(['name'=>'averageSessionDuration'])];
     $inserted_2026 = 0;
     $inserted_2025 = 0;
+    $debug = [];
 
     // ── FUNCION SYNC ─────────────────────────────────────────────────────────
-    $syncYear = function($yr, $client, $propId, $f_url, $metrics, $page_path, $conn) use ($processRows, &$inserted_2026, &$inserted_2025) {
+    $syncYear = function($yr, $client, $propId, $f_url, $metrics, $page_path, $conn) use ($processRows, &$inserted_2026, &$inserted_2025, &$debug) {
         $tbl = "ga4_history_$yr";
         $dr = ($yr == 2025) ? new DateRange(['start_date' => '2025-01-01', 'end_date' => '2025-12-31'])
-                            : new DateRange(['start_date' => '2026-01-01', 'end_date' => 'yesterday']);
+                            : new DateRange(['start_date' => '2026-01-01', 'end_date' => 'today']); // Usar today para 2026
         
         $stmt = $conn->prepare("INSERT INTO $tbl (page_path, period_type, period_num, period_label, sessions, web_views, mobile_views, avg_retention)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE sessions=?, web_views=?, mobile_views=?, avg_retention=?, period_label=?");
@@ -113,6 +122,7 @@ try {
 
         foreach ($configs as [$type, $dims]) {
             $rows = $client->runReport(['property'=>'properties/'.$propId,'dimensions'=>$dims,'metrics'=>$metrics,'dateRanges'=>[$dr],'dimensionFilter'=>$f_url])->getRows();
+            $debug[] = "Year $yr, Type $type: " . count($rows) . " rows from GA4";
             $ty = $type;
             foreach ($processRows($rows, $type) as $r) {
                 $nm = ($type === 'year') ? (int)$yr : $r['nm'];
@@ -137,7 +147,8 @@ try {
         'status' => 'success',
         'inserted_2026' => $inserted_2026,
         'inserted_2025' => $inserted_2025,
-        'has_2025_history' => $has_hist
+        'has_2025_history' => $has_hist,
+        'debug' => $debug
     ]);
 
 } catch (Throwable $e) {
