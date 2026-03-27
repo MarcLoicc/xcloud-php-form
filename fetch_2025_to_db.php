@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 
 require_once 'db.php';
 
-echo "<h2>🔧 Motor de Restauración de Datos GA4 (2025)</h2>";
+echo "<h2>🔧 Motor de Restauración de Datos GA4 Completo (2025)</h2>";
 
 // 1. Asegurar Tabla y Columnas
 $createTableQuery = "
@@ -22,11 +22,8 @@ $createTableQuery = "
     )
 ";
 $conn->query($createTableQuery);
-$conn->query("ALTER TABLE ga4_history_2025 ADD COLUMN IF NOT EXISTS web_views INT DEFAULT 0");
-$conn->query("ALTER TABLE ga4_history_2025 ADD COLUMN IF NOT EXISTS mobile_views INT DEFAULT 0");
-$conn->query("ALTER TABLE ga4_history_2025 ADD COLUMN IF NOT EXISTS avg_retention FLOAT DEFAULT 0");
 
-echo "🔄 Iniciando actualización completa (Anual, Mensual, Semanal)...<br>";
+echo "🔄 Iniciando actualización (Diario, Semanal, Mensual, Anual)...<br>";
 
 // 2. Comprobar Credenciales
 $ga4_id_query = $conn->query("SELECT setting_value FROM settings WHERE setting_key = 'ga4_property_id'");
@@ -36,7 +33,7 @@ $credentials_path = __DIR__ . '/google-credentials.json';
 $autoload_path = __DIR__ . '/vendor/autoload.php';
 
 if (!$property_id || !file_exists($autoload_path)) {
-    die("❌ Configuración incompleta. Faltan credenciales o Vendor.");
+    die("❌ Configuración incompleta.");
 }
 
 require_once $autoload_path;
@@ -87,12 +84,13 @@ try {
     $f_pc = new FilterExpression(['and_group' => new FilterExpressionList(['expressions' => array_merge([new FilterExpression(['filter' => new Filter(['field_name' => 'pagePath', 'in_list_filter' => new InListFilter(['values' => array_keys($pc)])])])], $f_base)])]);
     $f_total = new FilterExpression(['and_group' => new FilterExpressionList(['expressions' => $f_base])]);
     $dr = new DateRange(['start_date' => '2025-01-01', 'end_date' => '2025-12-31']);
+    
     $stmt = $conn->prepare("INSERT INTO ga4_history_2025 (page_path, period_type, period_num, period_label, sessions, web_views, mobile_views, avg_retention) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE sessions = ?, web_views = ?, mobile_views = ?, avg_retention = ?, period_label = ?");
     $pth=""; $ty=""; $nm=0; $lb=""; $vs=0; $wb=0; $mb=0; $av=0.0;
     $stmt->bind_param("ssisiiidiiiis", $pth, $ty, $nm, $lb, $vs, $wb, $mb, $av, $vs, $wb, $mb, $av, $lb);
 
-    $process = function($rows, $p_type, $monthNames, $stmt) use (&$pth, &$ty, &$nm, &$lb, &$vs, &$wb, &$mb, &$av) {
-        $ty = $p_type; $data = [];
+    $process = function($rows, $p_type, $stmt) use (&$pth, &$ty, &$nm, &$lb, &$vs, &$wb, &$mb, &$av) {
+        $ty = $p_type; $data = []; $monthNames = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         foreach ($rows as $row) {
             $dmns = $row->getDimensionValues(); $mtrcs = $row->getMetricValues();
             $p = (count($dmns) > 1 && !is_numeric($dmns[0]->getValue())) ? $dmns[0]->getValue() : "TOTAL";
@@ -107,23 +105,32 @@ try {
         foreach ($data as $p => $pds) {
             foreach ($pds as $n => $vals) {
                 $pth = $p; $nm = ($ty === 'year') ? 2025 : $n;
-                $lb = ($ty === 'month') ? ($monthNames[$n] ?? "Mes $n") : ($ty === 'year' ? "Total 2025" : "Sem $n");
+                if($ty==='month') $lb = $monthNames[$n] ?? "Mes $n";
+                else if($ty==='year') $lb = "Total 2025";
+                else if($ty==='week') $lb = "Semana $n";
+                else $lb = "Día $n";
                 $vs = $vals['total']; $wb = $vals['web']; $mb = $vals['mob'];
                 $av = ($vals['count'] > 0) ? ($vals['time'] / $vals['count']) : 0;
                 $stmt->execute();
             }
         }
     };
-    $mNames = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
-    echo "<h3>📊 Datos Anuales 2025...</h3>";
-    $process($client->runReport(['property'=>'properties/'.$property_id,'dimensions'=>[new Dimension(['name'=>'pagePath']),new Dimension(['name'=>'deviceCategory'])],'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],'dateRanges'=>[$dr],'dimensionFilter'=>$f_pc])->getRows(), 'year', $mNames, $stmt);
-    $process($client->runReport(['property'=>'properties/'.$property_id,'dimensions'=>[new Dimension(['name'=>'deviceCategory'])],'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],'dateRanges'=>[$dr],'dimensionFilter'=>$f_total])->getRows(), 'year', $mNames, $stmt);
-    echo "<h3>📅 Datos Mensuales 2025...</h3>";
-    $process($client->runReport(['property'=>'properties/'.$property_id,'dimensions'=>[new Dimension(['name'=>'pagePath']),new Dimension(['name'=>'month']),new Dimension(['name'=>'deviceCategory'])],'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],'dateRanges'=>[$dr],'dimensionFilter'=>$f_pc])->getRows(), 'month', $mNames, $stmt);
-    $process($client->runReport(['property'=>'properties/'.$property_id,'dimensions'=>[new Dimension(['name'=>'month']),new Dimension(['name'=>'deviceCategory'])],'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],'dateRanges'=>[$dr],'dimensionFilter'=>$f_total])->getRows(), 'month', $mNames, $stmt);
-    echo "<h3>🔄 Datos Semanales 2025...</h3>";
-    $process($client->runReport(['property'=>'properties/'.$property_id,'dimensions'=>[new Dimension(['name'=>'pagePath']),new Dimension(['name'=>'isoWeek']),new Dimension(['name'=>'deviceCategory'])],'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],'dateRanges'=>[$dr],'dimensionFilter'=>$f_pc])->getRows(), 'week', $mNames, $stmt);
-    $process($client->runReport(['property'=>'properties/'.$property_id,'dimensions'=>[new Dimension(['name'=>'isoWeek']),new Dimension(['name'=>'deviceCategory'])],'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],'dateRanges'=>[$dr],'dimensionFilter'=>$f_total])->getRows(), 'week', $mNames, $stmt);
-    echo "<h2 style='color:green'>🎉 ¡Base de datos 2025 restaurada completamente!</h2>";
+    echo "<h3>📊 Datos Anuales...</h3>";
+    $process($client->runReport(['property'=>'properties/'.$property_id,'dimensions'=>[new Dimension(['name'=>'pagePath']),new Dimension(['name'=>'deviceCategory'])],'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],'dateRanges'=>[$dr],'dimensionFilter'=>$f_pc])->getRows(), 'year', $stmt);
+    $process($client->runReport(['property'=>'properties/'.$property_id,'dimensions'=>[new Dimension(['name'=>'deviceCategory'])],'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],'dateRanges'=>[$dr],'dimensionFilter'=>$f_total])->getRows(), 'year', $stmt);
+
+    echo "<h3>📅 Datos Mensuales...</h3>";
+    $process($client->runReport(['property'=>'properties/'.$property_id,'dimensions'=>[new Dimension(['name'=>'pagePath']),new Dimension(['name'=>'month']),new Dimension(['name'=>'deviceCategory'])],'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],'dateRanges'=>[$dr],'dimensionFilter'=>$f_pc])->getRows(), 'month', $stmt);
+    $process($client->runReport(['property'=>'properties/'.$property_id,'dimensions'=>[new Dimension(['name'=>'month']),new Dimension(['name'=>'deviceCategory'])],'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],'dateRanges'=>[$dr],'dimensionFilter'=>$f_total])->getRows(), 'month', $stmt);
+
+    echo "<h3>🔄 Datos Semanales...</h3>";
+    $process($client->runReport(['property'=>'properties/'.$property_id,'dimensions'=>[new Dimension(['name'=>'pagePath']),new Dimension(['name'=>'isoWeek']),new Dimension(['name'=>'deviceCategory'])],'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],'dateRanges'=>[$dr],'dimensionFilter'=>$f_pc])->getRows(), 'week', $stmt);
+    $process($client->runReport(['property'=>'properties/'.$property_id,'dimensions'=>[new Dimension(['name'=>'isoWeek']),new Dimension(['name'=>'deviceCategory'])],'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],'dateRanges'=>[$dr],'dimensionFilter'=>$f_total])->getRows(), 'week', $stmt);
+
+    echo "<h3>☀️ Datos Diarios (Extracción Larga)...</h3>";
+    $process($client->runReport(['property'=>'properties/'.$property_id,'dimensions'=>[new Dimension(['name'=>'pagePath']),new Dimension(['name'=>'date']),new Dimension(['name'=>'deviceCategory'])],'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],'dateRanges'=>[$dr],'dimensionFilter'=>$f_pc])->getRows(), 'day', $stmt);
+    $process($client->runReport(['property'=>'properties/'.$property_id,'dimensions'=>[new Dimension(['name'=>'date']),new Dimension(['name'=>'deviceCategory'])],'metrics'=>[new Metric(['name'=>'screenPageViews']),new Metric(['name'=>'averageSessionDuration'])],'dateRanges'=>[$dr],'dimensionFilter'=>$f_total])->getRows(), 'day', $stmt);
+
+    echo "<h2 style='color:green'>🎉 ¡Base de datos 2025 completamente restaurada (Diario, Semanal, Mensual, Anual)!</h2>";
 } catch (Throwable $e) { die("❌ Error: " . $e->getMessage()); }

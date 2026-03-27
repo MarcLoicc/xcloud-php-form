@@ -257,19 +257,35 @@ try {
             
             $diff = ($prev['total'] > 0) ? round((($curr['total'] - $prev['total']) / $prev['total']) * 100, 2) : 0;
             $sign = ($diff > 0) ? '+' : '';
+
+            $diff_web = ($prev['web'] > 0) ? round((($curr['web'] - $prev['web']) / $prev['web']) * 100, 2) : 0;
+            $sign_web = ($diff_web > 0) ? '+' : '';
+            $diff_mob = ($prev['mob'] > 0) ? round((($curr['mob'] - $prev['mob']) / $prev['mob']) * 100, 2) : 0;
+            $sign_mob = ($diff_mob > 0) ? '+' : '';
+
+            $curr_ret_val = ($curr['count'] > 0) ? ($curr['time'] / $curr['count']) : 0;
+            $prev_ret_val = (float)$prev['ret'];
+            $diff_ret = ($prev_ret_val > 0) ? round((($curr_ret_val - $prev_ret_val) / $prev_ret_val) * 100, 2) : 0;
+            $sign_ret = ($diff_ret > 0) ? '+' : '';
             
             $results[] = [
                 'month_name' => $monthNames[$i-1],
                 'curr' => $curr['total'],
                 'prev' => $prev['total'],
+                'perc' => ($prev['total'] > 0) ? ($sign . $diff . '%') : ($curr['total'] > 0 ? '+∞' : '0%'),
+                'raw_perc' => $diff,
                 'curr_web' => $curr['web'],
                 'prev_web' => $prev['web'],
+                'perc_web' => ($prev['web'] > 0) ? ($sign_web . $diff_web . '%') : ($curr['web'] > 0 ? '+∞' : '0%'),
+                'raw_perc_web' => $diff_web,
                 'curr_mob' => $curr['mob'],
                 'prev_mob' => $prev['mob'],
-                'curr_ret' => ($curr['count'] > 0) ? round($curr['time'] / $curr['count'], 2) : 0,
-                'prev_ret' => round($prev['ret'], 2),
-                'perc' => ($prev['total'] > 0) ? ($sign . $diff . '%') : ($curr['total'] > 0 ? '+∞' : '0%'),
-                'raw_perc' => $diff
+                'perc_mob' => ($prev['mob'] > 0) ? ($sign_mob . $diff_mob . '%') : ($curr['mob'] > 0 ? '+∞' : '0%'),
+                'raw_perc_mob' => $diff_mob,
+                'curr_ret' => round($curr_ret_val, 2),
+                'prev_ret' => round($prev_ret_val, 2),
+                'perc_ret' => ($prev_ret_val > 0) ? ($sign_ret . $diff_ret . '%') : ($curr_ret_val > 0 ? '+∞' : '0%'),
+                'raw_perc_ret' => $diff_ret
             ];
         }
         
