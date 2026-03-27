@@ -34,6 +34,10 @@ require_once 'db.php';
                 <p class="text-[14px] text-zinc-400 mt-1 font-medium">Rendimiento de tráfico web por producto. Comparativa histórica 2025 vs 2026.</p>
             </div>
             <div class="flex items-center gap-3">
+                <button onclick="openManageModal()" class="flex items-center gap-2 px-5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-md text-[14px] font-semibold text-zinc-200 hover:bg-zinc-700 transition-colors shadow-sm">
+                    <i data-lucide="settings-2" class="w-4 h-4" aria-hidden="true"></i>
+                    Gestionar
+                </button>
                 <button onclick="openAddModal()" class="flex items-center gap-2 px-5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-md text-[14px] font-semibold text-zinc-200 hover:bg-zinc-700 transition-colors shadow-sm">
                     <i data-lucide="plus" class="w-4 h-4" aria-hidden="true"></i>
                     Añadir Producto
@@ -406,6 +410,96 @@ require_once 'db.php';
                 btn.disabled = false;
                 btn.textContent = 'Añadir al Panel';
             }
+        }
+    </script>
+    <!-- Modal Gestionar Productos -->
+    <div id="manage-modal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeManageModal()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[85vh] flex flex-col">
+            <div class="bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+                <div class="flex items-center justify-between px-8 py-6 border-b border-zinc-800">
+                    <div>
+                        <h2 class="text-xl font-bold text-zinc-100">Gestionar Productos</h2>
+                        <p class="text-[12px] text-zinc-500 mt-0.5">Los datos históricos se conservan aunque desactives o elimines un producto.</p>
+                    </div>
+                    <button onclick="closeManageModal()" class="text-zinc-500 hover:text-zinc-200 transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div id="manage-list" class="overflow-y-auto flex-1 px-8 py-4 space-y-2">
+                    <p class="text-zinc-500 text-[13px]">Cargando...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Gestionar Modal ──
+        async function openManageModal() {
+            document.getElementById('manage-modal').classList.remove('hidden');
+            lucide.createIcons();
+            await loadProductList();
+        }
+        function closeManageModal() {
+            document.getElementById('manage-modal').classList.add('hidden');
+        }
+        async function loadProductList() {
+            const list = document.getElementById('manage-list');
+            list.innerHTML = '<p class="text-zinc-500 text-[13px]">Cargando...</p>';
+            const res = await fetch('api_products.php');
+            const json = await res.json();
+            if (json.status !== 'success' || !json.data.length) {
+                list.innerHTML = '<p class="text-zinc-500 text-[13px]">No hay productos.</p>'; return;
+            }
+            list.innerHTML = json.data.map(p => `
+                <div id="prod-row-${p.id}" class="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border ${
+                    p.active == 1 ? 'bg-zinc-800/50 border-zinc-700' : 'bg-zinc-900 border-zinc-800 opacity-60'
+                }">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[13px] font-semibold text-zinc-200 truncate">${p.name}</p>
+                        <p class="text-[11px] text-zinc-500 truncate">${p.page_path}</p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                            p.active == 1 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-700 text-zinc-500'
+                        }">${p.active == 1 ? 'Activo' : 'Inactivo'}</span>
+                        <button onclick="toggleProduct(${p.id}, ${p.active == 1 ? 0 : 1})"
+                            title="${p.active == 1 ? 'Desactivar' : 'Activar'}"
+                            class="p-1.5 rounded-md text-zinc-400 hover:text-yellow-400 hover:bg-yellow-400/10 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${
+                                p.active == 1
+                                ? '<path d="M18.36 6.64A9 9 0 0 1 20.77 15"/><path d="M6.16 6.16a9 9 0 1 0 12.68 12.68"/><path d="M12 2v4"/><path d="m2 2 20 20"/>'
+                                : '<path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/>'
+                            }</svg>
+                        </button>
+                        <button onclick="deleteProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}')"
+                            title="Eliminar de ga4_products (datos históricos se conservan)"
+                            class="p-1.5 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-400/10 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        async function toggleProduct(id, newActive) {
+            await fetch('api_products.php', {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id, active: newActive})
+            });
+            await loadProductList();
+            // Recarga el panel sin sincronizar con GA4
+            await init();
+        }
+        async function deleteProduct(id, name) {
+            if (!confirm(`¿Eliminar "${name}" del panel?\n\nLos datos históricos en la base de datos se conservarán.`)) return;
+            await fetch('api_products.php', {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id})
+            });
+            await loadProductList();
+            await syncAll();
         }
     </script>
 </body>
