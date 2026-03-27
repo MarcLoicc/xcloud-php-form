@@ -82,7 +82,7 @@ try {
     ];
 
     $f_pc = new FilterExpression(['and_group' => new FilterExpressionList(['expressions' => array_merge([new FilterExpression(['filter' => new Filter(['field_name' => 'pagePath', 'in_list_filter' => new InListFilter(['values' => array_keys($pc)])])])], $f_base)])]);
-    $f_total = new FilterExpression(['and_group' => new FilterExpressionList(['expressions' => $f_base])]);
+    $f_total = $f_pc; // Ahora el TOTAL es solo la suma de los productos trackeados
     $dr = new DateRange(['start_date' => '2025-01-01', 'end_date' => '2025-12-31']);
     
     $stmt = $conn->prepare("INSERT INTO ga4_history_2025 (page_path, period_type, period_num, period_label, sessions, web_views, mobile_views, avg_retention) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE sessions = ?, web_views = ?, mobile_views = ?, avg_retention = ?, period_label = ?");

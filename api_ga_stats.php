@@ -210,7 +210,7 @@ try {
                 new Metric(['name' => 'averageSessionDuration'])
             ],
             'dateRanges' => [new DateRange(['start_date' => '2026-01-01', 'end_date' => 'today'])],
-            'dimensionFilter' => $filter_all
+            'dimensionFilter' => $filter_pc
         ]);
         
         $months_2026 = [];
