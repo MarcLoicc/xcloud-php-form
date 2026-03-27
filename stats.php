@@ -183,9 +183,9 @@
                     }
                     tC+=d.curr; tP+=d.prev;
                 }
-                const tp=tP>0?Math.round((tC-tP)/tP*10000)/100:0;
-                if(rep==='w_wow') { document.getElementById('total-w_wow').outerHTML=`<td class='cell-val text-zinc-400'>${tP.toLocaleString()}</td><td class='cell-val text-white font-bold'>${tC.toLocaleString()}</td><td class='${tp>=0?'perc-up':'perc-down'}'>${(tp>0?'+':'')+tp}%</td>`; }
-                else { const fC=document.getElementById(`total-${rep}`); if(fC) fC.innerText=tC.toLocaleString() + ' ('+(tp>0?'+':'')+tp+'%)'; }
+                const tp=(tP>0)?(Math.round((tC-tP)/tP*10000)/100):0;
+                const sign=(tp>0?'+':'');
+                document.getElementById(`total-${rep}`).outerHTML=`<td class='cell-val text-zinc-500'>${tP.toLocaleString()}</td><td class='cell-val font-bold text-white bg-zinc-800/20'>${tC.toLocaleString()}</td><td class='cell-val ${tp>=0?'perc-up':'perc-down'}'>${sign}${tp}%</td>`;
             }
             if(rep==='y_yoy' && document.getElementById('btn-icon')) document.getElementById('btn-icon').classList.remove('animate-spin');
         }
