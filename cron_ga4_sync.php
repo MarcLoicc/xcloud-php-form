@@ -125,12 +125,16 @@ try {
     echo "<h2 style='color:green'>🎉 ¡Sincronización Automática 2026 completada!</h2>";
 
     // ─── AUTO-IMPORTACIÓN HISTÓRICO 2025 PARA PRODUCTOS NUEVOS ───────────────
+    // Arreglar colación de ga4_products si difiere de ga4_history_2025
+    $conn->query("ALTER TABLE ga4_products CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+
     // Detecta productos en ga4_products que NO tienen ninguna fila en ga4_history_2025
     $new_products_res = $conn->query("
         SELECT p.page_path, p.name FROM ga4_products p
         WHERE p.active = 1
           AND NOT EXISTS (
-              SELECT 1 FROM ga4_history_2025 h WHERE h.page_path = p.page_path
+              SELECT 1 FROM ga4_history_2025 h
+              WHERE h.page_path = p.page_path COLLATE utf8mb4_unicode_ci
           )
     ");
 
