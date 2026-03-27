@@ -163,16 +163,16 @@ require_once 'db.php';
                 const id = path.replace(/[^a-z0-9]/gi, '_');
                 body.innerHTML += `<tr class="hover:bg-zinc-800/30 transition-colors group">
                     ${tdSticky(prod.name)}
-                    ${tdC((prod.prev_w_yoy||0).toLocaleString(),'text-zinc-500 text-[13px] border-l border-zinc-800')}
+                    ${tdC(((prod.fixed||{}).w_yoy||0).toLocaleString(),'text-zinc-500 text-[13px] border-l border-zinc-800')}
                     <td class="px-4 py-3.5 text-center text-[13px] font-bold text-zinc-100" id="curr-w_yoy-${id}">-</td>
                     <td class="px-4 py-3.5 text-center" id="perc-w_yoy-${id}">-</td>
                     <td class="px-4 py-3.5 text-center text-[13px] text-zinc-500 border-l border-zinc-800" id="w_wow-${id}-p">-</td>
                     <td class="px-4 py-3.5 text-center text-[13px] font-bold text-zinc-100" id="w_wow-${id}-c">-</td>
                     <td class="px-4 py-3.5 text-center" id="w_wow-${id}-v">-</td>
-                    ${tdC((prod.prev_m_yoy||0).toLocaleString(),'text-zinc-500 text-[13px] border-l border-zinc-800')}
+                    ${tdC(((prod.fixed||{}).m_yoy||0).toLocaleString(),'text-zinc-500 text-[13px] border-l border-zinc-800')}
                     <td class="px-4 py-3.5 text-center text-[13px] font-bold text-zinc-100" id="curr-m_yoy-${id}">-</td>
                     <td class="px-4 py-3.5 text-center" id="perc-m_yoy-${id}">-</td>
-                    ${tdC((prod.prev_y_yoy||0).toLocaleString(),'text-zinc-500 text-[13px] border-l border-zinc-800')}
+                    ${tdC(((prod.fixed||{}).y_yoy||0).toLocaleString(),'text-zinc-500 text-[13px] border-l border-zinc-800')}
                     <td class="px-4 py-3.5 text-center text-[13px] font-bold text-zinc-100" id="curr-y_yoy-${id}">-</td>
                     <td class="px-4 py-3.5 text-center" id="perc-y_yoy-${id}">-</td>
                 </tr>`;
