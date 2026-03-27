@@ -129,20 +129,29 @@ require_once 'db.php';
         function tdPerc(p, raw) { return `<td class="px-4 py-3.5 text-center"><span class="${raw>=0?'tt-up':'tt-down'}">${p}</span></td>`; }
 
         async function syncAll() {
-            const icon = document.getElementById('btn-icon');
-            icon.setAttribute('data-lucide', 'loader-2');
-            icon.classList.add('animate-spin');
+            const btn = document.getElementById('btn-icon').closest('button');
+            btn.disabled = true;
+            // Swap icon to spinner manually (avoid Lucide re-render losing spin state)
+            const iconEl = document.getElementById('btn-icon');
+            iconEl.setAttribute('data-lucide', 'loader-2');
             lucide.createIcons();
-            await renderTrend(true);
-            const res = await fetch(api + '?report=init&refresh=true');
-            const json = await res.json();
-            if(json.status === 'success') {
-                renderTopTable(json.data);
-                await Promise.all(['w_yoy','w_wow','m_yoy','y_yoy'].map(r => fetchAndRender(r, true)));
+            // After createIcons, grab the fresh SVG and add spin
+            document.getElementById('btn-icon').classList.add('animate-spin');
+            try {
+                await renderTrend(true);
+                const res = await fetch(api + '?report=init&refresh=true');
+                const json = await res.json();
+                if(json.status === 'success') {
+                    renderTopTable(json.data);
+                    await Promise.all(['w_yoy','w_wow','m_yoy','y_yoy'].map(r => fetchAndRender(r, true)));
+                }
+            } finally {
+                // Restore icon: remove spin first, then swap back
+                document.getElementById('btn-icon').classList.remove('animate-spin');
+                document.getElementById('btn-icon').setAttribute('data-lucide', 'refresh-cw');
+                lucide.createIcons();
+                btn.disabled = false;
             }
-            icon.setAttribute('data-lucide', 'refresh-cw');
-            icon.classList.remove('animate-spin');
-            lucide.createIcons();
         }
 
         async function init() {
