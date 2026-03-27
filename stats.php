@@ -48,9 +48,9 @@ require_once 'db.php';
                         <thead>
                             <tr class="bg-zinc-950/60 border-b border-zinc-800">
                                 <th class="tbl-sticky px-5 py-4 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Producto / Servicio</th>
-                                <th colspan="3" class="px-5 py-4 text-[11px] font-semibold text-indigo-400 uppercase tracking-wider text-center border-l border-zinc-800">📅 Semana YoY</th>
-                                <th colspan="3" class="px-5 py-4 text-[11px] font-semibold text-purple-400 uppercase tracking-wider text-center border-l border-zinc-800">📊 Semana WoW</th>
-                                <th colspan="3" class="px-5 py-4 text-[11px] font-semibold text-cyan-400 uppercase tracking-wider text-center border-l border-zinc-800">🌙 Mes MTD</th>
+                                <th colspan="3" id="hdr-wyoy" class="px-5 py-4 text-[11px] font-semibold text-indigo-400 uppercase tracking-wider text-center border-l border-zinc-800">📅 Semana YoY</th>
+                                <th colspan="3" id="hdr-wwow" class="px-5 py-4 text-[11px] font-semibold text-purple-400 uppercase tracking-wider text-center border-l border-zinc-800">📊 Semana WoW</th>
+                                <th colspan="3" id="hdr-mmtd" class="px-5 py-4 text-[11px] font-semibold text-cyan-400 uppercase tracking-wider text-center border-l border-zinc-800">🌙 Mes MTD</th>
                                 <th colspan="3" class="px-5 py-4 text-[11px] font-semibold text-amber-400 uppercase tracking-wider text-center border-l border-zinc-800">🏆 Año YTD</th>
                             </tr>
                             <tr class="bg-zinc-900/80 border-b border-zinc-800 text-[10px] text-zinc-500 uppercase tracking-wider">
@@ -242,6 +242,21 @@ require_once 'db.php';
                 </tr>`;
             });
         }
+
+        // Set dynamic week/month labels
+        (function() {
+            const now = new Date();
+            const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            const month = months[now.getMonth()];
+            // ISO week number
+            const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+            const week = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+            document.getElementById('hdr-wyoy').innerHTML = `📅 Semana ${week} YoY`;
+            document.getElementById('hdr-wwow').innerHTML = `📊 Semana ${week} WoW`;
+            document.getElementById('hdr-mmtd').innerHTML = `🌙 ${month} MTD`;
+        })();
 
         init();
     </script>
