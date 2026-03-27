@@ -7,32 +7,39 @@ require_once 'db.php';
 // Si se ejecuta por Cron, no necesita salida HTML pero la dejamos por si se abre manualmente
 echo "<h2>🔄 GA4 Auto-Sync Dashboard 2026</h2>";
 
-// 1. Configuración de Filtros (Igual que el dashboard)
-$pc = [
-    '/' => 'Home / General',
-    '/contacto/' => 'Contacto',
-    '/diseno-web-mostoles/' => 'Móstoles',
-    '/diseno-web-para-clinicas-en-madrid/diseno-web-para-clinicas-capilares/' => 'Clínicas Capilares',
-    '/diseno-web-para-clinicas-en-madrid/diseno-web-para-dentistas-y-clinicas-dentales-en-madrid/' => 'Dentistas Madrid',
-    '/diseno-web-para-abogados/' => 'Abogados',
-    '/diseno-web-para-escuelas-y-centros-educativos-en-madrid/' => 'Escuelas',
-    '/diseno-web-para-concesionarios-en-madrid/' => 'Concesionarios',
-    '/diseno-web-para-gimnasios-y-estudios-de-yoga-en-madrid/' => 'Gimnasios',
-    '/diseno-de-paginas-web-para-restaurantes/' => 'Restaurantes',
-    '/diseno-web-para-farmacias-en-madrid/' => 'Farmacias',
-    '/diseno-web-en-alcobendas/' => 'Alcobendas',
-    '/diseno-web-en-villaviciosa-de-odon/' => 'Villaviciosa',
-    '/diseno-web-en-tres-cantos/' => 'Tres Cantos',
-    '/diseno-web-en-collado-de-villalba/' => 'Collado Villalba',
-    '/diseno-web-aranjuez/' => 'Aranjuez',
-    '/diseno-web-en-arganda-del-rey/' => 'Arganda',
-    '/diseno-web-en-leganes/' => 'Leganés',
-    '/diseno-web-en-alcorcon/' => 'Alcorcón',
-    '/diseno-web-en-alcala-de-henares/' => 'Alcalá Henares',
-    '/diseno-web-para-clinicas-en-madrid/' => 'Clínicas Madrid',
-    '/diseno-tienda-online-madrid/' => 'Tienda Online',
-    '/calculadora-precio-web-online/' => 'Calculadora Precio'
-];
+// Cargar productos desde BD (con fallback si la tabla aún no existe)
+$pc = [];
+$pc_res = $conn->query("SELECT page_path, name FROM ga4_products WHERE active = 1 ORDER BY name ASC");
+if ($pc_res && $pc_res->num_rows > 0) {
+    while ($r = $pc_res->fetch_assoc()) $pc[$r['page_path']] = $r['name'];
+}
+if (empty($pc)) {
+    $pc = [
+        '/' => 'Home / General',
+        '/contacto/' => 'Contacto',
+        '/diseno-web-mostoles/' => 'Móstoles',
+        '/diseno-web-para-clinicas-en-madrid/diseno-web-para-clinicas-capilares/' => 'Clínicas Capilares',
+        '/diseno-web-para-clinicas-en-madrid/diseno-web-para-dentistas-y-clinicas-dentales-en-madrid/' => 'Dentistas Madrid',
+        '/diseno-web-para-abogados/' => 'Abogados',
+        '/diseno-web-para-escuelas-y-centros-educativos-en-madrid/' => 'Escuelas',
+        '/diseno-web-para-concesionarios-en-madrid/' => 'Concesionarios',
+        '/diseno-web-para-gimnasios-y-estudios-de-yoga-en-madrid/' => 'Gimnasios',
+        '/diseno-de-paginas-web-para-restaurantes/' => 'Restaurantes',
+        '/diseno-web-para-farmacias-en-madrid/' => 'Farmacias',
+        '/diseno-web-en-alcobendas/' => 'Alcobendas',
+        '/diseno-web-en-villaviciosa-de-odon/' => 'Villaviciosa',
+        '/diseno-web-en-tres-cantos/' => 'Tres Cantos',
+        '/diseno-web-en-collado-de-villalba/' => 'Collado Villalba',
+        '/diseno-web-aranjuez/' => 'Aranjuez',
+        '/diseno-web-en-arganda-del-rey/' => 'Arganda',
+        '/diseno-web-en-leganes/' => 'Leganés',
+        '/diseno-web-en-alcorcon/' => 'Alcorcón',
+        '/diseno-web-en-alcala-de-henares/' => 'Alcalá Henares',
+        '/diseno-web-para-clinicas-en-madrid/' => 'Clínicas Madrid',
+        '/diseno-tienda-online-madrid/' => 'Tienda Online',
+        '/calculadora-precio-web-online/' => 'Calculadora Precio',
+    ];
+}
 
 $ga4_id_query = $conn->query("SELECT setting_value FROM settings WHERE setting_key = 'ga4_property_id'");
 $property_id = ($ga4_id_query && $ga4_id_query->num_rows > 0) ? $ga4_id_query->fetch_assoc()['setting_value'] : null;
