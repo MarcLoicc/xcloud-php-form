@@ -171,13 +171,22 @@ try {
     $sql_prev = ''; 
     
     if ($report_type === 'w_yoy') {
-        $range_curr = new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today']);
+        // Monday of the current ISO week
+        $isoWeekMonday = new DateTime();
+        $isoWeekMonday->setISODate((int)date('o'), (int)date('W'), 1);
+        $weekStart = $isoWeekMonday->format('Y-m-d');
+        $range_curr = new DateRange(['start_date' => $weekStart, 'end_date' => $today]);
         $use_db_for_prev = true; 
         $db_num = (int)date('W'); 
         $sql_prev = "SELECT page_path, sessions as total FROM ga4_history_2025 WHERE period_type = 'week' AND period_num = $db_num";
     } elseif ($report_type === 'w_wow') {
-        $range_curr = new DateRange(['start_date' => '7daysAgo', 'end_date' => 'today']);
-        $range_prev = new DateRange(['start_date' => '14daysAgo', 'end_date' => '7daysAgo']); 
+        $isoWeekMonday = new DateTime();
+        $isoWeekMonday->setISODate((int)date('o'), (int)date('W'), 1);
+        $weekStart = $isoWeekMonday->format('Y-m-d');
+        $prevWeekStart = (clone $isoWeekMonday)->modify('-7 days')->format('Y-m-d');
+        $prevWeekEnd   = (clone $isoWeekMonday)->modify('-1 day')->format('Y-m-d');
+        $range_curr = new DateRange(['start_date' => $weekStart, 'end_date' => $today]);
+        $range_prev = new DateRange(['start_date' => $prevWeekStart, 'end_date' => $prevWeekEnd]); 
     } elseif ($report_type === 'm_yoy') {
         $currDayOfMonth = date('d');
         $currMonth = date('m');

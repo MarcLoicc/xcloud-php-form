@@ -289,8 +289,8 @@ require_once 'db.php';
             // Update sub-header cells with date ranges
             const sy25 = document.getElementById('sub-wyoy-p'); if(sy25) sy25.textContent = `Sem ${currWeek} '25`;
             const sy26 = document.getElementById('sub-wyoy-c'); if(sy26) sy26.textContent = `Sem ${currWeek} '26 (${currRange})`;
-            const sw_p = document.getElementById('sub-wwow-p'); if(sw_p) sw_p.textContent = prevRange;
-            const sw_c = document.getElementById('sub-wwow-c'); if(sw_c) sw_c.textContent = currRange;
+            const sw_p = document.getElementById('sub-wwow-p'); if(sw_p) sw_p.textContent = `${prevRange} '26`;
+            const sw_c = document.getElementById('sub-wwow-c'); if(sw_c) sw_c.textContent = `${currRange} '26`;
             const sm25 = document.getElementById('sub-mmtd-p'); if(sm25) sm25.textContent = `1-${day} ${mon} '25`;
             const sm26 = document.getElementById('sub-mmtd-c'); if(sm26) sm26.textContent = `1-${day} ${mon} '26`;
         })();
