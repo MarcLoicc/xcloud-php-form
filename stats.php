@@ -107,14 +107,28 @@
                 <h2 class="text-xl font-bold text-white uppercase tracking-tight italic">Tendencia Mensual (Full Year)</h2>
             </div>
             
-            <div class="bg-zinc-950 rounded-2xl border-2 border-zinc-800/80 shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden max-w-4xl">
+            <div class="bg-zinc-950 rounded-2xl border-2 border-zinc-800/80 shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden max-w-full">
                 <table class="excel-table w-full whitespace-nowrap m-0">
                     <thead>
                         <tr>
-                            <th class="header-sub text-left pl-6">Mes</th>
-                            <th class="header-sub w-32 border-l border-white/10">Total 2025</th>
-                            <th class="header-sub w-32">Total 2026</th>
-                            <th class="header-sub w-24 bg-indigo-600">Var. %</th>
+                            <th class="header-sub text-left pl-6" rowspan="2">Mes</th>
+                            <th colspan="3" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📈 TOTAL VISITAS</th>
+                            <th colspan="2" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">💻 WEB (DESKTOP)</th>
+                            <th colspan="2" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">📱 MÓVIL / TAB</th>
+                            <th colspan="2" class="header-top text-center bg-[#1e1b4b] text-indigo-200 border-x border-[#312e81]">⏳ RETENCIÓN (SEG)</th>
+                        </tr>
+                        <tr>
+                            <th class="header-sub w-24 border-l border-white/10">2025</th>
+                            <th class="header-sub w-24">2026</th>
+                            <th class="header-sub w-20 bg-indigo-600">%</th>
+                            <th class="header-sub w-24 border-l border-white/10">2025</th>
+                            <th class="header-sub w-24">2026</th>
+                            <th class="header-sub w-24 border-l border-white/10">2025</th>
+                            <th class="header-sub w-24">2026</th>
+                            <th class="header-sub w-24 border-l border-white/10">2025</th>
+                            <th class="header-sub w-24">2026</th>
+
+
                         </tr>
                     </thead>
                     <tbody class="bg-zinc-950/50" id="trend-body">
@@ -352,7 +366,16 @@
                                 <td class="cell-prod pl-6 h-12">${m.month_name}</td>
                                 <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${m.prev.toLocaleString()}</td>
                                 <td class="cell-val font-bold text-white bg-zinc-800/10">${m.curr.toLocaleString()}</td>
+
+
+
                                 <td class="${pClass} font-black text-center">${m.perc}</td>
+                                <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${m.prev_web.toLocaleString()}</td>
+                                <td class="cell-val text-zinc-300 font-bold">${m.curr_web.toLocaleString()}</td>
+                                <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${m.prev_mob.toLocaleString()}</td>
+                                <td class="cell-val text-zinc-300 font-bold">${m.curr_mob.toLocaleString()}</td>
+                                <td class="cell-val text-zinc-500 border-l border-zinc-800/40">${Math.round(m.prev_ret)}s</td>
+                                <td class="cell-val text-indigo-300 font-black">${Math.round(m.curr_ret)}s</td>
                             </tr>
                         `;
                     });

@@ -198,30 +198,56 @@ try {
                 GROUP BY page_path";
         $use_db_for_prev = true;
     } elseif ($report_type === 'monthly_trend') {
-        // Reporte de tendencia mensual: 12 meses (2025 vs 2026)
         $monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         $results = [];
         
-        // 1. Obtener 2026 de GA4 (Datos reales acumulados por mes)
+        // 1. Obtener 2026 de GA4 con métricas extendidas
         $response_2026 = $client->runReport([
             'property' => 'properties/' . $property_id,
-            'dimensions' => [new Dimension(['name' => 'month'])],
-            'metrics' => [new Metric(['name' => 'screenPageViews'])],
+            'dimensions' => [new Dimension(['name' => 'month']), new Dimension(['name' => 'deviceCategory'])],
+            'metrics' => [
+                new Metric(['name' => 'screenPageViews']),
+                new Metric(['name' => 'averageSessionDuration'])
+            ],
             'dateRanges' => [new DateRange(['start_date' => '2026-01-01', 'end_date' => 'today'])],
             'dimensionFilter' => $filter_all
         ]);
         
-        $months_2026 = array_fill(1, 12, 0);
+        $months_2026 = [];
+        for($i=1; $i<=12; $i++) $months_2026[$i] = ['total'=>0, 'web'=>0, 'mob'=>0, 'time'=>0, 'count'=>0];
+
         foreach ($response_2026->getRows() as $row) {
             $m = (int)$row->getDimensionValues()[0]->getValue();
-            $months_2026[$m] = (int)$row->getMetricValues()[0]->getValue();
+            $device = $row->getDimensionValues()[1]->getValue();
+            $v = (int)$row->getMetricValues()[0]->getValue();
+            $t = (float)$row->getMetricValues()[1]->getValue();
+
+            $months_2026[$m]['total'] += $v;
+            $months_2026[$m]['time'] += $t;
+            $months_2026[$m]['count']++;
+
+            if ($device === 'desktop') {
+                $months_2026[$m]['web'] += $v;
+            } elseif ($device === 'mobile' || $device === 'tablet') {
+                $months_2026[$m]['mob'] += $v;
+            }
         }
 
         // 2. Obtener 2025 de DB
-        $res2025 = $conn->query("SELECT period_num, sessions FROM ga4_history_2025 WHERE period_type = 'month' AND page_path = 'TOTAL' ORDER BY period_num ASC");
-        $months_2025 = array_fill(1, 12, 0);
+        $res2025 = $conn->query("SELECT period_num, sessions, web_views, mobile_views, avg_retention FROM ga4_history_2025 WHERE period_type = 'month' AND page_path = 'TOTAL' ORDER BY period_num ASC");
+        $months_2025 = [];
+        for($i=1; $i<=12; $i++) $months_2025[$i] = ['total'=>0, 'web'=>0, 'mob'=>0, 'ret'=>0];
+        
         if ($res2025) {
-            while ($r = $res2025->fetch_assoc()) $months_2025[(int)$r['period_num']] = (int)$r['sessions'];
+            while ($r = $res2025->fetch_assoc()) {
+                $m = (int)$r['period_num'];
+                $months_2025[$m] = [
+                    'total' => (int)$r['sessions'],
+                    'web' => (int)$r['web_views'],
+                    'mob' => (int)$r['mobile_views'],
+                    'ret' => (float)$r['avg_retention']
+                ];
+            }
         }
 
         // 3. Montar comparativa
@@ -229,14 +255,20 @@ try {
             $curr = $months_2026[$i];
             $prev = $months_2025[$i];
             
-            $diff = ($prev > 0) ? round((($curr - $prev) / $prev) * 100, 2) : 0;
+            $diff = ($prev['total'] > 0) ? round((($curr['total'] - $prev['total']) / $prev['total']) * 100, 2) : 0;
             $sign = ($diff > 0) ? '+' : '';
             
             $results[] = [
                 'month_name' => $monthNames[$i-1],
-                'curr' => $curr,
-                'prev' => $prev,
-                'perc' => ($prev > 0) ? ($sign . $diff . '%') : ($curr > 0 ? '+∞' : '0%'),
+                'curr' => $curr['total'],
+                'prev' => $prev['total'],
+                'curr_web' => $curr['web'],
+                'prev_web' => $prev['web'],
+                'curr_mob' => $curr['mob'],
+                'prev_mob' => $prev['mob'],
+                'curr_ret' => ($curr['count'] > 0) ? round($curr['time'] / $curr['count'], 2) : 0,
+                'prev_ret' => round($prev['ret'], 2),
+                'perc' => ($prev['total'] > 0) ? ($sign . $diff . '%') : ($curr['total'] > 0 ? '+∞' : '0%'),
                 'raw_perc' => $diff
             ];
         }
