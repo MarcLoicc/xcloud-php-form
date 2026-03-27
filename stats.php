@@ -340,13 +340,7 @@ require_once 'db.php';
                             class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-[14px] text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors">
                         <p class="text-[11px] text-zinc-600 mt-1.5">Debe empezar y terminar con / — igual que aparece en Google Analytics</p>
                     </div>
-                    <div class="flex items-center gap-3 p-4 bg-zinc-800/50 rounded-lg border border-zinc-700">
-                        <input id="f-hist" type="checkbox" class="w-4 h-4 rounded accent-indigo-500">
-                        <div>
-                            <label for="f-hist" class="text-[13px] font-medium text-zinc-200 cursor-pointer">¿Tiene histórico en 2025?</label>
-                            <p class="text-[11px] text-zinc-500 mt-0.5">Márcalo si la página ya existía en 2025 (la columna '25 mostrará 0 igualmente si no hay datos en BD).</p>
-                        </div>
-                    </div>
+
 
                     <div id="form-error" class="hidden text-[13px] text-red-400 bg-red-400/10 border border-red-400/30 rounded-lg px-4 py-3"></div>
 
@@ -384,8 +378,7 @@ require_once 'db.php';
 
             const payload = {
                 name: document.getElementById('f-name').value.trim(),
-                page_path: document.getElementById('f-path').value.trim(),
-                has_2025_history: document.getElementById('f-hist').checked ? 1 : 0
+                page_path: document.getElementById('f-path').value.trim()
             };
 
             try {
