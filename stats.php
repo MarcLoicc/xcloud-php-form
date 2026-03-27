@@ -55,14 +55,14 @@ require_once 'db.php';
                             </tr>
                             <tr class="bg-zinc-900/80 border-b border-zinc-800 text-[10px] text-zinc-500 uppercase tracking-wider">
                                 <th class="tbl-sticky px-5 py-2"></th>
-                                <th class="px-4 py-2 font-medium text-center border-l border-zinc-800">2025</th>
-                                <th class="px-4 py-2 font-medium text-center">2026</th>
+                                <th id="sub-wyoy-p" class="px-4 py-2 font-medium text-center border-l border-zinc-800">2025</th>
+                                <th id="sub-wyoy-c" class="px-4 py-2 font-medium text-center">2026</th>
                                 <th class="px-4 py-2 font-medium text-center">%</th>
-                                <th class="px-4 py-2 font-medium text-center border-l border-zinc-800">Prev</th>
-                                <th class="px-4 py-2 font-medium text-center">Act</th>
+                                <th id="sub-wwow-p" class="px-4 py-2 font-medium text-center border-l border-zinc-800">Prev</th>
+                                <th id="sub-wwow-c" class="px-4 py-2 font-medium text-center">Act</th>
                                 <th class="px-4 py-2 font-medium text-center">%</th>
-                                <th class="px-4 py-2 font-medium text-center border-l border-zinc-800">2025</th>
-                                <th class="px-4 py-2 font-medium text-center">2026</th>
+                                <th id="sub-mmtd-p" class="px-4 py-2 font-medium text-center border-l border-zinc-800">2025</th>
+                                <th id="sub-mmtd-c" class="px-4 py-2 font-medium text-center">2026</th>
                                 <th class="px-4 py-2 font-medium text-center">%</th>
                                 <th class="px-4 py-2 font-medium text-center border-l border-zinc-800">2025</th>
                                 <th class="px-4 py-2 font-medium text-center">2026</th>
@@ -243,19 +243,56 @@ require_once 'db.php';
             });
         }
 
-        // Set dynamic week/month labels
+        // Set dynamic week/month labels in sub-header
         (function() {
             const now = new Date();
-            const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-            const month = months[now.getMonth()];
-            // ISO week number
-            const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-            const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-            const week = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
-            document.getElementById('hdr-wyoy').innerHTML = `📅 Semana ${week} YoY`;
-            document.getElementById('hdr-wwow').innerHTML = `📊 Semana ${week} WoW`;
-            document.getElementById('hdr-mmtd').innerHTML = `🌙 ${month} MTD`;
+            const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+            const mon = months[now.getMonth()];
+            const day = now.getDate();
+
+            // ISO week helpers
+            function getISOWeek(date) {
+                const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+                const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+                return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            }
+            function weekRange(date) {
+                const d = new Date(date);
+                const day = d.getDay() || 7;
+                d.setDate(d.getDate() - day + 1); // Monday
+                const start = new Date(d);
+                d.setDate(d.getDate() + 6); // Sunday
+                const end = new Date(d);
+                const m = months[end.getMonth()];
+                if (start.getMonth() === end.getMonth()) {
+                    return `${start.getDate()}-${end.getDate()} ${m}`;
+                }
+                return `${start.getDate()} ${months[start.getMonth()]}-${end.getDate()} ${m}`;
+            }
+
+            const currWeek = getISOWeek(now);
+            const prevWeekDate = new Date(now);
+            prevWeekDate.setDate(now.getDate() - 7);
+
+            const currRange = weekRange(now);
+            const prevRange = weekRange(prevWeekDate);
+
+            // Update main group headers: remove week number, keep clean
+            const hdrWyoy = document.getElementById('hdr-wyoy');
+            const hdrWwow = document.getElementById('hdr-wwow');
+            const hdrMmtd = document.getElementById('hdr-mmtd');
+            if (hdrWyoy) hdrWyoy.innerHTML = '\uD83D\uDCC5 Semana YoY';
+            if (hdrWwow) hdrWwow.innerHTML = '\uD83D\uDCCA Semana WoW';
+            if (hdrMmtd) hdrMmtd.innerHTML = '\uD83C\uDF19 Mes MTD';
+
+            // Update sub-header cells with date ranges
+            const sy25 = document.getElementById('sub-wyoy-p'); if(sy25) sy25.textContent = `Sem ${currWeek} '25`;
+            const sy26 = document.getElementById('sub-wyoy-c'); if(sy26) sy26.textContent = `Sem ${currWeek} '26 (${currRange})`;
+            const sw_p = document.getElementById('sub-wwow-p'); if(sw_p) sw_p.textContent = prevRange;
+            const sw_c = document.getElementById('sub-wwow-c'); if(sw_c) sw_c.textContent = currRange;
+            const sm25 = document.getElementById('sub-mmtd-p'); if(sm25) sm25.textContent = `1-${day} ${mon} '25`;
+            const sm26 = document.getElementById('sub-mmtd-c'); if(sm26) sm26.textContent = `1-${day} ${mon} '26`;
         })();
 
         init();
