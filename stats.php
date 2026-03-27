@@ -33,10 +33,16 @@ require_once 'db.php';
                 <h1 class="text-3xl font-bold text-zinc-100 tracking-tight">Estadísticas</h1>
                 <p class="text-[14px] text-zinc-400 mt-1 font-medium">Rendimiento de tráfico web por producto. Comparativa histórica 2025 vs 2026.</p>
             </div>
-            <button onclick="syncAll()" class="flex items-center gap-2 px-5 py-2.5 bg-zinc-100 rounded-md text-[14px] font-bold text-zinc-950 hover:bg-zinc-300 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 shadow-sm">
-                <i data-lucide="refresh-cw" id="btn-icon" class="w-4 h-4" aria-hidden="true"></i>
-                Sincronizar
-            </button>
+            <div class="flex items-center gap-3">
+                <button onclick="openAddModal()" class="flex items-center gap-2 px-5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-md text-[14px] font-semibold text-zinc-200 hover:bg-zinc-700 transition-colors shadow-sm">
+                    <i data-lucide="plus" class="w-4 h-4" aria-hidden="true"></i>
+                    Añadir Producto
+                </button>
+                <button onclick="syncAll()" class="flex items-center gap-2 px-5 py-2.5 bg-zinc-100 rounded-md text-[14px] font-bold text-zinc-950 hover:bg-zinc-300 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 shadow-sm">
+                    <i data-lucide="refresh-cw" id="btn-icon" class="w-4 h-4" aria-hidden="true"></i>
+                    Sincronizar
+                </button>
+            </div>
         </header>
 
         <!-- Top Products Table -->
@@ -305,6 +311,102 @@ require_once 'db.php';
         })();
 
         init();
+    </script>
+    <!-- Modal Añadir Producto -->
+    <div id="add-modal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeAddModal()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg">
+            <div class="bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-zinc-100">Añadir Producto al Panel</h2>
+                    <button onclick="closeAddModal()" class="text-zinc-500 hover:text-zinc-200 transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <form id="add-form" onsubmit="submitProduct(event)" class="space-y-5">
+                    <div>
+                        <label class="block text-[12px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">Nombre del Producto *</label>
+                        <input id="f-name" type="text" placeholder="Ej: Peluquerías Madrid" required
+                            class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-[14px] text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[12px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">URL (page_path en GA4) *</label>
+                        <input id="f-path" type="text" placeholder="Ej: /diseno-web-para-peluquerias/" required
+                            class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-[14px] text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors">
+                        <p class="text-[11px] text-zinc-600 mt-1.5">Debe empezar y terminar con / — igual que aparece en Google Analytics</p>
+                    </div>
+                    <div class="flex items-center gap-3 p-4 bg-zinc-800/50 rounded-lg border border-zinc-700">
+                        <input id="f-hist" type="checkbox" class="w-4 h-4 rounded accent-indigo-500">
+                        <div>
+                            <label for="f-hist" class="text-[13px] font-medium text-zinc-200 cursor-pointer">¿Tiene histórico en 2025?</label>
+                            <p class="text-[11px] text-zinc-500 mt-0.5">Márcalo si la página ya existía en 2025 (la columna '25 mostrará 0 igualmente si no hay datos en BD).</p>
+                        </div>
+                    </div>
+
+                    <div id="form-error" class="hidden text-[13px] text-red-400 bg-red-400/10 border border-red-400/30 rounded-lg px-4 py-3"></div>
+
+                    <div class="flex items-center gap-3 pt-2">
+                        <button type="submit" id="form-btn" class="flex-1 py-3 bg-zinc-100 text-zinc-950 font-bold text-[14px] rounded-lg hover:bg-zinc-300 transition-colors">
+                            Añadir al Panel
+                        </button>
+                        <button type="button" onclick="closeAddModal()" class="px-5 py-3 text-[14px] text-zinc-400 hover:text-zinc-200 transition-colors">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openAddModal() {
+            document.getElementById('add-modal').classList.remove('hidden');
+            document.getElementById('f-name').focus();
+            lucide.createIcons();
+        }
+        function closeAddModal() {
+            document.getElementById('add-modal').classList.add('hidden');
+            document.getElementById('add-form').reset();
+            document.getElementById('form-error').classList.add('hidden');
+        }
+        async function submitProduct(e) {
+            e.preventDefault();
+            const btn = document.getElementById('form-btn');
+            const errEl = document.getElementById('form-error');
+            errEl.classList.add('hidden');
+            btn.disabled = true;
+            btn.textContent = 'Guardando...';
+
+            const payload = {
+                name: document.getElementById('f-name').value.trim(),
+                page_path: document.getElementById('f-path').value.trim(),
+                has_2025_history: document.getElementById('f-hist').checked ? 1 : 0
+            };
+
+            try {
+                const res = await fetch('api_products.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    closeAddModal();
+                    // Limpiar caché y recargar datos
+                    await syncAll();
+                } else {
+                    errEl.textContent = json.message || 'Error desconocido.';
+                    errEl.classList.remove('hidden');
+                }
+            } catch(err) {
+                errEl.textContent = 'Error de red: ' + err.message;
+                errEl.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Añadir al Panel';
+            }
+        }
     </script>
 </body>
 </html>

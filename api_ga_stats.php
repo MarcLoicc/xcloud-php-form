@@ -14,31 +14,40 @@ function send_json_error($msg) {
 
 $report_type = $_GET['report'] ?? 'init';
 
-$pc = [
-    '/' => 'Home / General',
-    '/contacto/' => 'Contacto',
-    '/diseno-web-mostoles/' => 'Móstoles',
-    '/diseno-web-para-clinicas-en-madrid/diseno-web-para-clinicas-capilares/' => 'Clínicas Capilares',
-    '/diseno-web-para-clinicas-en-madrid/diseno-web-para-dentistas-y-clinicas-dentales-en-madrid/' => 'Dentistas Madrid',
-    '/diseno-web-para-abogados/' => 'Abogados',
-    '/diseno-web-para-escuelas-y-centros-educativos-en-madrid/' => 'Escuelas',
-    '/diseno-web-para-concesionarios-en-madrid/' => 'Concesionarios',
-    '/diseno-web-para-gimnasios-y-estudios-de-yoga-en-madrid/' => 'Gimnasios',
-    '/diseno-de-paginas-web-para-restaurantes/' => 'Restaurantes',
-    '/diseno-web-para-farmacias-en-madrid/' => 'Farmacias',
-    '/diseno-web-en-alcobendas/' => 'Alcobendas',
-    '/diseno-web-en-villaviciosa-de-odon/' => 'Villaviciosa',
-    '/diseno-web-en-tres-cantos/' => 'Tres Cantos',
-    '/diseno-web-en-collado-de-villalba/' => 'Collado Villalba',
-    '/diseno-web-aranjuez/' => 'Aranjuez',
-    '/diseno-web-en-arganda-del-rey/' => 'Arganda',
-    '/diseno-web-en-leganes/' => 'Leganés',
-    '/diseno-web-en-alcorcon/' => 'Alcorcón',
-    '/diseno-web-en-alcala-de-henares/' => 'Alcalá Henares',
-    '/diseno-web-para-clinicas-en-madrid/' => 'Clínicas Madrid',
-    '/diseno-tienda-online-madrid/' => 'Tienda Online',
-    '/calculadora-precio-web-online/' => 'Calculadora Precio'
-];
+// Cargar productos desde BD (con fallback al array original si la tabla aún no existe)
+$pc = [];
+$pc_res = $conn->query("SELECT page_path, name FROM ga4_products WHERE active = 1 ORDER BY name ASC");
+if ($pc_res && $pc_res->num_rows > 0) {
+    while ($r = $pc_res->fetch_assoc()) $pc[$r['page_path']] = $r['name'];
+}
+// Fallback: si la tabla no existe o está vacía usamos el array original
+if (empty($pc)) {
+    $pc = [
+        '/' => 'Home / General',
+        '/contacto/' => 'Contacto',
+        '/diseno-web-mostoles/' => 'Móstoles',
+        '/diseno-web-para-clinicas-en-madrid/diseno-web-para-clinicas-capilares/' => 'Clínicas Capilares',
+        '/diseno-web-para-clinicas-en-madrid/diseno-web-para-dentistas-y-clinicas-dentales-en-madrid/' => 'Dentistas Madrid',
+        '/diseno-web-para-abogados/' => 'Abogados',
+        '/diseno-web-para-escuelas-y-centros-educativos-en-madrid/' => 'Escuelas',
+        '/diseno-web-para-concesionarios-en-madrid/' => 'Concesionarios',
+        '/diseno-web-para-gimnasios-y-estudios-de-yoga-en-madrid/' => 'Gimnasios',
+        '/diseno-de-paginas-web-para-restaurantes/' => 'Restaurantes',
+        '/diseno-web-para-farmacias-en-madrid/' => 'Farmacias',
+        '/diseno-web-en-alcobendas/' => 'Alcobendas',
+        '/diseno-web-en-villaviciosa-de-odon/' => 'Villaviciosa',
+        '/diseno-web-en-tres-cantos/' => 'Tres Cantos',
+        '/diseno-web-en-collado-de-villalba/' => 'Collado Villalba',
+        '/diseno-web-aranjuez/' => 'Aranjuez',
+        '/diseno-web-en-arganda-del-rey/' => 'Arganda',
+        '/diseno-web-en-leganes/' => 'Leganés',
+        '/diseno-web-en-alcorcon/' => 'Alcorcón',
+        '/diseno-web-en-alcala-de-henares/' => 'Alcalá Henares',
+        '/diseno-web-para-clinicas-en-madrid/' => 'Clínicas Madrid',
+        '/diseno-tienda-online-madrid/' => 'Tienda Online',
+        '/calculadora-precio-web-online/' => 'Calculadora Precio',
+    ];
+}
 
 if ($report_type === 'init') {
     $currDay = date('d');
