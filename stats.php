@@ -376,26 +376,51 @@ require_once 'db.php';
             btn.disabled = true;
             btn.textContent = 'Guardando...';
 
+            const page_path = document.getElementById('f-path').value.trim();
             const payload = {
                 name: document.getElementById('f-name').value.trim(),
-                page_path: document.getElementById('f-path').value.trim()
+                page_path
             };
 
             try {
+                // 1. Guardar en ga4_products
                 const res = await fetch('api_products.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(payload)
                 });
                 const json = await res.json();
-                if (json.status === 'success') {
-                    closeAddModal();
-                    // Limpiar caché y recargar datos
-                    await syncAll();
-                } else {
+                if (json.status !== 'success') {
                     errEl.textContent = json.message || 'Error desconocido.';
                     errEl.classList.remove('hidden');
+                    return;
                 }
+
+                // 2. Cerrar modal y mostrar notificación de progreso
+                closeAddModal();
+                showSyncNotice('⏳ Importando datos históricos de la nueva URL...');
+
+                // 3. Refrescar panel visual (datos GA4 en tiempo real ya aparecen)
+                syncAll();
+
+                // 4. Importar histórico 2025 y 2026 en segundo plano
+                const syncRes = await fetch('api_product_sync.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ page_path })
+                });
+                const syncJson = await syncRes.json();
+                if (syncJson.status === 'success') {
+                    const msg = syncJson.inserted_2025 > 0
+                        ? `✅ Producto añadido. Importadas ${syncJson.inserted_2025} filas de 2025 y ${syncJson.inserted_2026} de 2026.`
+                        : `✅ Producto añadido. Sin datos previos en 2025 (${syncJson.inserted_2026} filas de 2026 importadas).`;
+                    showSyncNotice(msg, 6000);
+                    // Refrescar panel con datos históricos ya grabados
+                    await syncAll();
+                } else {
+                    showSyncNotice('⚠️ Producto añadido pero error al importar histórico: ' + syncJson.message, 8000);
+                }
+
             } catch(err) {
                 errEl.textContent = 'Error de red: ' + err.message;
                 errEl.classList.remove('hidden');
@@ -403,6 +428,20 @@ require_once 'db.php';
                 btn.disabled = false;
                 btn.textContent = 'Añadir al Panel';
             }
+        }
+
+        function showSyncNotice(msg, duration = 4000) {
+            let el = document.getElementById('sync-notice');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'sync-notice';
+                el.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;max-width:400px;padding:14px 18px;background:#18181b;border:1px solid #3f3f46;border-radius:12px;color:#e4e4e7;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.5);transition:opacity .3s';
+                document.body.appendChild(el);
+            }
+            el.textContent = msg;
+            el.style.opacity = '1';
+            clearTimeout(el._timeout);
+            el._timeout = setTimeout(() => { el.style.opacity = '0'; }, duration);
         }
     </script>
     <!-- Modal Gestionar Productos -->
