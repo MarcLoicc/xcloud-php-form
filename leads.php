@@ -2,7 +2,46 @@
 <?php
 date_default_timezone_set('Europe/Madrid');
 require_once 'db.php';
-$result = $conn->query("SELECT * FROM leads ORDER BY created_at DESC");
+
+// Paginación
+$allowedPerPage = [25, 50, 100];
+$perPage = (int)($_GET['perpage'] ?? 25);
+if (!in_array($perPage, $allowedPerPage)) $perPage = 25;
+$page = max(1, (int)($_GET['page'] ?? 1));
+$offset = ($page - 1) * $perPage;
+
+// Filtros GET para preservarlos al paginar
+$filterStatus = $_GET['status'] ?? '';
+$filterSource = $_GET['source'] ?? '';
+$filterSearch = $_GET['search'] ?? '';
+
+// Construir WHERE dinámico
+$where = [];
+$params = [];
+$types = '';
+if ($filterStatus && $filterStatus !== 'all') { $where[] = 'status = ?'; $params[] = $filterStatus; $types .= 's'; }
+if ($filterSource && $filterSource !== 'all') { $where[] = 'source = ?'; $params[] = $filterSource; $types .= 's'; }
+if ($filterSearch) { $where[] = '(name LIKE ? OR company LIKE ? OR phone LIKE ?)'; $s = '%'.$filterSearch.'%'; $params[] = $s; $params[] = $s; $params[] = $s; $types .= 'sss'; }
+$whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+// Total de registros
+$countSql = "SELECT COUNT(*) as total FROM leads $whereSql";
+$countStmt = $conn->prepare($countSql);
+if ($types) $countStmt->bind_param($types, ...$params);
+$countStmt->execute();
+$totalRows = $countStmt->get_result()->fetch_assoc()['total'];
+$totalPages = max(1, ceil($totalRows / $perPage));
+$page = min($page, $totalPages);
+$offset = ($page - 1) * $perPage;
+
+// Query principal con LIMIT
+$sql = "SELECT * FROM leads $whereSql ORDER BY created_at DESC LIMIT ? OFFSET ?";
+$stmt = $conn->prepare($sql);
+$allParams = array_merge($params, [$perPage, $offset]);
+$allTypes = $types . 'ii';
+$stmt->bind_param($allTypes, ...$allParams);
+$stmt->execute();
+$result = $stmt->get_result();
 
 $existingTags = ['Metaads', 'Arquitectos', 'VIP', 'Urgente']; // Predefined default tags
 $tagQuery = $conn->query("SELECT DISTINCT tags FROM leads WHERE tags IS NOT NULL AND tags != ''");
@@ -99,9 +138,28 @@ function getStatusBadge($status) {
                 </div>
 
                 <div class="bg-zinc-900 border border-zinc-800 rounded-md px-4 py-2 flex items-center gap-2" aria-live="polite" aria-atomic="true">
-                    <span id="visibleLeadsCount" class="text-[14px] font-bold text-zinc-100"><?php echo $result->num_rows; ?></span>
+                    <span class="text-[14px] font-bold text-zinc-100"><?php echo min($offset+1, $totalRows); ?>–<?php echo min($offset+$perPage, $totalRows); ?></span>
+                    <span class="text-[14px] text-zinc-500">de</span>
+                    <span class="text-[14px] font-bold text-zinc-100"><?php echo $totalRows; ?></span>
                     <span class="text-[14px] text-zinc-500">registros</span>
                 </div>
+
+                <!-- Selector registros por página -->
+                <form method="GET" id="perPageForm" class="flex items-center gap-2">
+                    <?php if($filterStatus) echo '<input type="hidden" name="status" value="'.htmlspecialchars($filterStatus).'">'; ?>
+                    <?php if($filterSource) echo '<input type="hidden" name="source" value="'.htmlspecialchars($filterSource).'">'; ?>
+                    <?php if($filterSearch) echo '<input type="hidden" name="search" value="'.htmlspecialchars($filterSearch).'">'; ?>
+                    <input type="hidden" name="page" value="1">
+                    <label for="perPageSelect" class="text-[13px] text-zinc-500">Mostrar</label>
+                    <div class="relative">
+                        <select id="perPageSelect" name="perpage" onchange="document.getElementById('perPageForm').submit()" class="bg-zinc-900 border border-zinc-800 rounded-md pl-3 pr-8 py-2 text-[13px] font-medium text-zinc-300 appearance-none cursor-pointer focus:ring-2 focus:ring-indigo-500">
+                            <?php foreach([25,50,100] as $opt): ?>
+                                <option value="<?php echo $opt; ?>" <?php echo $perPage===$opt ? 'selected' : ''; ?>><?php echo $opt; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <i data-lucide="chevron-down" class="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"></i>
+                    </div>
+                </form>
             </div>
         </section>
 
@@ -230,8 +288,59 @@ function getStatusBadge($status) {
                 </table>
             </div>
             
-            <div class="px-6 py-4 border-t border-zinc-800 flex items-center justify-between text-[13px] text-zinc-500">
-                <p>Fin de los resultados.</p>
+            <?php
+            // Construir URL base preservando filtros
+            $baseParams = [];
+            if ($filterStatus) $baseParams['status'] = $filterStatus;
+            if ($filterSource) $baseParams['source'] = $filterSource;
+            if ($filterSearch) $baseParams['search'] = $filterSearch;
+            $baseParams['perpage'] = $perPage;
+            $buildUrl = function($p) use ($baseParams) {
+                return '?' . http_build_query(array_merge($baseParams, ['page' => $p]));
+            };
+            ?>
+            <div class="px-6 py-4 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-[13px] text-zinc-500">
+                <p>Mostrando <span class="text-zinc-100 font-semibold"><?php echo min($offset+1, $totalRows); ?>–<?php echo min($offset+$perPage, $totalRows); ?></span> de <span class="text-zinc-100 font-semibold"><?php echo $totalRows; ?></span> registros</p>
+                
+                <?php if ($totalPages > 1): ?>
+                <nav class="flex items-center gap-1" aria-label="Paginación">
+                    <!-- Anterior -->
+                    <?php if ($page > 1): ?>
+                        <a href="<?php echo $buildUrl($page-1); ?>" class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors flex items-center gap-1">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </a>
+                    <?php else: ?>
+                        <span class="px-3 py-1.5 rounded-md bg-zinc-900 text-zinc-700 cursor-not-allowed flex items-center gap-1">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </span>
+                    <?php endif; ?>
+
+                    <!-- Páginas -->
+                    <?php
+                    $range = 2;
+                    $start = max(1, $page - $range);
+                    $end = min($totalPages, $page + $range);
+                    if ($start > 1) echo '<span class="px-2 text-zinc-600">…</span>';
+                    for ($i = $start; $i <= $end; $i++):
+                    ?>
+                        <a href="<?php echo $buildUrl($i); ?>" class="px-3 py-1.5 rounded-md transition-colors <?php echo $i === $page ? 'bg-indigo-600 text-white font-semibold' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'; ?>">
+                            <?php echo $i; ?>
+                        </a>
+                    <?php endfor; ?>
+                    <?php if ($end < $totalPages) echo '<span class="px-2 text-zinc-600">…</span>'; ?>
+
+                    <!-- Siguiente -->
+                    <?php if ($page < $totalPages): ?>
+                        <a href="<?php echo $buildUrl($page+1); ?>" class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors flex items-center gap-1">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </a>
+                    <?php else: ?>
+                        <span class="px-3 py-1.5 rounded-md bg-zinc-900 text-zinc-700 cursor-not-allowed flex items-center gap-1">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </span>
+                    <?php endif; ?>
+                </nav>
+                <?php endif; ?>
             </div>
         </section>
     </main>
