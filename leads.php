@@ -113,6 +113,7 @@ function getStatusBadge($status) {
                     <thead>
                         <tr class="bg-zinc-950/50 border-b border-zinc-800">
                             <th scope="col" class="px-6 py-4 text-[12px] font-semibold text-zinc-400 uppercase tracking-wider">Cliente</th>
+                            <th scope="col" class="px-6 py-4 text-[12px] font-semibold text-zinc-400 uppercase tracking-wider">Teléfono</th>
                             <th scope="col" class="px-6 py-4 text-[12px] font-semibold text-zinc-400 uppercase tracking-wider">Estado</th>
                             <th scope="col" class="px-6 py-4 text-[12px] font-semibold text-zinc-400 uppercase tracking-wider">Origen</th>
                             <th scope="col" class="px-6 py-4 text-[12px] font-semibold text-zinc-400 uppercase tracking-wider text-right">Valor</th>
@@ -124,12 +125,12 @@ function getStatusBadge($status) {
                         <?php while($row = $result->fetch_assoc()): 
                             $json_data = htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8');
                             $rowDate = date('Y-m-d', strtotime($row['created_at']));
+                            $displayDate = date('M d, Y', strtotime($row['created_at']));
                             $statusInfo = getStatusBadge($row['status'] ?? 'nuevo');
                         ?>
                         <tr class="lead-row hover:bg-zinc-800/30 transition-colors group" 
+                            data-id="<?php echo $row['id']; ?>"
                             data-source="<?php echo $row['source']; ?>"
-                            data-price="<?php echo $row['proposal_price'] ?? 0; ?>"
-                            data-date="<?php echo $rowDate; ?>"
                             data-status="<?php echo $row['status'] ?? 'nuevo'; ?>">
                             
                             <td class="px-6 py-4">
@@ -138,36 +139,43 @@ function getStatusBadge($status) {
                                         <?php echo substr($row['name'], 0, 1); ?>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="text-[14px] font-bold text-zinc-100"><?php echo htmlspecialchars($row['name']); ?></span>
+                                        <span class="text-[14px] font-bold text-zinc-100 cursor-pointer hover:underline" onclick="openDetailModal(<?php echo $json_data; ?>)"><?php echo htmlspecialchars($row['name']); ?></span>
                                         <span class="text-[12px] text-zinc-500"><?php echo htmlspecialchars($row['company'] ?: 'Particular'); ?></span>
                                     </div>
                                 </div>
                             </td>
-                            
+
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2 py-1 rounded-md text-[12px] font-medium <?php echo $statusInfo['class']; ?>">
-                                    <?php echo $statusInfo['label']; ?>
+                                <span class="text-[14px] text-zinc-300 cursor-pointer hover:text-indigo-400 transition-colors tabular-nums" onclick="quickEdit(this, 'phone', '<?php echo $row['id']; ?>')">
+                                    <?php echo htmlspecialchars($row['phone'] ?: '---'); ?>
                                 </span>
                             </td>
                             
                             <td class="px-6 py-4">
-                                <div class="flex items-center gap-2">
-                                    <?php if($row['source'] == 'pago'): ?>
-                                        <i data-lucide="target" class="w-3.5 h-3.5 text-zinc-400" aria-hidden="true"></i>
-                                        <span class="text-[13px] text-zinc-300">Pago</span>
-                                    <?php else: ?>
-                                        <i data-lucide="globe" class="w-3.5 h-3.5 text-zinc-400" aria-hidden="true"></i>
-                                        <span class="text-[13px] text-zinc-300">Orgánico</span>
-                                    <?php endif; ?>
+                                <div class="cursor-pointer" onclick="quickEdit(this, 'status', '<?php echo $row['id']; ?>')">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-[12px] font-medium <?php echo $statusInfo['class']; ?>">
+                                        <?php echo $statusInfo['label']; ?>
+                                    </span>
                                 </div>
                             </td>
                             
-                            <td class="px-6 py-4 text-right">
-                                <span class="text-[14px] font-medium text-zinc-200">€<?php echo number_format($row['proposal_price'] ?? 0, 2, '.', ','); ?></span>
+                            <td class="px-6 py-4">
+                                <span class="text-[13px] text-zinc-400 flex items-center gap-2 cursor-pointer hover:text-zinc-200" onclick="quickEdit(this, 'source', '<?php echo $row['id']; ?>')">
+                                    <i data-lucide="<?php echo $row['source'] === 'pago' ? 'target' : 'globe'; ?>" class="w-3 h-3"></i>
+                                    <?php echo $row['source'] === 'pago' ? 'Pago' : 'Orgánico'; ?>
+                                </span>
                             </td>
-
+                            
                             <td class="px-6 py-4 text-right">
-                                <span class="text-[13px] text-zinc-400"><?php echo date('M d, Y', strtotime($row['created_at'])); ?></span>
+                                <span class="text-[14px] font-bold text-zinc-100 cursor-pointer hover:text-indigo-400 transition-colors" onclick="quickEdit(this, 'proposal_price', '<?php echo $row['id']; ?>')">
+                                    €<?php echo number_format($row['proposal_price'] ?? 0, 2); ?>
+                                </span>
+                            </td>
+                            
+                            <td class="px-6 py-4 text-right">
+                                <span class="text-[13px] text-zinc-500 cursor-pointer hover:text-zinc-300 transition-colors" onclick="quickEdit(this, 'created_at', '<?php echo $row['id']; ?>')">
+                                    <?php echo $displayDate; ?>
+                                </span>
                             </td>
                             
                             <td class="px-6 py-4 text-right">
@@ -423,6 +431,78 @@ function getStatusBadge($status) {
         [globalInp, statusSel, sourceSel].forEach(el => {
             el.addEventListener('input', applyFilters);
         });
+
+        function quickEdit(el, field, id) {
+            if (el.dataset.editing === 'true') return;
+            el.dataset.editing = 'true';
+            
+            const originalContent = el.innerHTML;
+            let input;
+
+            if (field === 'status') {
+                input = document.createElement('select');
+                input.className = 'bg-zinc-900 text-zinc-100 text-[12px] rounded border border-zinc-700 px-1 py-0.5';
+                const options = [
+                    {val: 'nuevo', label: 'Nuevo'},
+                    {val: 'no_responde', label: 'Sin Respuesta'},
+                    {val: 'llamar_tarde', label: 'Llamar más tarde'},
+                    {val: 'interesado_tarde', label: 'Interesado (Futuro)'},
+                    {val: 'enviar_propuesta', label: 'Enviar Propuesta'},
+                    {val: 'propuesta_enviada', label: 'Propuesta Enviada'},
+                    {val: 'ganado', label: 'Ganado'},
+                    {val: 'perdido', label: 'Perdido'},
+                    {val: 'no_cualificado', label: 'No Cualificado'}
+                ];
+                options.forEach(opt => {
+                    const o = document.createElement('option');
+                    o.value = opt.val; o.textContent = opt.label;
+                    if (el.closest('tr').dataset.status === opt.val) o.selected = true;
+                    input.appendChild(o);
+                });
+            } else if (field === 'source') {
+                input = document.createElement('select');
+                input.className = 'bg-zinc-900 text-zinc-100 text-[12px] rounded border border-zinc-700 px-1 py-0.5';
+                [['organico','Orgánico'],['pago','Pago']].forEach(opt => {
+                    const o = document.createElement('option');
+                    o.value = opt[0]; o.textContent = opt[1];
+                    if (el.closest('tr').dataset.source === opt[0]) o.selected = true;
+                    input.appendChild(o);
+                });
+            } else {
+                input = document.createElement('input');
+                input.type = (field === 'proposal_price') ? 'number' : (field === 'created_at' ? 'date' : 'text');
+                input.value = el.innerText.trim().replace('€', '').replace(',', '');
+                input.className = 'bg-zinc-900 text-zinc-100 text-[13px] rounded border border-zinc-700 px-2 py-1 w-full max-w-[120px]';
+            }
+
+            el.innerHTML = '';
+            el.appendChild(input);
+            input.focus();
+
+            const save = () => {
+                const newValue = input.value;
+                const formData = new FormData();
+                formData.append('id', id);
+                formData.append('field', field);
+                formData.append('value', newValue);
+
+                fetch('api_quick_update.php', { method: 'POST', body: formData })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) {
+                            location.reload(); // Recarga simple para actualizar badges y demás sin complicar el JS
+                        } else {
+                            el.innerHTML = originalContent;
+                            delete el.dataset.editing;
+                        }
+                    });
+            };
+
+            input.onblur = save;
+            if (input.tagName === 'INPUT') {
+                input.onkeydown = (e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') { el.innerHTML = originalContent; delete el.dataset.editing; } };
+            }
+        }
 
         /* Accessible Modal Focus Trapping / Handling */
         const modalD = document.getElementById('detailModal');
