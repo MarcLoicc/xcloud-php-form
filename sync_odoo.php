@@ -1,4 +1,13 @@
 <?php
+// ===== PROTECCIÓN POR TOKEN =====
+define('CRON_SECRET', 'mL9xK2pQ7rT4wZ1nJ8vY3sA6cE5bF0dH');
+$token = $_GET['token'] ?? $_SERVER['HTTP_X_CRON_TOKEN'] ?? '';
+if ($token !== CRON_SECRET) {
+    http_response_code(403);
+    die('Acceso denegado.');
+}
+// ================================
+
 require_once 'db.php';
 header('Content-Type: text/plain; charset=UTF-8');
 
