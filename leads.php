@@ -175,7 +175,7 @@ function getStatusBadge($status) {
                             
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-lg border flex items-center justify-center text-[13px] font-bold tracking-tighter <?php echo $avatarStyle; ?>" aria-hidden="true">
+                                    <div class="w-10 h-10 rounded-lg border flex items-center justify-center text-[13px] font-bold tracking-tighter <?php echo $avatarStyle; ?> cursor-pointer" aria-hidden="true" onclick="showLeadDetails(<?php echo $json_data; ?>)">
                                         <?php echo getInitials($displayName); ?>
                                     </div>
                                     <div class="flex flex-col">
