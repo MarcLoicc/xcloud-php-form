@@ -70,10 +70,14 @@ $files = array_reverse($files); // Recientes primero
                     <tbody id="fileTableBody" class="divide-y divide-zinc-800">
                         <?php 
                         require_once 'db.php';
-                        // Pre-cargar nombres de leads para evitar queries en el loop
-                        $leadNames = [];
-                        $lnRes = $conn->query("SELECT id, name FROM leads");
-                        while($lnRow = $lnRes->fetch_assoc()) { $leadNames[$lnRow['id']] = $lnRow['name']; }
+                        // Pre-cargar mapeo de ARCHIVO -> NOMBRE DE LEAD
+                        $fileToLeadMap = [];
+                        $lnRes = $conn->query("SELECT name, audio_path FROM leads WHERE audio_path IS NOT NULL AND audio_path != ''");
+                        while($lnRow = $lnRes->fetch_assoc()) { 
+                            // El audio_path suele ser 'uploads/archivo.webm'
+                            $filenameOnly = basename($lnRow['audio_path']);
+                            $fileToLeadMap[$filenameOnly] = $lnRow['name']; 
+                        }
 
                         foreach($files as $file): 
                             $filePath = $dir . $file;
@@ -82,19 +86,21 @@ $files = array_reverse($files); // Recientes primero
                             $size = round(filesize($filePath) / 1024 / 1024, 2);
                             $fileTime = filemtime($filePath);
                             
-                            // Lógica mejorada de nombres
-                            $parts = explode('_', pathinfo($file, PATHINFO_FILENAME)); 
-                            $displayName = 'Archivo General';
+                            // Lógica mejorada de nombres por mapeo de archivo
+                            $displayName = $fileToLeadMap[$file] ?? null;
                             $contextInfo = $isAudio ? 'Grabación de Audio' : 'Documento';
-
-                            if (strpos($file, 'odoo_') === 0) {
-                                $leadId = (int)($parts[1] ?? 0);
-                                $actualName = $leadNames[$leadId] ?? "Lead #$leadId";
-                                $displayName = $actualName;
-                                $contextInfo = "Odoo - " . ($isAudio ? 'Grabación' : 'Adjunto');
-                            } else {
-                                $leadName = $parts[1] ?? 'Sin asignar';
-                                $displayName = str_replace('-', ' ', $leadName);
+                            
+                            if (!$displayName) {
+                                if (strpos($file, 'odoo_') === 0) {
+                                    $parts = explode('_', pathinfo($file, PATHINFO_FILENAME)); 
+                                    $leadId = $parts[1] ?? 'Desconocido';
+                                    $displayName = "Lead Odoo #$leadId";
+                                    $contextInfo = "Odoo - " . ($isAudio ? 'Grabación' : 'Adjunto');
+                                } else {
+                                    $parts = explode('_', pathinfo($file, PATHINFO_FILENAME)); 
+                                    $leadName = $parts[1] ?? 'Sin asignar';
+                                    $displayName = str_replace('-', ' ', $leadName);
+                                }
                             }
                             
                             $dateStr = date('d/m/Y', $fileTime);
