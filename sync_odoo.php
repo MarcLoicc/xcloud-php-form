@@ -97,34 +97,36 @@ function odoo_parse_node($node) {
 // 1. Autenticación
 $uid = odoo_call("$url/xmlrpc/2/common", 'authenticate', [$db, $username, $password, []]);
 if (!$uid) die("ERROR: Fallo de login en Odoo.\n");
-echo "UID: $uid (OK)\n";
+echo "UID: $uid (Conectado con Odoo)\n";
 
-// 2. Buscar Oportunidades
-// 2. Buscar Oportunidades (Expected Revenue en lugar de Planned Revenue)
-$fields = ['id', 'name', 'contact_name', 'email_from', 'phone', 'expected_revenue', 'stage_id', 'create_date'];
+// Directorio para audios
+$uploadDir = __DIR__ . '/uploads/';
+if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+// 2. Buscar Oportunidades con campos extendidos (description, UTMs, etc.)
+$fields = ['id', 'name', 'contact_name', 'email_from', 'phone', 'expected_revenue', 'stage_id', 'create_date', 'description'];
 $odooLeads = odoo_call("$url/xmlrpc/2/object", 'execute_kw', [$db, $uid, $password, 'crm.lead', 'search_read', [[]], ['fields' => $fields]]);
 
 if (!is_array($odooLeads) || isset($odooLeads['faultCode'])) {
     die("Odoo Error: " . ($odooLeads['faultString'] ?? 'Error desconocido'));
 }
 
-echo "Registros encontrados en Odoo: " . count($odooLeads) . "\n\n";
+echo "Procesando " . count($odooLeads) . " registros encontrados...\n\n";
 
 $inserted = 0;
 $skipped = 0;
+$audios_dl = 0;
+
 foreach ($odooLeads as $ol) {
     if (!is_array($ol)) continue;
 
-    // Mapeo Inteligente con redundancia total para evitar NULLS
-    $contact = !empty($ol['contact_name']) ? (string)$ol['contact_name'] : '';
-    if (empty($contact) && !empty($ol['name'])) $contact = (string)$ol['name'];
-    if (empty($contact) && !empty($ol['display_name'])) $contact = (string)$ol['display_name'];
-    if (empty($contact)) $contact = 'Lead de Odoo sin nombre (ID: ' . ($ol['id'] ?? 'S/N') . ')';
-
+    $leadId = $ol['id'];
+    $contact = !empty($ol['contact_name']) ? (string)$ol['contact_name'] : (string)($ol['name'] ?? "Lead Odoo #$leadId");
     $email = (string)($ol['email_from'] ?? '');
     $phone = (string)($ol['phone'] ?? '');
     $revenue = (float)($ol['expected_revenue'] ?? 0);
     $created = (string)($ol['create_date'] ?? date('Y-m-d H:i:s'));
+    $desc = (string)($ol['description'] ?? '');
     
     // Mapeo de estados
     $stageName = 'nuevo';
@@ -143,15 +145,46 @@ foreach ($odooLeads as $ol) {
         continue;
     }
 
-    $ins = $conn->prepare("INSERT INTO leads (name, email, phone, proposal_price, status, source, created_at) VALUES (?, ?, ?, ?, ?, 'organico', ?)");
-    $ins->bind_param("sssdss", $contact, $email, $phone, $revenue, $status, $created);
+    // --- PROCESAR AUDIOS ADJUNTOS ---
+    $audioPath = null;
+    $attachments = odoo_call("$url/xmlrpc/2/object", 'execute_kw', [$db, $uid, $password, 'ir.attachment', 'search_read', [
+        [['res_model', '=', 'crm.lead'], ['res_id', '=', $leadId]]
+    ], ['fields' => ['name', 'datas', 'mimetype']]]);
+
+    if (is_array($attachments)) {
+        foreach ($attachments as $att) {
+            $mimetype = $att['mimetype'] ?? '';
+            $filename = $att['name'] ?? '';
+            // Si es un audio o tiene extensión de audio
+            if (stripos($mimetype, 'audio') !== false || stripos($filename, '.webm') !== false || stripos($filename, '.mp3') !== false) {
+                if (!empty($att['datas'])) {
+                    $audioData = base64_decode($att['datas']);
+                    // Generar nombre único: lead_ID_origName
+                    $safeName = 'odoo_' . $leadId . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename);
+                    if (file_put_contents($uploadDir . $safeName, $audioData)) {
+                        $audioPath = 'uploads/' . $safeName;
+                        $audios_dl++;
+                        break; // Nos quedamos con el primer audio que encontremos
+                    }
+                }
+            }
+        }
+    }
+
+    $ins = $conn->prepare("INSERT INTO leads (name, email, phone, proposal_price, status, source, message, audio_path, created_at) VALUES (?, ?, ?, ?, ?, 'organico', ?, ?, ?)");
+    $ins->bind_param("sssdssss", $contact, $email, $phone, $revenue, $status, $desc, $audioPath, $created);
+    
     if ($ins->execute()) {
-        echo "Importado: $contact (€$revenue)\n";
+        echo "Importado: $contact (€$revenue)" . ($audioPath ? " [AUDIO OK]" : "") . "\n";
         $inserted++;
+    } else {
+        echo "Error al insertar $contact: " . $conn->error . "\n";
     }
 }
+
 echo "\n--- RESUMEN FINAL ---";
 echo "\nNuevos importados: $inserted";
-echo "\nYa existentes: $skipped";
+echo "\nAudios descargados: $audios_dl";
+echo "\nYa existentes (omitidos): $skipped\n";
 $conn->close();
 ?>
