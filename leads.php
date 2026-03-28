@@ -394,14 +394,18 @@ function getStatusBadge($status) {
         const rows = document.querySelectorAll('.lead-row');
         const countSpan = document.getElementById('visibleLeadsCount');
 
+        function normalizeStr(str) {
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        }
+
         function applyFilters() {
-            const query = globalInp.value.toLowerCase();
+            const query = normalizeStr(globalInp.value);
             const status = statusSel.value;
             const source = sourceSel.value;
 
             let visible = 0;
             rows.forEach(r => {
-                const text = r.innerText.toLowerCase();
+                const text = normalizeStr(r.innerText);
                 const rStatus = r.dataset.status;
                 const rSrc = r.dataset.source;
 
