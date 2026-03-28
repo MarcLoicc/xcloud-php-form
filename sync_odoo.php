@@ -115,8 +115,8 @@ echo "UID: $uid (Conectado con Odoo)\n";
 $uploadDir = __DIR__ . '/uploads/';
 if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
-// 2. Buscar Oportunidades con campos extendidos (incluido mobile)
-$fields = ['id', 'name', 'contact_name', 'email_from', 'phone', 'mobile', 'expected_revenue', 'stage_id', 'create_date', 'description'];
+// 2. Buscar Oportunidades con campos estándar
+$fields = ['id', 'name', 'contact_name', 'email_from', 'phone', 'expected_revenue', 'stage_id', 'create_date', 'description'];
 $domain = [
     ['type', '=', 'opportunity'],
     ['active', '=', true]
@@ -141,8 +141,8 @@ foreach ($odooLeads as $ol) {
     $contact = !empty($ol['contact_name']) ? (string)$ol['contact_name'] : (string)($ol['name'] ?? "Lead Odoo #$leadId");
     $email = (string)($ol['email_from'] ?? '');
     
-    // Si no hay phone, probar con mobile
-    $phone = !empty($ol['phone']) ? (string)$ol['phone'] : (string)($ol['mobile'] ?? '');
+    // Solo Phone por ahora para evitar errores de modelo en Odoo 19
+    $phone = (string)($ol['phone'] ?? '');
     
     $revenue = (float)($ol['expected_revenue'] ?? 0);
     $created = (string)($ol['create_date'] ?? date('Y-m-d H:i:s'));
