@@ -118,6 +118,20 @@ function odoo_parse_node($node) {
     return (string)$child->nodeValue;
 }
 
+function cleanHtmlMessage($html) {
+    if (!$html) return '';
+    // Reemplazos estratégicos para mantener estructura
+    $search = ['</h3>', '</tr>', '</td>', '</div>', '<br>', '<br/>', '<br />'];
+    $replace = ["\n", "\n", " ", "\n", "\n", "\n", "\n"];
+    $text = str_replace($search, $replace, $html);
+    // Limpiar tags, decodificar entidades y normalizar espacios
+    $text = strip_tags($text);
+    $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $text = preg_replace("/\n\s+/", "\n", $text); // Limpiar espacios al inicio de línea
+    $text = preg_replace("/\n{3,}/", "\n\n", $text); // Máximo 2 saltos seguidos
+    return trim($text);
+}
+
 // 1. Autenticación
 $uid = odoo_call("$url/xmlrpc/2/common", 'authenticate', [$db, $username, $password, []]);
 if (!$uid) die("ERROR: Fallo de login en Odoo.\n");
@@ -158,7 +172,7 @@ foreach ($odooLeads as $ol) {
     
     $revenue = (float)($ol['expected_revenue'] ?? 0);
     $created = (string)($ol['create_date'] ?? date('Y-m-d H:i:s'));
-    $desc = (string)($ol['description'] ?? '');
+    $desc = cleanHtmlMessage((string)($ol['description'] ?? ''));
     
     // Mapeo detallado de estados solicitado por el usuario (IDs exactos del CRM)
     $stageName = isset($ol['stage_id']) && is_array($ol['stage_id']) ? strtolower($ol['stage_id'][1]) : 'nuevo';
