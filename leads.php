@@ -123,18 +123,21 @@ function getStatusBadge($status) {
                     </thead>
                     <tbody class="divide-y divide-zinc-800">
                         <?php 
-                        if (!function_exists('formatPhone')) {
-                            function formatPhone($phone) {
-                                if (!$phone) return '---';
-                                $clean = preg_replace('/[^0-9]/', '', $phone);
-                                if (strpos($clean, '34') === 0 && strlen($clean) > 9) {
-                                    $clean = substr($clean, 2);
-                                }
-                                if (strlen($clean) === 9) {
-                                    return substr($clean, 0, 3) . ' ' . substr($clean, 3, 3) . ' ' . substr($clean, 6, 3);
-                                }
-                                return $phone;
+                        function formatPhone($phone) {
+                            if (!$phone) return '---';
+                            $clean = preg_replace('/[^0-9]/', '', $phone);
+                            if (strpos($clean, '34') === 0 && strlen($clean) > 9) { $clean = substr($clean, 2); }
+                            if (strlen($clean) === 9) { return substr($clean, 0, 3) . ' ' . substr($clean, 3, 3) . ' ' . substr($clean, 6, 3); }
+                            return $phone;
+                        }
+
+                        function getInitials($name) {
+                            if (!$name) return '??';
+                            $parts = explode(' ', trim($name));
+                            if (count($parts) >= 2) {
+                                return mb_strtoupper(mb_substr($parts[0], 0, 1) . mb_substr($parts[1], 0, 1), 'UTF-8');
                             }
+                            return mb_strtoupper(mb_substr($name, 0, 2), 'UTF-8');
                         }
 
                         while($row = $result->fetch_assoc()): 
@@ -150,8 +153,8 @@ function getStatusBadge($status) {
                             
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-md bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[12px] font-bold text-zinc-300" aria-hidden="true">
-                                        <?php echo substr($row['name'], 0, 1); ?>
+                                    <div class="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[13px] font-bold text-zinc-100 tracking-tighter" aria-hidden="true">
+                                        <?php echo getInitials($row['name']); ?>
                                     </div>
                                     <div class="flex flex-col">
                                         <span class="text-[14px] font-bold text-zinc-100 cursor-pointer hover:underline" onclick="openDetailModal(<?php echo $json_data; ?>)"><?php echo htmlspecialchars($row['name']); ?></span>
