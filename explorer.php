@@ -68,23 +68,40 @@ $files = array_reverse($files); // Recientes primero
                         </tr>
                     </thead>
                     <tbody id="fileTableBody" class="divide-y divide-zinc-800">
-                        <?php foreach($files as $file): 
+                        <?php 
+                        require_once 'db.php';
+                        // Pre-cargar nombres de leads para evitar queries en el loop
+                        $leadNames = [];
+                        $lnRes = $conn->query("SELECT id, name FROM leads");
+                        while($lnRow = $lnRes->fetch_assoc()) { $leadNames[$lnRow['id']] = $lnRow['name']; }
+
+                        foreach($files as $file): 
+                            $filePath = $dir . $file;
                             $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                             $isAudio = ($ext == 'webm' || $ext == 'ogg' || $ext == 'mp3' || $ext == 'wav');
-                            $size = round(filesize($dir . $file) / 1024 / 1024, 2);
+                            $size = round(filesize($filePath) / 1024 / 1024, 2);
+                            $fileTime = filemtime($filePath);
                             
+                            // Lógica mejorada de nombres
                             $parts = explode('_', pathinfo($file, PATHINFO_FILENAME)); 
-                            $leadName = $parts[1] ?? 'Sin asignar';
-                            $leadNameFormatted = str_replace('-', ' ', $leadName);
-                            
-                            $dateStr = $parts[2] ?? 'N/D';
-                            $timeStr = $parts[3] ?? '';
-                            if (strlen($timeStr) == 4) {
-                                $timeStr = substr($timeStr, 0, 2) . ':' . substr($timeStr, 2, 2);
+                            $displayName = 'Archivo General';
+                            $contextInfo = $isAudio ? 'Grabación de Audio' : 'Documento';
+
+                            if (strpos($file, 'odoo_') === 0) {
+                                $leadId = (int)($parts[1] ?? 0);
+                                $actualName = $leadNames[$leadId] ?? "Lead #$leadId";
+                                $displayName = $actualName;
+                                $contextInfo = "Odoo - " . ($isAudio ? 'Grabación' : 'Adjunto');
+                            } else {
+                                $leadName = $parts[1] ?? 'Sin asignar';
+                                $displayName = str_replace('-', ' ', $leadName);
                             }
                             
+                            $dateStr = date('d/m/Y', $fileTime);
+                            $timeStr = date('H:i', $fileTime);
+                            
                             $typeClass = $isAudio ? 'audio' : 'doc';
-                            $searchString = strtolower($file . ' ' . $leadNameFormatted);
+                            $searchString = strtolower($file . ' ' . $displayName);
                         ?>
                         <tr class="file-row hover:bg-zinc-800/30 transition-colors group" data-type="<?php echo $typeClass; ?>" data-search="<?php echo htmlspecialchars($searchString); ?>">
                             <td class="px-6 py-4">
@@ -93,16 +110,14 @@ $files = array_reverse($files); // Recientes primero
                                         <i data-lucide="<?php echo $isAudio ? 'mic' : 'file-text'; ?>" class="w-4 h-4"></i>
                                     </div>
                                     <div>
-                                        <p class="text-[14px] font-bold text-zinc-100"><?php echo htmlspecialchars($leadNameFormatted); ?></p>
-                                        <p class="text-[12px] text-zinc-500 font-medium"><?php echo $isAudio ? 'Grabación de Audio' : 'Documento'; ?></p>
+                                        <p class="text-[14px] font-bold text-zinc-100"><?php echo htmlspecialchars($displayName); ?></p>
+                                        <p class="text-[12px] text-zinc-500 font-medium"><?php echo $contextInfo; ?></p>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <span class="text-zinc-200 font-semibold block text-[13px]"><?php echo htmlspecialchars($dateStr); ?></span>
-                                <?php if($timeStr): ?>
-                                    <span class="text-[12px] text-zinc-500"><?php echo htmlspecialchars($timeStr); ?></span>
-                                <?php endif; ?>
+                                <span class="text-zinc-200 font-semibold block text-[13px]"><?php echo $dateStr; ?></span>
+                                <span class="text-[12px] text-zinc-500"><?php echo $timeStr; ?></span>
                             </td>
                             <td class="px-6 py-4">
                                 <span class="inline-block text-[13px] font-mono text-zinc-400 bg-zinc-950 px-2 py-1 rounded border border-zinc-800 truncate max-w-[200px]" title="<?php echo htmlspecialchars($file); ?>">
