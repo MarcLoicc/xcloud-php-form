@@ -184,5 +184,6 @@ $files = array_reverse($files); // Recientes primero
             noResults.classList.toggle('hidden', visibleCount > 0 || rows.length === 0);
         }
     </script>
+    <?php include_once 'modal-add-lead.php'; ?>
 </body>
 </html>

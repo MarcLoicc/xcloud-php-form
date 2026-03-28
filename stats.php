@@ -539,5 +539,6 @@ require_once 'db.php';
             await syncAll();
         }
     </script>
+    <?php include_once 'modal-add-lead.php'; ?>
 </body>
 </html>

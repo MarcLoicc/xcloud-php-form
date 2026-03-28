@@ -546,6 +546,7 @@ function getStatusBadge($status) {
             if (e.target === modalD) closeDetailModal();
         });
     </script>
+    <?php include_once 'modal-add-lead.php'; ?>
 </body>
 </html>
 <?php $conn->close(); ?>
