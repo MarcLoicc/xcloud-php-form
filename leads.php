@@ -173,7 +173,7 @@ function getStatusBadge($status) {
                                         <?php echo getInitials($row['name']); ?>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="text-[14px] font-bold text-zinc-100 cursor-pointer hover:text-white transition-colors" onclick="openDetailModal(<?php echo $json_data; ?>)"><?php echo htmlspecialchars($row['name']); ?></span>
+                                        <span class="text-[14px] font-bold text-zinc-100 cursor-pointer hover:text-white transition-colors" onclick="showLeadDetails(<?php echo $json_data; ?>)"><?php echo htmlspecialchars($row['name']); ?></span>
                                         <span class="text-[12px] text-zinc-500"><?php echo htmlspecialchars($row['company'] ?: 'Particular'); ?></span>
                                     </div>
                                 </div>
