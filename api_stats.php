@@ -43,7 +43,7 @@ $historyQuery = "
 $historyData = $conn->query($historyQuery);
 $dates = []; $pagoCounts = []; $organicoCounts = [];
 while($h = $historyData->fetch_assoc()) {
-    $dates[] = date('d M', strtotime($h['date']));
+    $dates[] = date('d M Y', strtotime($h['date']));
     $pagoCounts[] = (int)$h['pago'];
     $organicoCounts[] = (int)$h['organico'];
 }
