@@ -148,7 +148,7 @@ foreach ($odooLeads as $ol) {
     $created = (string)($ol['create_date'] ?? date('Y-m-d H:i:s'));
     $desc = (string)($ol['description'] ?? '');
     
-    // Mapeo detallado de estados solicitado por el usuario
+    // Mapeo detallado de estados solicitado por el usuario (IDs exactos del CRM)
     $stageName = isset($ol['stage_id']) && is_array($ol['stage_id']) ? strtolower($ol['stage_id'][1]) : 'nuevo';
     $status = 'nuevo';
 
@@ -161,12 +161,12 @@ foreach ($odooLeads as $ol) {
     } elseif (stripos($stageName, 'enviar propuesta') !== false) {
         $status = 'enviar_propuesta';
     } elseif (stripos($stageName, 'sin respuesta') !== false) {
-        $status = 'sin_respuesta';
+        $status = 'no_responde';
     } elseif (stripos($stageName, 'nuevo lead') !== false || stripos($stageName, 'llamar') !== false) {
         $status = 'nuevo';
     }
 
-    // Lógica inteligente: Si ya existe, actualizamos descripción, audio, TELÉFONO y ESTADO (overwrite status now).
+    // Lógica inteligente: Si ya existe, actualizamos descripción, audio, TELÉFONO y ESTADO (overwrite status).
     $stmt = $conn->prepare("SELECT id, audio_path, message, phone FROM leads WHERE (email = ? AND email != '') OR (name = ? AND ? != '') LIMIT 1");
     $stmt->bind_param("sss", $email, $contact, $contact);
     $stmt->execute();
