@@ -153,43 +153,53 @@ foreach ($odooLeads as $ol) {
     if (stripos($stageName, 'won') !== false || stripos($stageName, 'ganado') !== false) $status = 'ganado';
     if (stripos($stageName, 'lost') !== false || stripos($stageName, 'perdido') !== false) $status = 'perdido';
 
-    // Anti-Duplicados
-    $stmt = $conn->prepare("SELECT id FROM leads WHERE (email = ? AND email != '') OR (name = ? AND ? != '')");
+    // Lógica inteligente: Si ya existe, actualizamos descripción y audio si faltan. Si no existe, insertamos.
+    $stmt = $conn->prepare("SELECT id, audio_path, message FROM leads WHERE (email = ? AND email != '') OR (name = ? AND ? != '') LIMIT 1");
     $stmt->bind_param("sss", $email, $contact, $contact);
     $stmt->execute();
-    if ($stmt->get_result()->num_rows > 0) {
-        $skipped++; continue;
-    }
+    $res = $stmt->get_result();
+    $existing = $res->fetch_assoc();
 
-    // --- PROCESAR AUDIOS ADJUNTOS ---
-    $audioPath = null;
-    $attachments = odoo_call("$url/xmlrpc/2/object", 'execute_kw', [$db, $uid, $password, 'ir.attachment', 'search_read', [
-        [['res_model', '=', 'crm.lead'], ['res_id', '=', $leadId]]
-    ], ['fields' => ['name', 'datas', 'mimetype']]]);
+    // --- PROCESAR AUDIOS ADJUNTOS SIEMPRE (Para ver si hay nuevos) ---
+    $audioPath = $existing['audio_path'] ?? null;
+    if (!$audioPath) { // Solo buscamos si no tenemos ya uno
+        $attachments = odoo_call("$url/xmlrpc/2/object", 'execute_kw', [$db, $uid, $password, 'ir.attachment', 'search_read', [
+            [['res_model', '=', 'crm.lead'], ['res_id', '=', $leadId]]
+        ], ['fields' => ['name', 'datas', 'mimetype']]]);
 
-    if (is_array($attachments)) {
-        foreach ($attachments as $att) {
-            $mimetype = $att['mimetype'] ?? '';
-            $filename = $att['name'] ?? '';
-            if (stripos($mimetype, 'audio') !== false || stripos($filename, '.webm') !== false || stripos($filename, '.mp3') !== false) {
-                if (!empty($att['datas'])) {
-                    $audioData = base64_decode($att['datas']);
-                    $safeName = 'odoo_' . $leadId . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename);
-                    if (file_put_contents($uploadDir . $safeName, $audioData)) {
-                        $audioPath = 'uploads/' . $safeName;
-                        $audios_dl++; break;
+        if (is_array($attachments)) {
+            foreach ($attachments as $att) {
+                $mimetype = $att['mimetype'] ?? '';
+                $filename = $att['name'] ?? '';
+                if (stripos($mimetype, 'audio') !== false || stripos($filename, '.webm') !== false) {
+                    if (!empty($att['datas'])) {
+                        $audioData = base64_decode($att['datas']);
+                        $safeName = 'odoo_' . $leadId . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename);
+                        if (file_put_contents($uploadDir . $safeName, $audioData)) {
+                            $audioPath = 'uploads/' . $safeName;
+                            $audios_dl++; break;
+                        }
                     }
                 }
             }
         }
     }
 
-    $ins = $conn->prepare("INSERT INTO leads (name, email, phone, proposal_price, status, source, message, audio_path, created_at) VALUES (?, ?, ?, ?, ?, 'organico', ?, ?, ?)");
-    $ins->bind_param("sssdssss", $contact, $email, $phone, $revenue, $status, $desc, $audioPath, $created);
-    
-    if ($ins->execute()) {
-        echo "Importado: $contact (€$revenue)" . ($audioPath ? " [AUDIO OK]" : "") . "\n";
-        $inserted++;
+    if ($existing) {
+        // ACTUALIZAR EXISTENTE
+        $upd = $conn->prepare("UPDATE leads SET message = IF(message IS NULL OR message = '', ?, message), audio_path = IF(audio_path IS NULL OR audio_path = '', ?, audio_path) WHERE id = ?");
+        $upd->bind_param("ssi", $desc, $audioPath, $existing['id']);
+        $upd->execute();
+        echo "Actualizado: $contact" . ($audioPath ? " [AUDIO OK]" : "") . "\n";
+        $skipped++;
+    } else {
+        // INSERTAR NUEVO
+        $ins = $conn->prepare("INSERT INTO leads (name, email, phone, proposal_price, status, source, message, audio_path, created_at) VALUES (?, ?, ?, ?, ?, 'organico', ?, ?, ?)");
+        $ins->bind_param("sssdssss", $contact, $email, $phone, $revenue, $status, $desc, $audioPath, $created);
+        if ($ins->execute()) {
+            echo "Importado: $contact (€$revenue)" . ($audioPath ? " [AUDIO OK]" : "") . "\n";
+            $inserted++;
+        }
     }
 }
 
