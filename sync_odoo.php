@@ -1,6 +1,6 @@
 <?php
 require_once 'db.php';
-header('Content-Type: text/plain');
+header('Content-Type: text/plain; charset=UTF-8');
 
 // CREDENCIALES ODOO
 $url = 'https://marc-loic.odoo.com';
@@ -8,8 +8,8 @@ $db = 'marc-loic';
 $username = 'contactomarc404@gmail.com';
 $password = 'fcbacb311626c453a04dfc3b59a434391bc1c0f1';
 
-echo "SINCRO CRM (MODO CURL) -> ODOO v1.1\n";
-echo "Conectando sin XMLRPC (Usando cURL nativo)...\n\n";
+echo "SINCRO CRM -> ODOO (V2.0 - REFINADO)\n";
+echo "Filtrando por 'Mi Flujo' (Oportunidades Activas)...\n\n";
 
 function odoo_call($endpoint, $method, $params) {
     global $url;
@@ -67,8 +67,11 @@ function odoo_parse_response($xml) {
 }
 
 function odoo_parse_node($node) {
-    $child = $node->firstChild;
-    while ($child && $child->nodeType != XML_ELEMENT_NODE) $child = $child->nextSibling;
+    if (!$node) return null;
+    $child = null;
+    foreach ($node->childNodes as $cn) {
+        if ($cn->nodeType === XML_ELEMENT_NODE) { $child = $cn; break; }
+    }
     if (!$child) return (string)$node->nodeValue;
     
     switch ($child->tagName) {
@@ -78,16 +81,25 @@ function odoo_parse_node($node) {
         case 'string': return (string)$child->nodeValue;
         case 'array':
             $arr = [];
-            $vals = $child->getElementsByTagName('value');
-            foreach ($vals as $v) $arr[] = odoo_parse_node($v);
+            $dataNode = null;
+            foreach ($child->childNodes as $cn) { if ($cn->nodeName === 'data') { $dataNode = $cn; break; } }
+            if ($dataNode) {
+                foreach ($dataNode->childNodes as $cn) {
+                    if ($cn->nodeName === 'value') $arr[] = odoo_parse_node($cn);
+                }
+            }
             return $arr;
         case 'struct':
             $obj = [];
-            $members = $child->getElementsByTagName('member');
-            foreach ($members as $m) {
-                $k = $m->getElementsByTagName('name')->item(0)->nodeValue;
-                $v = $m->getElementsByTagName('value')->item(0);
-                $obj[$k] = odoo_parse_node($v);
+            foreach ($child->childNodes as $m) {
+                if ($m->nodeName === 'member') {
+                    $k = ''; $vNode = null;
+                    foreach ($m->childNodes as $cn) {
+                        if ($cn->nodeName === 'name') $k = $cn->nodeValue;
+                        if ($cn->nodeName === 'value') $vNode = $cn;
+                    }
+                    if ($k !== '' && $vNode) $obj[$k] = odoo_parse_node($vNode);
+                }
             }
             return $obj;
     }
@@ -103,9 +115,14 @@ echo "UID: $uid (Conectado con Odoo)\n";
 $uploadDir = __DIR__ . '/uploads/';
 if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
-// 2. Buscar Oportunidades con campos extendidos (description, UTMs, etc.)
+// 2. Buscar Oportunidades (Filtrado por tipo=opportunity y activo=true)
 $fields = ['id', 'name', 'contact_name', 'email_from', 'phone', 'expected_revenue', 'stage_id', 'create_date', 'description'];
-$odooLeads = odoo_call("$url/xmlrpc/2/object", 'execute_kw', [$db, $uid, $password, 'crm.lead', 'search_read', [[]], ['fields' => $fields]]);
+$domain = [
+    ['type', '=', 'opportunity'],
+    ['active', '=', true]
+];
+
+$odooLeads = odoo_call("$url/xmlrpc/2/object", 'execute_kw', [$db, $uid, $password, 'crm.lead', 'search_read', [$domain], ['fields' => $fields]]);
 
 if (!is_array($odooLeads) || isset($odooLeads['faultCode'])) {
     die("Odoo Error: " . ($odooLeads['faultString'] ?? 'Error desconocido'));
@@ -113,14 +130,14 @@ if (!is_array($odooLeads) || isset($odooLeads['faultCode'])) {
 
 echo "Procesando " . count($odooLeads) . " registros encontrados...\n\n";
 
-$inserted = 0;
-$skipped = 0;
-$audios_dl = 0;
+$inserted = 0; $skipped = 0; $audios_dl = 0;
 
 foreach ($odooLeads as $ol) {
     if (!is_array($ol)) continue;
 
-    $leadId = $ol['id'];
+    $leadId = (int)($ol['id'] ?? 0);
+    if (!$leadId) continue;
+
     $contact = !empty($ol['contact_name']) ? (string)$ol['contact_name'] : (string)($ol['name'] ?? "Lead Odoo #$leadId");
     $email = (string)($ol['email_from'] ?? '');
     $phone = (string)($ol['phone'] ?? '');
@@ -141,8 +158,7 @@ foreach ($odooLeads as $ol) {
     $stmt->bind_param("sss", $email, $contact, $contact);
     $stmt->execute();
     if ($stmt->get_result()->num_rows > 0) {
-        $skipped++;
-        continue;
+        $skipped++; continue;
     }
 
     // --- PROCESAR AUDIOS ADJUNTOS ---
@@ -155,16 +171,13 @@ foreach ($odooLeads as $ol) {
         foreach ($attachments as $att) {
             $mimetype = $att['mimetype'] ?? '';
             $filename = $att['name'] ?? '';
-            // Si es un audio o tiene extensión de audio
             if (stripos($mimetype, 'audio') !== false || stripos($filename, '.webm') !== false || stripos($filename, '.mp3') !== false) {
                 if (!empty($att['datas'])) {
                     $audioData = base64_decode($att['datas']);
-                    // Generar nombre único: lead_ID_origName
                     $safeName = 'odoo_' . $leadId . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename);
                     if (file_put_contents($uploadDir . $safeName, $audioData)) {
                         $audioPath = 'uploads/' . $safeName;
-                        $audios_dl++;
-                        break; // Nos quedamos con el primer audio que encontremos
+                        $audios_dl++; break;
                     }
                 }
             }
@@ -177,14 +190,11 @@ foreach ($odooLeads as $ol) {
     if ($ins->execute()) {
         echo "Importado: $contact (€$revenue)" . ($audioPath ? " [AUDIO OK]" : "") . "\n";
         $inserted++;
-    } else {
-        echo "Error al insertar $contact: " . $conn->error . "\n";
     }
 }
 
 echo "\n--- RESUMEN FINAL ---";
 echo "\nNuevos importados: $inserted";
 echo "\nAudios descargados: $audios_dl";
-echo "\nYa existentes (omitidos): $skipped\n";
+echo "\nYa existentes: $skipped\n";
 $conn->close();
-?>
