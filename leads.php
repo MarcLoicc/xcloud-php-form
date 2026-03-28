@@ -277,9 +277,18 @@ function getStatusBadge($status) {
                             <div class="pt-6 border-t border-zinc-800/50">
                                 <label for="det-message" class="block text-[14px] font-bold text-zinc-100 mb-3">Notas y Contexto</label>
                                 <!-- Vista Renderizada (para Odoo y HTML) -->
-                                <div id="det-message-rich" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-4 overflow-x-auto text-[14px] text-zinc-300 leading-relaxed max-h-[400px] overflow-y-auto hidden"></div>
+                                <div id="det-message-rich" class="w-full bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 mb-4 overflow-x-auto text-[14px] text-zinc-300 leading-relaxed max-h-[500px] overflow-y-auto hidden selection:bg-indigo-500/30"></div>
                                 
                                 <textarea name="message" id="det-message" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-3 px-4 focus:ring-2 focus:ring-indigo-500 outline-none min-h-[140px] text-[14px] text-zinc-100 transition-colors placeholder:text-zinc-600 shadow-inner" placeholder="Añade aquí los detalles de la reunión, necesidades del cliente..."></textarea>
+                                
+                                <style>
+                                    /* Sobrescribir fondos blancos de Odoo y tablas para que se vean bien en modo oscuro */
+                                    #det-message-rich * { background-color: transparent !important; color: inherit !important; border-color: #3f3f46 !important; }
+                                    #det-message-rich table { width: 100% !important; border-collapse: collapse; margin-bottom: 1rem; }
+                                    #det-message-rich td { padding: 8px !important; vertical-align: top; }
+                                    #det-message-rich h3 { color: #818cf8 !important; border-bottom: 2px solid #312e81 !important; margin: 1.5rem 0 1rem 0; padding-bottom: 4px; font-size: 15px; text-transform: uppercase; letter-spacing: 0.05em; }
+                                    #det-message-rich strong { color: #f4f4f5 !important; }
+                                </style>
                             </div>
                         </div>
 
@@ -435,11 +444,11 @@ function getStatusBadge($status) {
             const msgVal = data.message || '';
             msgInp.value = msgVal;
             
-            // Si contiene HTML (Odoo), mostrar el renderizado
+            // Si contiene HTML (Odoo), mostrar el renderizado y ocultar el textarea
             if (msgVal.includes('<') && msgVal.includes('>')) {
                 msgRich.innerHTML = msgVal;
                 msgRich.classList.remove('hidden');
-                // msgInp.classList.add('hidden'); // Opcional: ocultar el textarea si es Odoo
+                msgInp.classList.add('hidden'); 
             } else {
                 msgRich.classList.add('hidden');
                 msgInp.classList.remove('hidden');
