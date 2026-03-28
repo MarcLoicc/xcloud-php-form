@@ -115,8 +115,8 @@ echo "UID: $uid (Conectado con Odoo)\n";
 $uploadDir = __DIR__ . '/uploads/';
 if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
-// 2. Buscar Oportunidades (Filtrado por tipo=opportunity y activo=true)
-$fields = ['id', 'name', 'contact_name', 'email_from', 'phone', 'expected_revenue', 'stage_id', 'create_date', 'description'];
+// 2. Buscar Oportunidades con campos extendidos (incluido mobile)
+$fields = ['id', 'name', 'contact_name', 'email_from', 'phone', 'mobile', 'expected_revenue', 'stage_id', 'create_date', 'description'];
 $domain = [
     ['type', '=', 'opportunity'],
     ['active', '=', true]
@@ -140,12 +140,15 @@ foreach ($odooLeads as $ol) {
 
     $contact = !empty($ol['contact_name']) ? (string)$ol['contact_name'] : (string)($ol['name'] ?? "Lead Odoo #$leadId");
     $email = (string)($ol['email_from'] ?? '');
-    $phone = (string)($ol['phone'] ?? '');
+    
+    // Si no hay phone, probar con mobile
+    $phone = !empty($ol['phone']) ? (string)$ol['phone'] : (string)($ol['mobile'] ?? '');
+    
     $revenue = (float)($ol['expected_revenue'] ?? 0);
     $created = (string)($ol['create_date'] ?? date('Y-m-d H:i:s'));
     $desc = (string)($ol['description'] ?? '');
     
-    // Mapeo de estados
+    // ... mapeo de estados igual ...
     $stageName = 'nuevo';
     if (isset($ol['stage_id']) && is_array($ol['stage_id'])) $stageName = strtolower($ol['stage_id'][1]);
 
@@ -153,16 +156,16 @@ foreach ($odooLeads as $ol) {
     if (stripos($stageName, 'won') !== false || stripos($stageName, 'ganado') !== false) $status = 'ganado';
     if (stripos($stageName, 'lost') !== false || stripos($stageName, 'perdido') !== false) $status = 'perdido';
 
-    // Lógica inteligente: Si ya existe, actualizamos descripción y audio si faltan. Si no existe, insertamos.
-    $stmt = $conn->prepare("SELECT id, audio_path, message FROM leads WHERE (email = ? AND email != '') OR (name = ? AND ? != '') LIMIT 1");
+    // Lógica inteligente: Si ya existe, actualizamos descripción, audio y TELÉFONO si faltan.
+    $stmt = $conn->prepare("SELECT id, audio_path, message, phone FROM leads WHERE (email = ? AND email != '') OR (name = ? AND ? != '') LIMIT 1");
     $stmt->bind_param("sss", $email, $contact, $contact);
     $stmt->execute();
     $res = $stmt->get_result();
     $existing = $res->fetch_assoc();
 
-    // --- PROCESAR AUDIOS ADJUNTOS SIEMPRE (Para ver si hay nuevos) ---
+    // --- PROCESAR AUDIOS ADJUNTOS SIEMPRE ---
     $audioPath = $existing['audio_path'] ?? null;
-    if (!$audioPath) { // Solo buscamos si no tenemos ya uno
+    if (!$audioPath) { 
         $attachments = odoo_call("$url/xmlrpc/2/object", 'execute_kw', [$db, $uid, $password, 'ir.attachment', 'search_read', [
             [['res_model', '=', 'crm.lead'], ['res_id', '=', $leadId]]
         ], ['fields' => ['name', 'datas', 'mimetype']]]);
@@ -186,18 +189,18 @@ foreach ($odooLeads as $ol) {
     }
 
     if ($existing) {
-        // ACTUALIZAR EXISTENTE
-        $upd = $conn->prepare("UPDATE leads SET message = IF(message IS NULL OR message = '', ?, message), audio_path = IF(audio_path IS NULL OR audio_path = '', ?, audio_path) WHERE id = ?");
-        $upd->bind_param("ssi", $desc, $audioPath, $existing['id']);
+        // ACTUALIZAR EXISTENTE (reforzamos teléfono también si estaba vacío)
+        $upd = $conn->prepare("UPDATE leads SET message = IF(message IS NULL OR message = '', ?, message), audio_path = IF(audio_path IS NULL OR audio_path = '', ?, audio_path), phone = IF(phone IS NULL OR phone = '', ?, phone) WHERE id = ?");
+        $upd->bind_param("sssi", $desc, $audioPath, $phone, $existing['id']);
         $upd->execute();
-        echo "Actualizado: $contact" . ($audioPath ? " [AUDIO OK]" : "") . "\n";
+        echo "Actualizado: $contact" . ($audioPath ? " [AUDIO OK]" : "") . ($phone ? " [TEL OK]" : "") . "\n";
         $skipped++;
     } else {
         // INSERTAR NUEVO
         $ins = $conn->prepare("INSERT INTO leads (name, email, phone, proposal_price, status, source, message, audio_path, created_at) VALUES (?, ?, ?, ?, ?, 'organico', ?, ?, ?)");
         $ins->bind_param("sssdssss", $contact, $email, $phone, $revenue, $status, $desc, $audioPath, $created);
         if ($ins->execute()) {
-            echo "Importado: $contact (€$revenue)" . ($audioPath ? " [AUDIO OK]" : "") . "\n";
+            echo "Importado: $contact (€$revenue)\n";
             $inserted++;
         }
     }
