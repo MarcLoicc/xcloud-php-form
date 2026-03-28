@@ -131,6 +131,21 @@ function getStatusBadge($status) {
                             return $phone;
                         }
 
+                        function getAvatarColor($name) {
+                            $colors = [
+                                'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
+                                'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+                                'bg-sky-500/20 text-sky-400 border-sky-500/30',
+                                'bg-amber-500/20 text-amber-400 border-amber-500/30',
+                                'bg-rose-500/20 text-rose-400 border-rose-500/30',
+                                'bg-violet-500/20 text-violet-400 border-violet-500/30',
+                                'bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30',
+                                'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
+                            ];
+                            $hash = crc32($name);
+                            return $colors[abs($hash) % count($colors)];
+                        }
+
                         function getInitials($name) {
                             if (!$name) return '??';
                             $parts = explode(' ', trim($name));
@@ -145,6 +160,7 @@ function getStatusBadge($status) {
                             $rowDate = date('Y-m-d', strtotime($row['created_at']));
                             $displayDate = date('M d, Y', strtotime($row['created_at']));
                             $statusInfo = getStatusBadge($row['status'] ?? 'nuevo');
+                            $avatarStyle = getAvatarColor($row['name']);
                         ?>
                         <tr class="lead-row hover:bg-zinc-800/30 transition-colors group" 
                             data-id="<?php echo $row['id']; ?>"
@@ -153,11 +169,11 @@ function getStatusBadge($status) {
                             
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[13px] font-bold text-zinc-100 tracking-tighter" aria-hidden="true">
+                                    <div class="w-10 h-10 rounded-lg border flex items-center justify-center text-[13px] font-bold tracking-tighter <?php echo $avatarStyle; ?>" aria-hidden="true">
                                         <?php echo getInitials($row['name']); ?>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="text-[14px] font-bold text-zinc-100 cursor-pointer hover:underline" onclick="openDetailModal(<?php echo $json_data; ?>)"><?php echo htmlspecialchars($row['name']); ?></span>
+                                        <span class="text-[14px] font-bold text-zinc-100 cursor-pointer hover:text-white transition-colors" onclick="openDetailModal(<?php echo $json_data; ?>)"><?php echo htmlspecialchars($row['name']); ?></span>
                                         <span class="text-[12px] text-zinc-500"><?php echo htmlspecialchars($row['company'] ?: 'Particular'); ?></span>
                                     </div>
                                 </div>
