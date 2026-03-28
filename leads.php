@@ -142,7 +142,7 @@ function getStatusBadge($status) {
                             $rowDate = date('Y-m-d', strtotime($row['created_at']));
                             $displayDate = date('M d, Y', strtotime($row['created_at']));
                             $statusInfo = getStatusBadge($row['status'] ?? 'nuevo');
-                        ?>      ?>
+                        ?>
                         <tr class="lead-row hover:bg-zinc-800/30 transition-colors group" 
                             data-id="<?php echo $row['id']; ?>"
                             data-source="<?php echo $row['source']; ?>"
