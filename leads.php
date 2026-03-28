@@ -122,12 +122,27 @@ function getStatusBadge($status) {
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-zinc-800">
-                        <?php while($row = $result->fetch_assoc()): 
+                        <?php 
+                        if (!function_exists('formatPhone')) {
+                            function formatPhone($phone) {
+                                if (!$phone) return '---';
+                                $clean = preg_replace('/[^0-9]/', '', $phone);
+                                if (strpos($clean, '34') === 0 && strlen($clean) > 9) {
+                                    $clean = substr($clean, 2);
+                                }
+                                if (strlen($clean) === 9) {
+                                    return substr($clean, 0, 3) . ' ' . substr($clean, 3, 3) . ' ' . substr($clean, 6, 3);
+                                }
+                                return $phone;
+                            }
+                        }
+
+                        while($row = $result->fetch_assoc()): 
                             $json_data = htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8');
                             $rowDate = date('Y-m-d', strtotime($row['created_at']));
                             $displayDate = date('M d, Y', strtotime($row['created_at']));
                             $statusInfo = getStatusBadge($row['status'] ?? 'nuevo');
-                        ?>
+                        ?>      ?>
                         <tr class="lead-row hover:bg-zinc-800/30 transition-colors group" 
                             data-id="<?php echo $row['id']; ?>"
                             data-source="<?php echo $row['source']; ?>"
@@ -146,8 +161,8 @@ function getStatusBadge($status) {
                             </td>
 
                             <td class="px-6 py-4">
-                                <span class="text-[14px] text-zinc-300 cursor-pointer hover:text-indigo-400 transition-colors tabular-nums" onclick="quickEdit(this, 'phone', '<?php echo $row['id']; ?>')">
-                                    <?php echo htmlspecialchars($row['phone'] ?: '---'); ?>
+                                <span class="text-[14px] text-zinc-400 tabular-nums">
+                                    <?php echo htmlspecialchars(formatPhone($row['phone'])); ?>
                                 </span>
                             </td>
                             
