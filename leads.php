@@ -168,10 +168,11 @@ function getStatusBadge($status) {
                             $displayName = formatName($row['name']);
                             $avatarStyle = getAvatarColor($row['name']);
                         ?>
-                        <tr class="lead-row hover:bg-zinc-800/30 transition-colors group" 
+                        <tr class="lead-row hover:bg-zinc-800/50 transition-colors cursor-pointer" 
                             data-id="<?php echo $row['id']; ?>"
                             data-source="<?php echo $row['source']; ?>"
-                            data-status="<?php echo $row['status'] ?? 'nuevo'; ?>">
+                            data-status="<?php echo $row['status'] ?? 'nuevo'; ?>"
+                            onclick="showLeadDetails(<?php echo $json_data; ?>)">
                             
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
@@ -192,7 +193,7 @@ function getStatusBadge($status) {
                             </td>
                             
                             <td class="px-6 py-4">
-                                <div class="cursor-pointer" onclick="quickEdit(this, 'status', '<?php echo $row['id']; ?>')">
+                                <div class="cursor-pointer" onclick="event.stopPropagation(); quickEdit(this, 'status', '<?php echo $row['id']; ?>')">
                                     <span class="inline-flex items-center px-2 py-1 rounded-md text-[12px] font-medium <?php echo $statusInfo['class']; ?>">
                                         <?php echo $statusInfo['label']; ?>
                                     </span>
@@ -200,20 +201,20 @@ function getStatusBadge($status) {
                             </td>
                             
                             <td class="px-6 py-4">
-                                <span class="text-[13px] text-zinc-400 flex items-center gap-2 cursor-pointer hover:text-zinc-200" onclick="quickEdit(this, 'source', '<?php echo $row['id']; ?>')">
+                                <span class="text-[13px] text-zinc-400 flex items-center gap-2 cursor-pointer hover:text-zinc-200" onclick="event.stopPropagation(); quickEdit(this, 'source', '<?php echo $row['id']; ?>')">
                                     <i data-lucide="<?php echo $row['source'] === 'pago' ? 'target' : 'globe'; ?>" class="w-3 h-3"></i>
                                     <?php echo $row['source'] === 'pago' ? 'Pago' : 'Orgánico'; ?>
                                 </span>
                             </td>
                             
                             <td class="px-6 py-4 text-right">
-                                <span class="text-[14px] font-bold text-zinc-100 cursor-pointer hover:text-indigo-400 transition-colors" onclick="quickEdit(this, 'proposal_price', '<?php echo $row['id']; ?>')">
+                                <span class="text-[14px] font-bold text-zinc-100 cursor-pointer hover:text-indigo-400 transition-colors" onclick="event.stopPropagation(); quickEdit(this, 'proposal_price', '<?php echo $row['id']; ?>')">
                                     €<?php echo number_format($row['proposal_price'] ?? 0, 2); ?>
                                 </span>
                             </td>
                             
                             <td class="px-6 py-4 text-right">
-                                <span class="text-[13px] text-zinc-500 cursor-pointer hover:text-zinc-300 transition-colors" onclick="quickEdit(this, 'created_at', '<?php echo $row['id']; ?>')">
+                                <span class="text-[13px] text-zinc-500 cursor-pointer hover:text-zinc-300 transition-colors" onclick="event.stopPropagation(); quickEdit(this, 'created_at', '<?php echo $row['id']; ?>')">
                                     <?php echo $displayDate; ?>
                                 </span>
                             </td>
