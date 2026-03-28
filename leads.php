@@ -131,6 +131,11 @@ function getStatusBadge($status) {
                             return $phone;
                         }
 
+                        function formatName($name) {
+                            if (!$name) return '';
+                            return mb_convert_case(trim($name), MB_CASE_TITLE, 'UTF-8');
+                        }
+
                         function getAvatarColor($name) {
                             $colors = [
                                 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
@@ -160,6 +165,7 @@ function getStatusBadge($status) {
                             $rowDate = date('Y-m-d', strtotime($row['created_at']));
                             $displayDate = date('M d, Y', strtotime($row['created_at']));
                             $statusInfo = getStatusBadge($row['status'] ?? 'nuevo');
+                            $displayName = formatName($row['name']);
                             $avatarStyle = getAvatarColor($row['name']);
                         ?>
                         <tr class="lead-row hover:bg-zinc-800/30 transition-colors group" 
@@ -170,10 +176,10 @@ function getStatusBadge($status) {
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-lg border flex items-center justify-center text-[13px] font-bold tracking-tighter <?php echo $avatarStyle; ?>" aria-hidden="true">
-                                        <?php echo getInitials($row['name']); ?>
+                                        <?php echo getInitials($displayName); ?>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="text-[14px] font-bold text-zinc-100 cursor-pointer hover:text-white transition-colors" onclick="showLeadDetails(<?php echo $json_data; ?>)"><?php echo htmlspecialchars($row['name']); ?></span>
+                                        <span class="text-[14px] font-bold text-zinc-100 cursor-pointer hover:text-white transition-colors" onclick="showLeadDetails(<?php echo $json_data; ?>)"><?php echo htmlspecialchars($displayName); ?></span>
                                         <span class="text-[12px] text-zinc-500"><?php echo htmlspecialchars($row['company'] ?: 'Particular'); ?></span>
                                     </div>
                                 </div>
