@@ -276,6 +276,9 @@ function getStatusBadge($status) {
                              <!-- Notas -->
                             <div class="pt-6 border-t border-zinc-800/50">
                                 <label for="det-message" class="block text-[14px] font-bold text-zinc-100 mb-3">Notas y Contexto</label>
+                                <!-- Vista Renderizada (para Odoo y HTML) -->
+                                <div id="det-message-rich" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-4 overflow-x-auto text-[14px] text-zinc-300 leading-relaxed max-h-[400px] overflow-y-auto hidden"></div>
+                                
                                 <textarea name="message" id="det-message" class="w-full bg-zinc-950 border border-zinc-800 rounded-md py-3 px-4 focus:ring-2 focus:ring-indigo-500 outline-none min-h-[140px] text-[14px] text-zinc-100 transition-colors placeholder:text-zinc-600 shadow-inner" placeholder="Añade aquí los detalles de la reunión, necesidades del cliente..."></textarea>
                             </div>
                         </div>
@@ -427,7 +430,20 @@ function getStatusBadge($status) {
             document.getElementById('det-source').value = data.source || 'organico';
             document.getElementById('det-status').value = data.status || 'nuevo';
             document.getElementById('det-price').value = data.proposal_price || 0;
-            document.getElementById('det-message').value = data.message || '';
+            const msgInp = document.getElementById('det-message');
+            const msgRich = document.getElementById('det-message-rich');
+            const msgVal = data.message || '';
+            msgInp.value = msgVal;
+            
+            // Si contiene HTML (Odoo), mostrar el renderizado
+            if (msgVal.includes('<') && msgVal.includes('>')) {
+                msgRich.innerHTML = msgVal;
+                msgRich.classList.remove('hidden');
+                // msgInp.classList.add('hidden'); // Opcional: ocultar el textarea si es Odoo
+            } else {
+                msgRich.classList.add('hidden');
+                msgInp.classList.remove('hidden');
+            }
             
             // Formatear fecha y hora por separado para mejor UX
             if(data.created_at) {
