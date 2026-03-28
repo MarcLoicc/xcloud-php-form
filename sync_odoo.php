@@ -148,15 +148,25 @@ foreach ($odooLeads as $ol) {
     $created = (string)($ol['create_date'] ?? date('Y-m-d H:i:s'));
     $desc = (string)($ol['description'] ?? '');
     
-    // ... mapeo de estados igual ...
-    $stageName = 'nuevo';
-    if (isset($ol['stage_id']) && is_array($ol['stage_id'])) $stageName = strtolower($ol['stage_id'][1]);
-
+    // Mapeo detallado de estados solicitado por el usuario
+    $stageName = isset($ol['stage_id']) && is_array($ol['stage_id']) ? strtolower($ol['stage_id'][1]) : 'nuevo';
     $status = 'nuevo';
-    if (stripos($stageName, 'won') !== false || stripos($stageName, 'ganado') !== false) $status = 'ganado';
-    if (stripos($stageName, 'lost') !== false || stripos($stageName, 'perdido') !== false) $status = 'perdido';
 
-    // Lógica inteligente: Si ya existe, actualizamos descripción, audio y TELÉFONO si faltan.
+    if (stripos($stageName, 'ganado') !== false || stripos($stageName, 'colaboracion') !== false) {
+        $status = 'ganado';
+    } elseif (stripos($stageName, 'perdido') !== false || stripos($stageName, 'rechazada') !== false) {
+        $status = 'perdido';
+    } elseif (stripos($stageName, 'propuesta enviada') !== false || stripos($stageName, 'seguimiento') !== false || stripos($stageName, 'revisar propuesta') !== false) {
+        $status = 'propuesta_enviada';
+    } elseif (stripos($stageName, 'enviar propuesta') !== false) {
+        $status = 'enviar_propuesta';
+    } elseif (stripos($stageName, 'sin respuesta') !== false) {
+        $status = 'sin_respuesta';
+    } elseif (stripos($stageName, 'nuevo lead') !== false || stripos($stageName, 'llamar') !== false) {
+        $status = 'nuevo';
+    }
+
+    // Lógica inteligente: Si ya existe, actualizamos descripción, audio, TELÉFONO y ESTADO (overwrite status now).
     $stmt = $conn->prepare("SELECT id, audio_path, message, phone FROM leads WHERE (email = ? AND email != '') OR (name = ? AND ? != '') LIMIT 1");
     $stmt->bind_param("sss", $email, $contact, $contact);
     $stmt->execute();
@@ -189,11 +199,11 @@ foreach ($odooLeads as $ol) {
     }
 
     if ($existing) {
-        // ACTUALIZAR EXISTENTE (reforzamos teléfono también si estaba vacío)
-        $upd = $conn->prepare("UPDATE leads SET message = IF(message IS NULL OR message = '', ?, message), audio_path = IF(audio_path IS NULL OR audio_path = '', ?, audio_path), phone = IF(phone IS NULL OR phone = '', ?, phone) WHERE id = ?");
-        $upd->bind_param("sssi", $desc, $audioPath, $phone, $existing['id']);
+        // ACTUALIZAR EXISTENTE (ahora también forzamos el estado para que coincida con Odoo)
+        $upd = $conn->prepare("UPDATE leads SET message = IF(message IS NULL OR message = '', ?, message), audio_path = IF(audio_path IS NULL OR audio_path = '', ?, audio_path), phone = IF(phone IS NULL OR phone = '', ?, phone), status = ? WHERE id = ?");
+        $upd->bind_param("ssssi", $desc, $audioPath, $phone, $status, $existing['id']);
         $upd->execute();
-        echo "Actualizado: $contact" . ($audioPath ? " [AUDIO OK]" : "") . ($phone ? " [TEL OK]" : "") . "\n";
+        echo "Actualizado: $contact" . ($audioPath ? " [AUDIO OK]" : "") . " [ESTADO: $status]\n";
         $skipped++;
     } else {
         // INSERTAR NUEVO
